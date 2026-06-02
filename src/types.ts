@@ -21,6 +21,12 @@ export type SnapshotOutputs = {
   upsell: string
 }
 
+export type BrandingFields = {
+  preparedBy: string
+  brandName: string
+  contactLine: string
+}
+
 export type SnapshotForm = {
   businessName: string
   websiteUrl: string
@@ -39,4 +45,5 @@ export type SavedSnapshot = SnapshotForm & {
   createdAt: string
   scores: Scores
   outputs: SnapshotOutputs
+  branding?: BrandingFields
 }
