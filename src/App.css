@@ -299,11 +299,19 @@ button {
   place-items: center;
 }
 
+
 .copy-status {
   margin: 10px 0 0;
   color: var(--accent);
   font-size: 0.84rem;
   font-weight: 800;
+}
+
+.character-count {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 750;
 }
 
 .saved-panel {

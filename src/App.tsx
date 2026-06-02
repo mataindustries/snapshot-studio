@@ -40,11 +40,11 @@ const outputLabels: Array<{
   title: string
   icon: typeof FileText
 }> = [
-  { key: 'snapshot', title: '3-point snapshot', icon: FileText },
-  { key: 'email', title: 'Contact form/email', icon: Send },
+  { key: 'snapshot', title: 'Snapshot', icon: FileText },
+  { key: 'email', title: 'Email / contact form', icon: Send },
   { key: 'text', title: 'Text message', icon: MessageSquare },
   { key: 'followUp', title: 'Reply follow-up', icon: Clipboard },
-  { key: 'upsell', title: 'Paid report upsell', icon: FileText },
+  { key: 'upsell', title: 'Paid report offer', icon: FileText },
 ]
 
 const scoreKeys = Object.keys(scoreLabels) as ScoreKey[]
@@ -286,6 +286,9 @@ function App() {
               </button>
             </div>
             <pre>{outputs[key]}</pre>
+            {key === 'text' && (
+              <p className="character-count">{outputs.text.length} characters</p>
+            )}
             {copiedKey === key && <p className="copy-status">Copied</p>}
           </article>
         ))}
