@@ -47,3 +47,34 @@ export type SavedSnapshot = SnapshotForm & {
   outputs: SnapshotOutputs
   branding?: BrandingFields
 }
+
+export type LeadPriority = 'High' | 'Medium' | 'Low'
+
+export type LeadStatus =
+  | 'Not reviewed'
+  | 'Snapshot made'
+  | 'Sent'
+  | 'Replied'
+  | 'Call booked'
+  | 'Paid'
+  | 'Not interested'
+
+export type Lead = {
+  id: string
+  createdAt: string
+  businessName: string
+  websiteUrl: string
+  city: string
+  niche: string
+  mainService: string
+  phone: string
+  email: string
+  contactFormUrl: string
+  leadSource: string
+  priority: LeadPriority
+  researchNotes: string
+  suggestedAngle: string
+  status: LeadStatus
+  lastContactedAt: string
+  linkedSnapshotId?: string
+}
