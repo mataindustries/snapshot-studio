@@ -401,6 +401,105 @@ button {
   font-weight: 750;
 }
 
+.archetype-hero,
+.share-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+  margin-top: 18px;
+  border: 1px solid #dce4e8;
+  border-radius: 8px;
+  background: #f8fbfa;
+}
+
+.archetype-hero {
+  padding: 14px;
+}
+
+.archetype-hero img {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 7px;
+  object-fit: cover;
+  background: #e8eeee;
+}
+
+.archetype-hero h3,
+.share-card h3 {
+  margin: 0;
+  color: #121820;
+  line-height: 1.12;
+}
+
+.archetype-hero h3 {
+  font-size: 1.35rem;
+}
+
+.archetype-hero p:not(.section-kicker),
+.share-card p {
+  margin: 8px 0 0;
+  color: #344450;
+  font-size: 0.94rem;
+  line-height: 1.45;
+}
+
+.share-card {
+  overflow: hidden;
+  background: #121820;
+  color: #fff;
+}
+
+.share-card img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: #24313a;
+}
+
+.share-card-copy {
+  display: grid;
+  gap: 7px;
+  padding: 2px 16px 16px;
+}
+
+.share-card-copy span {
+  width: fit-content;
+  padding: 5px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  color: #dcefed;
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.share-card h3,
+.share-card p,
+.share-card strong {
+  color: #fff;
+}
+
+.share-card p {
+  margin: 0;
+  color: #d7e0e4;
+}
+
+.share-card strong {
+  font-size: 0.9rem;
+}
+
+.share-card-actions {
+  display: grid;
+  gap: 9px;
+  padding: 0 16px 16px;
+}
+
+.share-card-actions .secondary-button {
+  min-height: 40px;
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
 .report-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -615,6 +714,33 @@ button {
     align-items: start;
   }
 
+  .archetype-hero {
+    grid-template-columns: minmax(220px, 0.7fr) minmax(0, 1fr);
+    align-items: center;
+    padding: 16px;
+  }
+
+  .share-card {
+    grid-template-columns: minmax(180px, 0.5fr) minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .share-card img {
+    height: 100%;
+    min-height: 210px;
+  }
+
+  .share-card-copy {
+    align-content: center;
+    padding: 18px 18px 8px;
+  }
+
+  .share-card-actions {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding: 0 18px 18px;
+  }
+
   .report-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -696,7 +822,13 @@ button {
   .offer-box p,
   .report-next li,
   .report-footer,
-  .report-meta span {
+  .report-meta span,
+  .archetype-hero h3,
+  .archetype-hero p,
+  .share-card h3,
+  .share-card p,
+  .share-card strong,
+  .share-card-copy span {
     color: #000;
   }
 
@@ -720,7 +852,9 @@ button {
   .report-score,
   .report-meta span,
   .report-block,
-  .offer-box {
+  .offer-box,
+  .archetype-hero,
+  .share-card {
     border: 1px solid #000;
     background: #fff;
     box-shadow: none;

@@ -13,6 +13,9 @@ type Archetype =
 type BusinessHoroscope = {
   archetype: Archetype
   archetypeSummary: string
+  archetypeImagePath: string
+  shareSummary: string
+  shareCta: string
   scoreExplanations: string[]
   strengths: string[]
   weaknesses: string[]
@@ -96,6 +99,39 @@ export function getDigitalZodiac(scores: Scores, totalScore: number): Archetype 
   }
   if (scores.conversion <= 9 || lowest === 'conversion') return 'The Sleeping Giant'
   return 'The Wandering Generalist'
+}
+
+function getArchetypeImagePath(archetype: Archetype) {
+  const filenames: Record<Archetype, string> = {
+    'The Hidden Gem': 'hidden-gem.png',
+    'The Local Legend': 'local-legend.png',
+    'The Sleeping Giant': 'sleeping-giant.png',
+    'The Invisible Expert': 'invisible-expert.png',
+    'The Trust Magnet': 'trust-magnet.png',
+    'The Wandering Generalist': 'wandering-generalist.png',
+    'The AI Blind Spot': 'ai-blind-spot.png',
+    'The Competitor Snack': 'competitor-snack.png',
+  }
+
+  return `/archetypes/${filenames[archetype]}`
+}
+
+function buildShareSummary(form: SnapshotForm, archetype: Archetype) {
+  const city = valueOrFallback(form.city, 'the local market')
+  const service = valueOrFallback(form.mainService, 'the main service')
+
+  const summaries: Record<Archetype, string> = {
+    'The Hidden Gem': `Trusted potential that needs to be easier for ${city} buyers to find.`,
+    'The Local Legend': `A strong local contender that can protect its lead with sharper proof.`,
+    'The Sleeping Giant': `Real business substance held back by a soft inquiry path.`,
+    'The Invisible Expert': `Strong know-how that needs clearer ${service} signals online.`,
+    'The Trust Magnet': `Credibility is present; the next step needs to work harder.`,
+    'The Wandering Generalist': `Too many broad signals; the offer needs a sharper lane.`,
+    'The AI Blind Spot': `Useful business details need cleaner answers for search and AI.`,
+    'The Competitor Snack': `Competitors may be making the choice feel easier right now.`,
+  }
+
+  return summaries[archetype]
 }
 
 function buildArchetypeSummary(form: SnapshotForm, archetype: Archetype, scores: Scores, totalScore: number) {
@@ -257,6 +293,9 @@ export function buildBusinessHoroscope(
   return {
     archetype,
     archetypeSummary: buildArchetypeSummary(form, archetype, scores, totalScore),
+    archetypeImagePath: getArchetypeImagePath(archetype),
+    shareSummary: buildShareSummary(form, archetype),
+    shareCta: 'Want the one-page version?',
     scoreExplanations: buildScoreExplanations(form, scores),
     strengths: buildStrengths(form, scores),
     weaknesses: buildWeaknesses(form, scores),
@@ -290,6 +329,7 @@ Tone: ${tone}
 
 1. Business Digital Zodiac archetype
 ${report.archetype}
+Image: ${report.archetypeImagePath}
 ${report.archetypeSummary}
 
 2. Overall score
@@ -321,6 +361,13 @@ ${report.outreachSummary}
 
 10. CTA section
 ${report.cta}
+
+Share card
+Image: ${report.archetypeImagePath}
+Archetype: ${report.archetype}
+Summary: ${report.shareSummary}
+Score: ${totalScore}/100
+CTA: ${report.shareCta}
 
 ${report.premiumUpsell}`
 }
@@ -356,8 +403,10 @@ function buildShareable(form: SnapshotForm, totalScore: number, archetype: Arche
   const businessName = valueOrFallback(form.businessName, 'This business')
   const city = valueOrFallback(form.city, 'its market')
   const industry = valueOrFallback(form.niche, 'its industry')
+  const imagePath = getArchetypeImagePath(archetype)
+  const shareSummary = buildShareSummary(form, archetype)
 
-  return `${businessName} scored ${totalScore}/100 in its Business Horoscope and came through as ${archetype}. The fastest win is making ${industry} buyers in ${city} understand the offer faster, trust it sooner, compare it more clearly, and contact the business from a phone without second-guessing the next step.`
+  return `${businessName} scored ${totalScore}/100 in its Business Horoscope and came through as ${archetype}. ${shareSummary} Fastest win: help ${industry} buyers in ${city} understand the offer, trust it, compare it, and contact the business from a phone. Image: ${imagePath}`
 }
 
 export function generateOutputs(
