@@ -1,13 +1,13 @@
-export type Tone = 'friendly' | 'expert' | 'blunt'
+export type Tone = 'fun' | 'professional' | 'spicy' | 'premium' | 'friendly' | 'expert' | 'blunt'
 
 export type CtaStyle = 'ask-permission' | 'send-snapshot' | 'book-call'
 
 export type ScoreKey =
-  | 'clearServices'
-  | 'clearServiceArea'
-  | 'trustProof'
-  | 'helpfulContent'
-  | 'readableStructure'
+  | 'visibility'
+  | 'trust'
+  | 'conversion'
+  | 'aiSearchReadiness'
+  | 'competitorPosition'
 
 export type Scores = Record<ScoreKey, number>
 
@@ -17,7 +17,7 @@ export type SnapshotOutputs = {
   snapshot: string
   email: string
   text: string
-  followUp: string
+  shareable: string
   upsell: string
 }
 
@@ -36,6 +36,8 @@ export type SnapshotForm = {
   notes: string
   weakness: string
   competitorNote: string
+  competitorUrl1: string
+  competitorUrl2: string
   tone: Tone
   ctaStyle: CtaStyle
 }

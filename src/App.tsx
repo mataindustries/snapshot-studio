@@ -36,10 +36,9 @@ import {
   type LeadInput,
   type ParsedLead,
 } from './lib/leads'
-import { generateOutputs } from './templates/snapshotTemplates'
+import { buildBusinessHoroscope, generateOutputs } from './templates/snapshotTemplates'
 import type {
   BrandingFields,
-  CtaStyle,
   Lead,
   LeadPriority,
   LeadStatus,
@@ -60,7 +59,9 @@ const emptyForm: SnapshotForm = {
   notes: '',
   weakness: '',
   competitorNote: '',
-  tone: 'friendly',
+  competitorUrl1: '',
+  competitorUrl2: '',
+  tone: 'fun',
   ctaStyle: 'ask-permission',
 }
 
@@ -75,11 +76,11 @@ const outputLabels: Array<{
   title: string
   icon: typeof FileText
 }> = [
-  { key: 'snapshot', title: 'Snapshot', icon: FileText },
-  { key: 'email', title: 'Email / contact form', icon: Send },
-  { key: 'text', title: 'Text message', icon: MessageSquare },
-  { key: 'followUp', title: 'Reply follow-up', icon: Clipboard },
-  { key: 'upsell', title: 'Paid report offer', icon: FileText },
+  { key: 'snapshot', title: 'Business Horoscope report', icon: FileText },
+  { key: 'text', title: 'Short text message', icon: MessageSquare },
+  { key: 'email', title: 'Short cold email', icon: Send },
+  { key: 'shareable', title: 'Shareable result', icon: Clipboard },
+  { key: 'upsell', title: 'Premium upsell', icon: FileText },
 ]
 
 const scoreKeys = Object.keys(scoreLabels) as ScoreKey[]
@@ -88,23 +89,32 @@ function valueOrFallback(value: string, fallback: string) {
   return value.trim() || fallback
 }
 
-function getReportRating(totalScore: number) {
-  if (totalScore >= 21) return 'Strong visibility base'
-  if (totalScore >= 16) return 'Solid visibility base'
-  if (totalScore >= 11) return 'Visibility opportunity'
-  return 'Foundation stage'
+function normalizeScores(scores: Partial<Scores> | undefined): Scores {
+  return scoreKeys.reduce(
+    (nextScores, key) => ({
+      ...nextScores,
+      [key]: typeof scores?.[key] === 'number' ? scores[key] : emptyScores[key],
+    }),
+    {} as Scores,
+  )
 }
 
-function getRecommendedSteps(form: SnapshotForm) {
-  const city = valueOrFallback(form.city, 'the target city')
-  const mainService = valueOrFallback(form.mainService, 'the main service')
-  const niche = valueOrFallback(form.niche, 'local business')
+function normalizeToneValue(tone: Tone | undefined): Tone {
+  if (tone === 'friendly') return 'fun'
+  if (tone === 'expert') return 'professional'
+  if (tone === 'blunt') return 'spicy'
+  return tone || 'fun'
+}
 
-  return [
-    `Clarify the ${mainService} offer and primary service area near the top of the page.`,
-    `Add trust proof, service-area context, and answers to the questions a ${niche} buyer would check before contacting the business.`,
-    `Turn the fastest improvement into a short 30-day cleanup plan for ${city}.`,
-  ]
+function getReportRating(totalScore: number) {
+  if (totalScore >= 82) return 'Category leader energy'
+  if (totalScore >= 66) return 'Strong growth window'
+  if (totalScore >= 46) return 'Clear fix opportunity'
+  return 'Needs a visibility reset'
+}
+
+function getRecommendedSteps(horoscope: ReturnType<typeof buildBusinessHoroscope>) {
+  return horoscope.fixPlan.slice(0, 3).map((step) => step.replace(/^Day \d: /, ''))
 }
 
 function buildReportText({
@@ -113,56 +123,60 @@ function buildReportText({
   totalScore,
   reportRating,
   reportDate,
+  horoscope,
+  scores,
 }: {
   form: SnapshotForm
   branding: BrandingFields
   totalScore: number
   reportRating: string
   reportDate: string
+  horoscope: ReturnType<typeof buildBusinessHoroscope>
+  scores: Scores
 }) {
   const businessName = valueOrFallback(form.businessName, 'Business name')
   const city = valueOrFallback(form.city, 'City')
-  const niche = valueOrFallback(form.niche, 'Niche')
-  const notes = valueOrFallback(
-    form.notes,
-    'The current site gives a basic public-facing explanation of the business.',
-  )
-  const weakness = valueOrFallback(
-    form.weakness,
-    'The biggest limitation appears to be clarity around the offer, service area, trust proof, or next step.',
-  )
-  const mainService = valueOrFallback(form.mainService, 'the primary service')
+  const industry = valueOrFallback(form.niche, 'Industry')
   const preparedBy = valueOrFallback(branding.preparedBy, defaultBranding.preparedBy)
   const brandName = valueOrFallback(branding.brandName, defaultBranding.brandName)
   const contactLine = branding.contactLine.trim()
-  const nextSteps = getRecommendedSteps(form).map((step) => `- ${step}`).join('\n')
   const contact = contactLine ? `\n${contactLine}` : ''
+  const categoryScores = scoreKeys.map((key) => `- ${scoreLabels[key]}: ${scores[key]}/20`).join('\n')
 
-  return `AI Search Visibility Snapshot
+  return `Business Horoscope Website Audit
 
 Business: ${businessName}
-Market: ${city} - ${niche}
+Market: ${city} - ${industry}
 Prepared by: ${preparedBy}, ${brandName}${contact}
 Date: ${reportDate}
-Score: ${totalScore}/25 - ${reportRating}
+Digital Zodiac: ${horoscope.archetype}
+Score: ${totalScore}/100 - ${reportRating}
 
-What is clear
-${notes}
+Category scores
+${categoryScores}
 
-What may be limiting visibility
-${weakness}
+3 strengths
+${horoscope.strengths.map((item) => `- ${item}`).join('\n')}
 
-Fastest improvement
-Tighten the public-facing page around ${mainService}, ${city}, visible proof, and the questions prospects are likely to ask before reaching out.
+3 weaknesses
+${horoscope.weaknesses.map((item) => `- ${item}`).join('\n')}
 
-Recommended next steps
-${nextSteps}
+Competitor comparison
+${horoscope.competitorSummary}
 
-Paid report offer
-A paid AI Search Readiness PDF can expand this snapshot into screenshots, prioritized fixes, and a plain-language 30-day action plan.
+Biggest missed opportunity
+${horoscope.missedOpportunity}
 
-Footer note
-This snapshot is based on a quick public-facing review and is not a full technical SEO audit.`
+7-day fix plan
+${horoscope.fixPlan.map((item) => `- ${item}`).join('\n')}
+
+Outreach-ready summary
+${horoscope.outreachSummary}
+
+CTA
+${horoscope.cta}
+
+${horoscope.premiumUpsell}`
 }
 
 function formatDate(value: string) {
@@ -216,15 +230,19 @@ function App() {
       }),
     [],
   )
+  const horoscope = useMemo(
+    () => buildBusinessHoroscope(form, scores, totalScore),
+    [form, scores, totalScore],
+  )
   const outputs = useMemo(
-    () => generateOutputs(form, totalScore, rating),
-    [form, rating, totalScore],
+    () => generateOutputs(form, scores, totalScore),
+    [form, scores, totalScore],
   )
   const reportText = useMemo(
-    () => buildReportText({ form, branding, totalScore, reportRating, reportDate }),
-    [branding, form, reportDate, reportRating, totalScore],
+    () => buildReportText({ form, branding, totalScore, reportRating, reportDate, horoscope, scores }),
+    [branding, form, horoscope, reportDate, reportRating, scores, totalScore],
   )
-  const recommendedSteps = useMemo(() => getRecommendedSteps(form), [form])
+  const recommendedSteps = useMemo(() => getRecommendedSteps(horoscope), [horoscope])
   const activeLead = useMemo(
     () => leads.find((lead) => lead.id === activeLeadId) ?? null,
     [activeLeadId, leads],
@@ -326,12 +344,14 @@ function App() {
       mainService: snapshot.mainService,
       notes: snapshot.notes,
       weakness: snapshot.weakness,
-      competitorNote: snapshot.competitorNote,
-      tone: snapshot.tone,
+      competitorNote: snapshot.competitorNote || '',
+      competitorUrl1: snapshot.competitorUrl1 || '',
+      competitorUrl2: snapshot.competitorUrl2 || '',
+      tone: normalizeToneValue(snapshot.tone),
       ctaStyle: snapshot.ctaStyle,
     })
     setBranding(snapshot.branding ?? defaultBranding)
-    setScores(snapshot.scores)
+    setScores(normalizeScores(snapshot.scores))
     setLoadedId(snapshot.id)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -461,13 +481,12 @@ function App() {
           <p className="eyebrow">Internal consulting workspace</p>
           <h1>Snapshot Studio</h1>
           <p className="topbar-copy">
-            Build a quick AI search visibility snapshot, outreach copy, and a polished report
-            preview from one lightweight workflow.
+            Create a premium, playful business website audit with practical fixes, outreach copy, and a shareable result from one lightweight workflow.
           </p>
         </div>
-        <div className="score-pill" aria-label={`Score ${totalScore} out of 25, ${rating}`}>
-          <span>Readiness score</span>
-          <strong>{totalScore}/25</strong>
+        <div className="score-pill" aria-label={`Score ${totalScore} out of 100, ${rating}`}>
+          <span>Business Horoscope score</span>
+          <strong>{totalScore}/100</strong>
           <small>{rating}</small>
         </div>
       </header>
@@ -738,8 +757,8 @@ function App() {
         <div className="panel form-panel">
           <div className="section-heading">
             <div>
-              <p className="section-kicker">Snapshot inputs</p>
-              <h2>Business Profile</h2>
+              <p className="section-kicker">Business Horoscope</p>
+              <h2>Audit Profile</h2>
             </div>
             <button className="ghost-button" type="button" onClick={handleNewSnapshot}>
               New
@@ -764,55 +783,58 @@ function App() {
               onChange={(value) => updateField('city', value)}
             />
             <TextInput
-              label="Niche"
+              label="Industry"
               value={form.niche}
               onChange={(value) => updateField('niche', value)}
             />
             <TextInput
-              label="Main service"
+              label="Primary service"
               value={form.mainService}
               onChange={(value) => updateField('mainService', value)}
+            />
+            <TextInput
+              label="Competitor URL 1 optional"
+              inputMode="url"
+              value={form.competitorUrl1}
+              onChange={(value) => updateField('competitorUrl1', value)}
+            />
+            <TextInput
+              label="Competitor URL 2 optional"
+              inputMode="url"
+              value={form.competitorUrl2}
+              onChange={(value) => updateField('competitorUrl2', value)}
             />
           </div>
 
           <div className="notes-grid">
             <TextArea
-              label="Notes from website"
+              label="Strength notes from website"
               value={form.notes}
               onChange={(value) => updateField('notes', value)}
             />
             <TextArea
-              label="Obvious weakness"
+              label="Weakness or missed opportunity"
               value={form.weakness}
               onChange={(value) => updateField('weakness', value)}
             />
           </div>
 
           <TextArea
-            label="Optional competitor note"
+            label="Competitor comparison note"
             value={form.competitorNote}
             onChange={(value) => updateField('competitorNote', value)}
           />
 
-          <div className="control-row">
+          <div className="control-row single-control">
             <SelectField
               label="Tone"
               value={form.tone}
               onChange={(value) => updateField('tone', value as Tone)}
               options={[
-                ['friendly', 'Friendly'],
-                ['expert', 'Expert'],
-                ['blunt', 'Blunt'],
-              ]}
-            />
-            <SelectField
-              label="CTA"
-              value={form.ctaStyle}
-              onChange={(value) => updateField('ctaStyle', value as CtaStyle)}
-              options={[
-                ['ask-permission', 'Ask permission'],
-                ['send-snapshot', 'Send snapshot'],
-                ['book-call', 'Book call'],
+                ['fun', 'Fun'],
+                ['professional', 'Professional'],
+                ['spicy', 'Spicy'],
+                ['premium', 'Premium'],
               ]}
             />
           </div>
@@ -823,7 +845,7 @@ function App() {
             <div className="section-heading">
               <div>
                 <p className="section-kicker">Assessment</p>
-                <h2>Visibility Score</h2>
+                <h2>Business Horoscope Score</h2>
               </div>
               <span className={`rating-badge ${rating.toLowerCase().replace(' ', '-')}`}>
                 {rating}
@@ -832,7 +854,7 @@ function App() {
 
             <div className="total-score">
               <span>{totalScore}</span>
-              <p>out of 25</p>
+              <p>out of 100</p>
             </div>
 
             <div className="score-list">
@@ -845,7 +867,7 @@ function App() {
                   <input
                     type="range"
                     min="0"
-                    max="5"
+                    max="20"
                     step="1"
                     value={scores[key]}
                     onChange={(event) => updateScore(key, Number(event.target.value))}
@@ -897,7 +919,7 @@ function App() {
         <div className="report-toolbar screen-only">
           <div>
             <p className="section-kicker">Client preview</p>
-            <h2>One-Page Report Preview</h2>
+            <h2>Business Horoscope Preview</h2>
           </div>
           <div className="report-actions">
             <button
@@ -906,7 +928,7 @@ function App() {
               onClick={() => void copyText('report', reportText)}
             >
               <Copy size={18} aria-hidden="true" />
-              {copiedKey === 'report' ? 'Copied report' : 'Copy report text'}
+              {copiedKey === 'report' ? 'Copied report' : 'Copy horoscope'}
             </button>
             <button className="primary-button" type="button" onClick={() => window.print()}>
               <Printer size={18} aria-hidden="true" />
@@ -921,14 +943,14 @@ function App() {
               <p className="report-brand">
                 {valueOrFallback(branding.brandName, defaultBranding.brandName)}
               </p>
-              <h2>AI Search Visibility Snapshot</h2>
+              <h2>Business Horoscope Website Audit</h2>
               <p>
                 {valueOrFallback(form.businessName, 'Business name')} |{' '}
-                {valueOrFallback(form.city, 'City')} | {valueOrFallback(form.niche, 'Niche')}
+                {valueOrFallback(form.city, 'City')} | {valueOrFallback(form.niche, 'Industry')}
               </p>
             </div>
-            <div className="report-score" aria-label={`Report score ${totalScore} out of 25`}>
-              <span>{totalScore}/25</span>
+            <div className="report-score" aria-label={`Report score ${totalScore} out of 100`}>
+              <span>{totalScore}/100</span>
               <strong>{reportRating}</strong>
             </div>
           </header>
@@ -946,35 +968,23 @@ function App() {
           </div>
 
           <div className="report-grid">
-            <ReportBlock
-              title="What is clear"
-              text={valueOrFallback(
-                form.notes,
-                'The current site gives a basic public-facing explanation of the business.',
-              )}
+            <ReportBlock title="Digital Zodiac" text={horoscope.archetype} />
+            <ReportList title="3 strengths" items={horoscope.strengths} />
+            <ReportList title="3 weaknesses" items={horoscope.weaknesses} />
+          </div>
+
+          <div className="report-grid report-grid-wide">
+            <ReportList
+              title="Category scores"
+              items={scoreKeys.map((key) => `${scoreLabels[key]}: ${scores[key]}/20`)}
             />
-            <ReportBlock
-              title="What may be limiting visibility"
-              text={valueOrFallback(
-                form.weakness,
-                'The biggest limitation appears to be clarity around the offer, service area, trust proof, or next step.',
-              )}
-            />
-            <ReportBlock
-              title="Fastest improvement"
-              text={`Tighten the public-facing page around ${valueOrFallback(
-                form.mainService,
-                'the primary service',
-              )}, ${valueOrFallback(
-                form.city,
-                'the target city',
-              )}, visible proof, and the questions prospects are likely to ask before reaching out.`}
-            />
+            <ReportBlock title="Competitor comparison" text={horoscope.competitorSummary} />
+            <ReportBlock title="Biggest missed opportunity" text={horoscope.missedOpportunity} />
           </div>
 
           <section className="report-next">
             <div>
-              <h3>Recommended next steps</h3>
+              <h3>7-day fix plan preview</h3>
               <ul>
                 {recommendedSteps.map((step) => (
                   <li key={step}>{step}</li>
@@ -982,18 +992,14 @@ function App() {
               </ul>
             </div>
             <div className="offer-box">
-              <h3>Paid report offer</h3>
-              <p>
-                A paid AI Search Readiness PDF can expand this snapshot into screenshots,
-                prioritized fixes, and a plain-language 30-day action plan.
-              </p>
+              <h3>Premium upsell</h3>
+              <p>{horoscope.cta}</p>
             </div>
           </section>
 
           <footer className="report-footer">
             <BarChart3 size={16} aria-hidden="true" />
-            This snapshot is based on a quick public-facing review and is not a full technical
-            SEO audit.
+            This Business Horoscope is based on a quick public-facing website review and is built for practical business outcomes: more calls, stronger trust, clearer pages, and easier customer decisions.
           </footer>
         </article>
       </section>
@@ -1040,7 +1046,7 @@ function App() {
                 <button type="button" onClick={() => handleLoadSnapshot(snapshot)}>
                   <strong>{snapshot.businessName || 'Untitled business'}</strong>
                   <span>
-                    {snapshot.city || 'No city'} - {snapshot.niche || 'No niche'}
+                    {snapshot.city || 'No city'} - {snapshot.niche || 'No industry'}
                   </span>
                   <small>{new Date(snapshot.createdAt).toLocaleString()}</small>
                 </button>
@@ -1099,7 +1105,7 @@ function LeadEditor({
           onChange={(value) => onChange('niche', value)}
         />
         <TextInput
-          label="Main service"
+          label="Primary service"
           value={draft.mainService}
           onChange={(value) => onChange('mainService', value)}
         />
@@ -1158,6 +1164,19 @@ function ReportBlock({ title, text }: { title: string; text: string }) {
     <section className="report-block">
       <h3>{title}</h3>
       <p>{text}</p>
+    </section>
+  )
+}
+
+function ReportList({ title, items }: { title: string; items: string[] }) {
+  return (
+    <section className="report-block">
+      <h3>{title}</h3>
+      <ul className="report-mini-list">
+        {items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
     </section>
   )
 }

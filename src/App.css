@@ -124,6 +124,10 @@
   gap: 12px;
 }
 
+.single-control {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .field {
   display: grid;
   gap: 7px;
@@ -421,7 +425,8 @@ button {
 
 .report-block p,
 .offer-box p,
-.report-next li {
+.report-next li,
+.report-mini-list li {
   color: #344450;
   font-size: 0.92rem;
   line-height: 1.5;
@@ -430,6 +435,13 @@ button {
 .report-block p,
 .offer-box p {
   margin: 0;
+}
+
+.report-mini-list {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding-left: 18px;
 }
 
 .report-next {
@@ -581,6 +593,10 @@ button {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .single-control {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .report-toolbar {
     align-items: center;
   }
@@ -601,6 +617,10 @@ button {
 
   .report-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .report-grid-wide {
+    grid-template-columns: minmax(220px, 0.75fr) repeat(2, minmax(0, 1fr));
   }
 
   .report-next {
@@ -691,7 +711,8 @@ button {
   .report-header p,
   .report-block p,
   .offer-box p,
-  .report-next li {
+  .report-next li,
+  .report-mini-list li {
     font-size: 10pt;
     line-height: 1.35;
   }
