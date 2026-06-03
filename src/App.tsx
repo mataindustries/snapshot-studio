@@ -150,10 +150,14 @@ Market: ${city} - ${industry}
 Prepared by: ${preparedBy}, ${brandName}${contact}
 Date: ${reportDate}
 Digital Zodiac: ${horoscope.archetype}
+${horoscope.archetypeSummary}
 Score: ${totalScore}/100 - ${reportRating}
 
 Category scores
 ${categoryScores}
+
+Score explanations
+${horoscope.scoreExplanations.map((item) => `- ${item}`).join('\n')}
 
 3 strengths
 ${horoscope.strengths.map((item) => `- ${item}`).join('\n')}
@@ -968,16 +972,16 @@ function App() {
           </div>
 
           <div className="report-grid">
-            <ReportBlock title="Digital Zodiac" text={horoscope.archetype} />
+            <ReportBlock
+              title="Digital Zodiac"
+              text={`${horoscope.archetype}. ${horoscope.archetypeSummary}`}
+            />
             <ReportList title="3 strengths" items={horoscope.strengths} />
             <ReportList title="3 weaknesses" items={horoscope.weaknesses} />
           </div>
 
           <div className="report-grid report-grid-wide">
-            <ReportList
-              title="Category scores"
-              items={scoreKeys.map((key) => `${scoreLabels[key]}: ${scores[key]}/20`)}
-            />
+            <ReportList title="Score explanations" items={horoscope.scoreExplanations} />
             <ReportBlock title="Competitor comparison" text={horoscope.competitorSummary} />
             <ReportBlock title="Biggest missed opportunity" text={horoscope.missedOpportunity} />
           </div>
