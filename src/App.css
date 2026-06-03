@@ -405,99 +405,169 @@ button {
 .share-card {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 14px;
-  margin-top: 18px;
-  border: 1px solid #dce4e8;
+  margin-top: 16px;
   border-radius: 8px;
-  background: #f8fbfa;
 }
 
 .archetype-hero {
-  padding: 14px;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #dce4e8;
+  background: #f8fbfa;
 }
 
-.archetype-hero img {
-  width: 100%;
-  aspect-ratio: 16 / 10;
+.archetype-image-frame {
+  overflow: hidden;
   border-radius: 7px;
+  background: #e5ece9;
+}
+
+.archetype-image-frame img,
+.share-card-media img {
+  display: block;
+  width: 100%;
   object-fit: cover;
-  background: #e8eeee;
+}
+
+.archetype-image-frame img {
+  aspect-ratio: 4 / 3;
+}
+
+.archetype-hero-copy {
+  display: grid;
+  gap: 8px;
+  align-content: center;
 }
 
 .archetype-hero h3,
 .share-card h3 {
   margin: 0;
   color: #121820;
-  line-height: 1.12;
+  line-height: 1.08;
 }
 
 .archetype-hero h3 {
-  font-size: 1.35rem;
+  font-size: 1.45rem;
 }
 
 .archetype-hero p:not(.section-kicker),
 .share-card p {
-  margin: 8px 0 0;
+  margin: 0;
   color: #344450;
-  font-size: 0.94rem;
+  font-size: 0.95rem;
   line-height: 1.45;
+}
+
+.archetype-signal-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.archetype-signal-row span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 4px 9px;
+  border: 1px solid #d8e2df;
+  border-radius: 999px;
+  background: #fff;
+  color: #263640;
+  font-size: 0.8rem;
+  font-weight: 850;
 }
 
 .share-card {
   overflow: hidden;
-  background: #121820;
+  border: 1px solid #1d2a33;
+  background: #101820;
+  box-shadow: 0 18px 44px rgba(18, 24, 32, 0.18);
   color: #fff;
 }
 
-.share-card img {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
+.share-card-media img {
+  aspect-ratio: 16 / 10;
   background: #24313a;
 }
 
 .share-card-copy {
   display: grid;
-  gap: 7px;
-  padding: 2px 16px 16px;
+  gap: 8px;
+  padding: 16px;
+}
+
+.share-card-kicker {
+  color: #9fd3c8;
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
 }
 
 .share-card-copy span {
   width: fit-content;
-  padding: 5px 8px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  padding: 5px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: 999px;
-  color: #dcefed;
-  font-size: 0.78rem;
-  font-weight: 850;
+  background: rgba(255, 255, 255, 0.08);
+  color: #eef8f5;
+  font-size: 0.8rem;
+  font-weight: 900;
 }
 
 .share-card h3,
 .share-card p,
-.share-card strong {
+.share-card strong,
+.share-card small,
+.share-card em {
   color: #fff;
 }
 
-.share-card p {
-  margin: 0;
+.share-card h3 {
+  font-size: 1.55rem;
+}
+
+.share-card p:not(.share-card-kicker) {
   color: #d7e0e4;
 }
 
-.share-card strong {
+.share-card-meta {
+  display: grid;
+  gap: 2px;
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.share-card-meta small {
+  color: #b8c9ce;
+  font-size: 0.8rem;
+  font-style: normal;
+  font-weight: 750;
+}
+
+.share-card em {
+  color: #9fd3c8;
   font-size: 0.9rem;
+  font-style: normal;
+  font-weight: 900;
 }
 
 .share-card-actions {
   display: grid;
   gap: 9px;
-  padding: 0 16px 16px;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid #dce4e8;
+  border-radius: 8px;
+  background: #fff;
 }
 
 .share-card-actions .secondary-button {
-  min-height: 40px;
-  border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  min-height: 42px;
+  background: #f8fbfa;
+  color: #17242c;
 }
 
 .report-grid {
@@ -715,30 +785,28 @@ button {
   }
 
   .archetype-hero {
-    grid-template-columns: minmax(220px, 0.7fr) minmax(0, 1fr);
+    grid-template-columns: minmax(210px, 0.68fr) minmax(0, 1fr);
     align-items: center;
-    padding: 16px;
+    padding: 14px;
   }
 
   .share-card {
-    grid-template-columns: minmax(180px, 0.5fr) minmax(0, 1fr);
+    grid-template-columns: minmax(190px, 0.48fr) minmax(0, 1fr);
     align-items: stretch;
   }
 
-  .share-card img {
+  .share-card-media img {
     height: 100%;
-    min-height: 210px;
+    min-height: 230px;
   }
 
   .share-card-copy {
     align-content: center;
-    padding: 18px 18px 8px;
+    padding: 20px;
   }
 
   .share-card-actions {
-    grid-column: 1 / -1;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    padding: 0 18px 18px;
   }
 
   .report-grid {
@@ -828,7 +896,10 @@ button {
   .share-card h3,
   .share-card p,
   .share-card strong,
-  .share-card-copy span {
+  .share-card small,
+  .share-card em,
+  .share-card-copy span,
+  .share-card-kicker {
     color: #000;
   }
 

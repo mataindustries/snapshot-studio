@@ -121,14 +121,14 @@ function buildShareSummary(form: SnapshotForm, archetype: Archetype) {
   const service = valueOrFallback(form.mainService, 'the main service')
 
   const summaries: Record<Archetype, string> = {
-    'The Hidden Gem': `Trusted potential that needs to be easier for ${city} buyers to find.`,
-    'The Local Legend': `A strong local contender that can protect its lead with sharper proof.`,
-    'The Sleeping Giant': `Real business substance held back by a soft inquiry path.`,
-    'The Invisible Expert': `Strong know-how that needs clearer ${service} signals online.`,
-    'The Trust Magnet': `Credibility is present; the next step needs to work harder.`,
-    'The Wandering Generalist': `Too many broad signals; the offer needs a sharper lane.`,
-    'The AI Blind Spot': `Useful business details need cleaner answers for search and AI.`,
-    'The Competitor Snack': `Competitors may be making the choice feel easier right now.`,
+    'The Hidden Gem': `Strong trust signals, but ${city} buyers may not see them fast enough.`,
+    'The Local Legend': `A credible local contender that can win more calls with sharper proof.`,
+    'The Sleeping Giant': `Real business value, but the site is not turning enough visitors into inquiries.`,
+    'The Invisible Expert': `The expertise is there; the ${service} story needs to be easier to spot.`,
+    'The Trust Magnet': `The site has credibility, but the next step should feel more obvious.`,
+    'The Wandering Generalist': `The offer needs a clearer lane so buyers know exactly why to choose it.`,
+    'The AI Blind Spot': `The business needs cleaner answers for search, AI, and fast-moving buyers.`,
+    'The Competitor Snack': `Competitors may be making the buying decision feel easier right now.`,
   }
 
   return summaries[archetype]
@@ -186,11 +186,11 @@ function buildStrengths(form: SnapshotForm, scores: Scores) {
   const service = valueOrFallback(form.mainService, 'its core offer')
 
   const strengthMap: Record<ScoreKey, string> = {
-    visibility: `${businessName} has enough public-facing signal to start competing for ${industry} searches in ${city}.`,
-    trust: `Trust is already a workable asset: proof, reviews, credentials, or credibility cues can be turned into faster buyer confidence.`,
-    conversion: `The site has a path toward inquiries; sharpening the ask around ${service} can turn more visitors into calls.`,
-    aiSearchReadiness: `There is a base for AI/search engines to understand who the business helps, where it operates, and what it offers.`,
-    competitorPosition: `The business is not starting from zero against nearby alternatives; clearer positioning can make the comparison easier to win.`,
+    visibility: `${businessName} already gives buyers a way to connect ${industry}, ${service}, and ${city} without starting from a blank page.`,
+    trust: `There are credibility cues worth using harder: reviews, credentials, examples, guarantees, team proof, or real customer outcomes.`,
+    conversion: `The site has an inquiry path to build on; a clearer phone/form ask around ${service} could turn more visits into conversations.`,
+    aiSearchReadiness: `The business has enough service and location signal to shape stronger AI/search answers with cleaner page structure.`,
+    competitorPosition: `The business has a defensible position; the next win is making its best proof easier to compare at a glance.`,
   }
 
   const scoredStrengths = getHighestScores(scores).map((key) => strengthMap[key])
@@ -206,11 +206,11 @@ function buildWeaknesses(form: SnapshotForm, scores: Scores) {
   const service = valueOrFallback(form.mainService, 'the main service')
 
   const weaknessMap: Record<ScoreKey, string> = {
-    visibility: `Searchers may not immediately see the strongest ${industry} and ${city} signals, which can suppress calls from ready buyers.`,
-    trust: `Decision-making proof is too quiet; visitors need reviews, outcomes, credentials, guarantees, or examples before they feel safe reaching out.`,
-    conversion: `The next step is not doing enough work. Calls, forms, and service-page CTAs should make the decision feel obvious.`,
-    aiSearchReadiness: `AI and search systems may struggle to summarize the business cleanly because services, locations, FAQs, and proof are not explicit enough.`,
-    competitorPosition: `Competitors may look easier to choose if they explain ${service}, pricing/process cues, proof, or local relevance more clearly.`,
+    visibility: `The page may not say ${industry}, ${service}, and ${city} quickly enough for a ready buyer scanning on a phone.`,
+    trust: `The proof is not close enough to the decision. Reviews, examples, credentials, or guarantees should sit near the CTA, not buried.`,
+    conversion: `The call/request path needs a cleaner promise: what happens next, how fast they respond, and why reaching out is low-risk.`,
+    aiSearchReadiness: `Search and AI summaries may miss the business because services, locations, FAQs, and proof are not written as clear answers.`,
+    competitorPosition: `A competitor can win the click if they explain ${service}, process, proof, pricing cues, or local fit more clearly.`,
   }
 
   const scoredWeaknesses = (Object.keys(scores) as ScoreKey[])
@@ -295,19 +295,19 @@ export function buildBusinessHoroscope(
     archetypeSummary: buildArchetypeSummary(form, archetype, scores, totalScore),
     archetypeImagePath: getArchetypeImagePath(archetype),
     shareSummary: buildShareSummary(form, archetype),
-    shareCta: 'Want the one-page version?',
+    shareCta: 'Want the quick fix plan?',
     scoreExplanations: buildScoreExplanations(form, scores),
     strengths: buildStrengths(form, scores),
     weaknesses: buildWeaknesses(form, scores),
     competitorSummary,
     missedOpportunity,
     fixPlan: buildFixPlan(form, scores),
-    outreachSummary: `${businessName} scored ${totalScore}/100 and came through as ${archetype}. The useful opportunity is specific: help ${industry} buyers in ${city} understand the offer faster, trust the page sooner, compare it with less doubt, and take the next step from a phone.`,
-    cta: `A paid competitor snapshot or 7-day fix plan would turn this quick read into screenshots, side-by-side competitor notes, and the first copy/page updates to make this easier to choose.`,
+    outreachSummary: `${businessName} scored ${totalScore}/100 and came through as ${archetype}. The practical opportunity is to help ${industry} buyers in ${city} understand the offer faster, trust the page sooner, compare with less doubt, and reach out from a phone.`,
+    cta: `This is the quick read. The paid next step is a screenshot-backed competitor snapshot or 7-day fix plan with the exact proof, copy, and mobile CTA updates that would make this site easier to choose.`,
     premiumUpsell:
       tone === 'premium'
-        ? `Soft next step: a paid competitor snapshot with screenshots, positioning notes, AI/search readiness gaps, and a calm 7-day fix plan for the highest-leverage pages.`
-        : `Soft next step: a $297 competitor snapshot or 7-day fix plan with screenshots, competitor receipts, service-page copy fixes, and the first updates most likely to create easier customer decisions.`,
+        ? `Soft next step: a paid competitor snapshot with screenshots, positioning notes, AI/search readiness gaps, and a focused 7-day fix plan for the pages most likely to produce calls.`
+        : `Soft next step: a $297 competitor snapshot or 7-day fix plan with screenshots, competitor receipts, service-page copy fixes, and the first updates most likely to make the business easier to contact.`,
   }
 }
 
@@ -374,8 +374,8 @@ ${report.premiumUpsell}`
 
 function buildText(form: SnapshotForm, totalScore: number, archetype: Archetype) {
   const businessName = valueOrFallback(form.businessName, 'your business')
-  const service = valueOrFallback(form.mainService, 'your main service')
-  const message = `Hi, I made a quick Business Horoscope for ${businessName}: ${totalScore}/100, ${archetype}. The main fix is making ${service} easier to trust and request from a phone. Want me to send it over?`
+  const shareSummary = buildShareSummary(form, archetype)
+  const message = `Hi, I made a quick website snapshot for ${businessName}: ${totalScore}/100, ${archetype}. ${shareSummary} Want me to send the screenshot?`
 
   return message.length <= 280 ? message : `${message.slice(0, 276).trimEnd()}...`
 }
@@ -385,18 +385,21 @@ function buildEmail(form: SnapshotForm, totalScore: number, archetype: Archetype
   const industry = valueOrFallback(form.niche, 'your industry')
   const city = valueOrFallback(form.city, 'your city')
   const service = valueOrFallback(form.mainService, 'your main service')
+  const shareSummary = buildShareSummary(form, archetype)
 
-  return `Subject: Quick website read for ${businessName}
+  return `Subject: Quick website snapshot for ${businessName}
 
 Hi ${businessName} team,
 
-I made a quick Business Horoscope for your website. It scored ${totalScore}/100 and came through as ${archetype}.
+I made a quick Business Horoscope snapshot for your website. It scored ${totalScore}/100 and came through as ${archetype}.
 
-The useful part is not generic SEO. I looked at whether ${industry} buyers in ${city} can quickly understand ${service}, trust the business, compare it with alternatives, and take the next step from a phone.
+The short version: ${shareSummary}
 
-The biggest opportunity is making the proof, service fit, and call/request path easier to choose.
+I looked at whether ${industry} buyers in ${city} can quickly understand ${service}, trust the business, compare it with alternatives, and reach out from a phone.
 
-Want me to send the one-page version?`
+I can send the one-page screenshot if useful. It points out the fastest proof, copy, and CTA fixes.
+
+Want me to send it over?`
 }
 
 function buildShareable(form: SnapshotForm, totalScore: number, archetype: Archetype) {
@@ -406,7 +409,7 @@ function buildShareable(form: SnapshotForm, totalScore: number, archetype: Arche
   const imagePath = getArchetypeImagePath(archetype)
   const shareSummary = buildShareSummary(form, archetype)
 
-  return `${businessName} scored ${totalScore}/100 in its Business Horoscope and came through as ${archetype}. ${shareSummary} Fastest win: help ${industry} buyers in ${city} understand the offer, trust it, compare it, and contact the business from a phone. Image: ${imagePath}`
+  return `Business Horoscope snapshot for ${businessName}: ${totalScore}/100, ${archetype}. ${shareSummary} Fastest win: make the offer, proof, comparison, and phone CTA easier for ${industry} buyers in ${city}. Image: ${imagePath}`
 }
 
 export function generateOutputs(

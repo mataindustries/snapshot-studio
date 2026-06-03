@@ -940,7 +940,7 @@ function App() {
               onClick={() => void copyText('report', reportText)}
             >
               <Copy size={18} aria-hidden="true" />
-              {copiedKey === 'report' ? 'Copied report' : 'Copy horoscope'}
+              {copiedKey === 'report' ? 'Copied report' : 'Copy full report'}
             </button>
             <button className="primary-button" type="button" onClick={() => window.print()}>
               <Printer size={18} aria-hidden="true" />
@@ -980,49 +980,65 @@ function App() {
           </div>
 
           <section className="archetype-hero" aria-label="Business Horoscope archetype">
-            <img src={horoscope.archetypeImagePath} alt={`${horoscope.archetype} archetype`} />
-            <div>
-              <p className="section-kicker">Digital Zodiac</p>
+            <div className="archetype-image-frame">
+              <img src={horoscope.archetypeImagePath} alt={`${horoscope.archetype} archetype`} />
+            </div>
+            <div className="archetype-hero-copy">
+              <p className="section-kicker">Outreach snapshot</p>
               <h3>{horoscope.archetype}</h3>
               <p>{horoscope.shareSummary}</p>
+              <div className="archetype-signal-row">
+                <span>{totalScore}/100</span>
+                <span>{reportRating}</span>
+              </div>
             </div>
           </section>
 
           <section className="share-card" aria-label="Share card">
-            <img src={horoscope.archetypeImagePath} alt="" aria-hidden="true" />
+            <div className="share-card-media">
+              <img src={horoscope.archetypeImagePath} alt="" aria-hidden="true" />
+            </div>
             <div className="share-card-copy">
+              <p className="share-card-kicker">Business Horoscope</p>
               <span>{totalScore}/100</span>
               <h3>{horoscope.archetype}</h3>
               <p>{horoscope.shareSummary}</p>
-              <strong>{horoscope.shareCta}</strong>
-            </div>
-            <div className="share-card-actions screen-only">
-              <button
-                className="secondary-button"
-                type="button"
-                onClick={() => void copyText('text', outputs.text)}
-              >
-                <MessageSquare size={17} aria-hidden="true" />
-                {copiedKey === 'text' ? 'Copied text' : 'Copy outreach text'}
-              </button>
-              <button
-                className="secondary-button"
-                type="button"
-                onClick={() => void copyText('email', outputs.email)}
-              >
-                <Send size={17} aria-hidden="true" />
-                {copiedKey === 'email' ? 'Copied email' : 'Copy short email'}
-              </button>
-              <button
-                className="secondary-button"
-                type="button"
-                onClick={() => void copyText('shareable', outputs.shareable)}
-              >
-                <Clipboard size={17} aria-hidden="true" />
-                {copiedKey === 'shareable' ? 'Copied caption' : 'Copy share caption'}
-              </button>
+              <div className="share-card-meta">
+                <strong>{valueOrFallback(form.businessName, 'Business name')}</strong>
+                <small>
+                  {valueOrFallback(form.city, 'City')} | {valueOrFallback(form.niche, 'Industry')}
+                </small>
+              </div>
+              <em>{horoscope.shareCta}</em>
             </div>
           </section>
+
+          <div className="share-card-actions screen-only" aria-label="Outreach copy actions">
+            <button
+              className="secondary-button"
+              type="button"
+              onClick={() => void copyText('text', outputs.text)}
+            >
+              <MessageSquare size={17} aria-hidden="true" />
+              {copiedKey === 'text' ? 'Copied text' : 'Copy outreach text'}
+            </button>
+            <button
+              className="secondary-button"
+              type="button"
+              onClick={() => void copyText('email', outputs.email)}
+            >
+              <Send size={17} aria-hidden="true" />
+              {copiedKey === 'email' ? 'Copied email' : 'Copy short email'}
+            </button>
+            <button
+              className="secondary-button"
+              type="button"
+              onClick={() => void copyText('shareable', outputs.shareable)}
+            >
+              <Clipboard size={17} aria-hidden="true" />
+              {copiedKey === 'shareable' ? 'Copied caption' : 'Copy share caption'}
+            </button>
+          </div>
 
           <div className="report-grid">
             <ReportBlock
