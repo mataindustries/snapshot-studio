@@ -950,122 +950,102 @@ function App() {
         </div>
 
         <article className="report-shell">
-          <header className="report-header">
-            <div>
+          <section className="report-page share-page report-share-hero" aria-label="Share-ready Business Horoscope result">
+            <div className="share-page-topline">
               <p className="report-brand">
                 {valueOrFallback(branding.brandName, defaultBranding.brandName)}
               </p>
-              <h2>Business Horoscope Website Audit</h2>
-              <p>
-                {valueOrFallback(form.businessName, 'Business name')} |{' '}
-                {valueOrFallback(form.city, 'City')} | {valueOrFallback(form.niche, 'Industry')}
-              </p>
+              <span>{reportDate}</span>
             </div>
-            <div className="report-score" aria-label={`Report score ${totalScore} out of 100`}>
-              <span>{totalScore}/100</span>
-              <strong>{reportRating}</strong>
-            </div>
-          </header>
 
-          <div className="report-meta">
-            <span>
-              <Briefcase size={16} aria-hidden="true" />
-              Prepared by {valueOrFallback(branding.preparedBy, defaultBranding.preparedBy)}
-            </span>
-            <span>
-              <CalendarDays size={16} aria-hidden="true" />
-              {reportDate}
-            </span>
-            {branding.contactLine.trim() && <span>{branding.contactLine}</span>}
-          </div>
-
-          <section className="archetype-hero" aria-label="Business Horoscope archetype">
-            <div className="archetype-image-frame">
-              <img src={horoscope.archetypeImagePath} alt={`${horoscope.archetype} archetype`} />
-            </div>
-            <div className="archetype-hero-copy">
-              <p className="section-kicker">Outreach snapshot</p>
-              <h3>{horoscope.archetype}</h3>
-              <p>{horoscope.shareSummary}</p>
-              <div className="archetype-signal-row">
-                <span>{totalScore}/100</span>
-                <span>{reportRating}</span>
+            <section className="share-card" aria-label="Screenshot-ready share card">
+              <div className="share-card-media">
+                <img src={horoscope.archetypeImagePath} alt={`${horoscope.archetype} archetype`} />
               </div>
+              <div className="share-card-copy">
+                <p className="share-card-kicker">Business Horoscope</p>
+                <div className="share-card-business">
+                  <strong>{valueOrFallback(form.businessName, 'Business name')}</strong>
+                  <small>
+                    {valueOrFallback(form.city, 'City')} | {valueOrFallback(form.niche, 'Industry')}
+                  </small>
+                </div>
+                <div className="share-card-result">
+                  <div>
+                    <span>Digital Zodiac</span>
+                    <h3>{horoscope.archetype}</h3>
+                  </div>
+                  <div className="share-card-score" aria-label={`Report score ${totalScore} out of 100`}>
+                    <strong>{totalScore}</strong>
+                    <small>/100</small>
+                  </div>
+                </div>
+                <p className="share-card-diagnosis">{horoscope.shareSummary}</p>
+                <em>{horoscope.shareCta}</em>
+              </div>
+            </section>
+
+            <div className="report-meta">
+              <span>
+                <Briefcase size={16} aria-hidden="true" />
+                Prepared by {valueOrFallback(branding.preparedBy, defaultBranding.preparedBy)}
+              </span>
+              <span>
+                <CalendarDays size={16} aria-hidden="true" />
+                {reportDate}
+              </span>
+              {branding.contactLine.trim() && <span>{branding.contactLine}</span>}
+            </div>
+
+            <div className="share-card-actions screen-only" aria-label="Outreach copy actions">
+              <button
+                className="secondary-button"
+                type="button"
+                onClick={() => void copyText('text', outputs.text)}
+              >
+                <MessageSquare size={17} aria-hidden="true" />
+                {copiedKey === 'text' ? 'Copied text' : 'Copy outreach text'}
+              </button>
+              <button
+                className="secondary-button"
+                type="button"
+                onClick={() => void copyText('email', outputs.email)}
+              >
+                <Send size={17} aria-hidden="true" />
+                {copiedKey === 'email' ? 'Copied email' : 'Copy short email'}
+              </button>
+              <button
+                className="secondary-button"
+                type="button"
+                onClick={() => void copyText('shareable', outputs.shareable)}
+              >
+                <Clipboard size={17} aria-hidden="true" />
+                {copiedKey === 'shareable' ? 'Copied caption' : 'Copy share caption'}
+              </button>
             </div>
           </section>
 
-          <section className="share-card" aria-label="Share card">
-            <div className="share-card-media">
-              <img src={horoscope.archetypeImagePath} alt="" aria-hidden="true" />
+          <section className="report-page diagnosis-page" aria-label="Quick diagnosis and fixes">
+            <div className="report-page-heading">
+              <p className="section-kicker">Mini diagnosis</p>
+              <h2>What I would fix first</h2>
+              <p>{horoscope.outreachSummary}</p>
             </div>
-            <div className="share-card-copy">
-              <p className="share-card-kicker">Business Horoscope</p>
-              <span>{totalScore}/100</span>
-              <h3>{horoscope.archetype}</h3>
-              <p>{horoscope.shareSummary}</p>
-              <div className="share-card-meta">
-                <strong>{valueOrFallback(form.businessName, 'Business name')}</strong>
-                <small>
-                  {valueOrFallback(form.city, 'City')} | {valueOrFallback(form.niche, 'Industry')}
-                </small>
-              </div>
-              <em>{horoscope.shareCta}</em>
+
+            <div className="diagnosis-spotlight">
+              <ReportBlock title="Quick read" text={horoscope.archetypeSummary} />
+              <ReportBlock title="Biggest missed opportunity" text={horoscope.missedOpportunity} />
             </div>
-          </section>
 
-          <div className="share-card-actions screen-only" aria-label="Outreach copy actions">
-            <button
-              className="secondary-button"
-              type="button"
-              onClick={() => void copyText('text', outputs.text)}
-            >
-              <MessageSquare size={17} aria-hidden="true" />
-              {copiedKey === 'text' ? 'Copied text' : 'Copy outreach text'}
-            </button>
-            <button
-              className="secondary-button"
-              type="button"
-              onClick={() => void copyText('email', outputs.email)}
-            >
-              <Send size={17} aria-hidden="true" />
-              {copiedKey === 'email' ? 'Copied email' : 'Copy short email'}
-            </button>
-            <button
-              className="secondary-button"
-              type="button"
-              onClick={() => void copyText('shareable', outputs.shareable)}
-            >
-              <Clipboard size={17} aria-hidden="true" />
-              {copiedKey === 'shareable' ? 'Copied caption' : 'Copy share caption'}
-            </button>
-          </div>
-
-          <div className="report-grid">
-            <ReportBlock
-              title="Digital Zodiac"
-              text={`${horoscope.archetype}. ${horoscope.archetypeSummary}`}
-            />
-            <ReportList title="3 strengths" items={horoscope.strengths} />
-            <ReportList title="3 weaknesses" items={horoscope.weaknesses} />
-          </div>
-
-          <div className="report-grid report-grid-wide">
-            <ReportList title="Score explanations" items={horoscope.scoreExplanations} />
-            <ReportBlock title="Competitor comparison" text={horoscope.competitorSummary} />
-            <ReportBlock title="Biggest missed opportunity" text={horoscope.missedOpportunity} />
-          </div>
-
-          <section className="report-next">
-            <div>
-              <h3>7-day fix plan preview</h3>
-              <ul>
-                {recommendedSteps.map((step) => (
-                  <li key={step}>{step}</li>
-                ))}
-              </ul>
+            <div className="roadmap-grid">
+              {recommendedSteps.map((step, index) => (
+                <ReportActionCard key={step} step={step} index={index} />
+              ))}
             </div>
+
             <div className="offer-box">
-              <h3>Premium upsell</h3>
+              <p className="section-kicker">Soft next step</p>
+              <h3>Want the 3 screenshot-backed fixes I’d make first?</h3>
               <p>{horoscope.cta}</p>
             </div>
           </section>
@@ -1241,16 +1221,12 @@ function ReportBlock({ title, text }: { title: string; text: string }) {
   )
 }
 
-function ReportList({ title, items }: { title: string; items: string[] }) {
+function ReportActionCard({ step, index }: { step: string; index: number }) {
   return (
-    <section className="report-block">
-      <h3>{title}</h3>
-      <ul className="report-mini-list">
-        {items.map((item) => (
-          <li key={item}>{item}</li>
-        ))}
-      </ul>
-    </section>
+    <article className="roadmap-card">
+      <span>Day {index + 1}</span>
+      <p>{step}</p>
+    </article>
   )
 }
 
