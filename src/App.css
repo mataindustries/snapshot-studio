@@ -2032,7 +2032,7 @@ button:disabled {
 .report-share-hero .share-card {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  width: min(100%, 470px);
+  width: min(100%, 620px);
   margin: 0 auto;
   overflow: hidden;
   border: 1px solid rgba(184, 139, 64, 0.36);
@@ -2045,7 +2045,7 @@ button:disabled {
 .report-share-hero .share-card-media {
   display: grid;
   place-items: center;
-  padding: 18px;
+  padding: clamp(14px, 3vw, 24px);
   border-bottom: 1px solid rgba(184, 139, 64, 0.2);
   background:
     radial-gradient(circle at center, rgba(213, 179, 115, 0.22), transparent 58%),
@@ -2063,15 +2063,15 @@ button:disabled {
 
 .report-share-hero .share-card-media img {
   max-width: 100%;
-  height: clamp(260px, 62vw, 430px);
+  height: clamp(340px, 68vw, 540px);
   min-height: 0;
   aspect-ratio: auto;
 }
 
 .report-share-hero .share-card-copy {
   display: grid;
-  gap: 14px;
-  padding: 24px;
+  gap: clamp(12px, 2vw, 18px);
+  padding: clamp(22px, 4vw, 34px);
   background: linear-gradient(180deg, #fffaf0, #f8efdf);
 }
 
@@ -2197,11 +2197,11 @@ button:disabled {
 @media (min-width: 760px) {
   .report-share-hero .share-card {
     grid-template-columns: minmax(0, 1fr);
-    width: min(100%, 520px);
+    width: min(100%, 680px);
   }
 
   .report-share-hero .share-card-media img {
-    height: 440px;
+    height: 560px;
   }
 
   .diagnosis-spotlight {
@@ -2216,12 +2216,12 @@ button:disabled {
 @media print {
   @page {
     size: letter;
-    margin: 0.36in;
+    margin: 0.18in;
   }
 
   .report-page {
-    min-height: calc(11in - 0.72in) !important;
-    padding: 0.26in !important;
+    min-height: calc(11in - 0.36in) !important;
+    padding: 0.2in !important;
     break-after: page;
     page-break-after: always;
   }
@@ -2229,11 +2229,15 @@ button:disabled {
   .share-page {
     break-after: page !important;
     page-break-after: always !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: #fffaf0 !important;
   }
 
   .diagnosis-page {
     break-after: auto !important;
     page-break-after: auto !important;
+    min-height: auto !important;
   }
 
   .report-footer {
@@ -2241,8 +2245,8 @@ button:disabled {
   }
 
   .report-share-hero {
-    align-content: start;
-    gap: 0.14in;
+    align-content: stretch;
+    gap: 0;
     background: #fffaf0 !important;
   }
 
@@ -2253,40 +2257,48 @@ button:disabled {
 
   .report-share-hero .share-card {
     grid-template-columns: minmax(0, 1fr) !important;
-    width: min(100%, 5.65in);
+    grid-template-rows: minmax(0, 6.6in) auto;
+    width: 100%;
+    min-height: calc(11in - 0.36in);
+    margin: 0 !important;
     border-color: #d8bf8a !important;
+    border-radius: 8px !important;
     background: #fffaf0 !important;
     box-shadow: none !important;
   }
 
   .report-share-hero .share-card-media {
-    padding: 0.15in;
+    padding: 0.12in 0.18in 0.08in;
     background: #f4ead8 !important;
   }
 
   .report-share-hero .share-card-media img {
-    height: 4.35in !important;
+    width: 100% !important;
+    height: 100% !important;
     min-height: 0 !important;
     max-height: none !important;
     object-fit: contain !important;
   }
 
   .report-share-hero .share-card-copy {
-    gap: 0.09in;
-    padding: 0.2in !important;
+    align-content: center;
+    gap: 0.08in;
+    padding: 0.18in 0.3in 0.24in !important;
     background: #fffaf0 !important;
   }
 
   .share-card-business strong {
-    font-size: 26pt;
+    font-size: 30pt;
+    line-height: 0.96;
   }
 
   .report-share-hero .share-card h3 {
-    font-size: 34pt;
+    font-size: 36pt;
+    line-height: 0.96;
   }
 
   .report-share-hero .share-card-score strong {
-    font-size: 25pt;
+    font-size: 30pt;
   }
 
   .report-share-hero .share-card-score small,
@@ -2298,8 +2310,13 @@ button:disabled {
 
   .report-share-hero .share-card-diagnosis,
   .report-share-hero .share-card p:not(.share-card-kicker) {
-    font-size: 10.5pt !important;
-    line-height: 1.34 !important;
+    font-size: 12pt !important;
+    line-height: 1.32 !important;
+  }
+
+  .report-share-hero .share-card em {
+    font-size: 11pt !important;
+    padding: 0.08in 0.12in !important;
   }
 
   .report-share-hero .share-card h3,
