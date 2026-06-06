@@ -724,12 +724,22 @@
     }
 
     .export-business {
-      margin: 0 0 14px;
+      display: block;
+      width: auto;
+      max-width: none;
+      max-height: none;
+      margin: 0 0 16px;
+      overflow: visible;
       color: #D9D1C4;
       font-size: 17px;
       font-weight: 800;
       letter-spacing: 0.08em;
+      line-height: 1.35;
       text-transform: uppercase;
+      white-space: normal;
+      overflow-wrap: break-word;
+      word-break: normal;
+      text-overflow: clip;
     }
 
     .export-hero-row {
@@ -791,6 +801,10 @@
     }
 
     .export-score {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 64px;
+      align-items: center;
+      gap: 14px;
       padding: 24px;
       background: #111110;
     }
@@ -802,6 +816,20 @@
       font-size: 48px;
       font-weight: 700;
       line-height: 1;
+    }
+
+    .export-score-ring {
+      width: 64px;
+      height: 64px;
+      overflow: visible;
+    }
+
+    .export-score-ring .export-ring-track {
+      stroke: #2A2418;
+    }
+
+    .export-score-ring .export-ring-progress {
+      stroke: #C9A84C;
     }
 
     .export-diagnosis,
@@ -1270,10 +1298,18 @@
 
 
     function renderExportScore(label, value) {
+      const circumference = 132;
+      const dash = circumference - (clamp(value, 0, 100) / 100 * circumference);
       return `
         <section class="export-score">
-          <div class="export-label">${escapeHtml(label)}</div>
-          <div class="export-score-value">${value}</div>
+          <div>
+            <div class="export-label">${escapeHtml(label)}</div>
+            <div class="export-score-value">${value}</div>
+          </div>
+          <svg class="export-score-ring" viewBox="0 0 52 52" aria-hidden="true">
+            <circle class="export-ring-track" cx="26" cy="26" r="21" fill="none" stroke="#2A2418" stroke-width="4" />
+            <circle class="export-ring-progress" cx="26" cy="26" r="21" fill="none" stroke="#C9A84C" stroke-width="4" stroke-linecap="round" stroke-dasharray="132" stroke-dashoffset="${dash}" transform="rotate(-90 26 26)" />
+          </svg>
         </section>
       `;
     }
