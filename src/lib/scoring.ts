@@ -16,6 +16,19 @@ export const emptyScores: Scores = {
   competitorPosition: 10,
 }
 
+export function normalizeScores(scores: Partial<Scores> | undefined): Scores {
+  return (Object.keys(emptyScores) as Array<keyof Scores>).reduce(
+    (normalized, key) => {
+      const value = scores?.[key]
+      normalized[key] = typeof value === 'number' && Number.isFinite(value)
+        ? Math.min(20, Math.max(0, value))
+        : emptyScores[key]
+      return normalized
+    },
+    { ...emptyScores },
+  )
+}
+
 export function getTotalScore(scores: Scores) {
   return Object.values(scores).reduce((sum, score) => sum + score, 0)
 }

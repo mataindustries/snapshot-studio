@@ -2345,3 +2345,54 @@ button:disabled {
     font-size: 20pt;
   }
 }
+
+.storage-message {
+  margin: 0;
+  padding: 9px 10px;
+  border-radius: 7px;
+  background: #f3f0e9;
+  color: #5f5548;
+  font-size: 0.76rem;
+  font-weight: 750;
+  line-height: 1.4;
+}
+
+.roadmap-card > small {
+  color: #756655;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.evidence-view-button {
+  width: fit-content;
+  min-height: 38px;
+  padding: 0 11px;
+  border: 1px solid rgba(155, 107, 35, 0.3);
+  background: #fffaf0;
+  color: #7b541e;
+  font-size: 0.76rem;
+}
+
+@media print {
+  .report-page {
+    min-height: auto !important;
+  }
+
+  .report-page-heading,
+  .client-evidence-header,
+  .screenshot-preview figcaption {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .report-footer {
+    display: flex !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .roadmap-card > small {
+    color: #5b4c3e !important;
+    font-size: 7pt;
+  }
+}
