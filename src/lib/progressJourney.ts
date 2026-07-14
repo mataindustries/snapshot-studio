@@ -4,6 +4,7 @@ import type {
   RecommendedActionDifficulty,
   SnapshotGrowthFoundation,
 } from '../types'
+import { createStableId } from './evidence'
 import { growthArchetypeBands } from './growthPlanning'
 
 export type JourneyLevelStatus = 'completed' | 'current' | 'next' | 'future'
@@ -70,12 +71,14 @@ const difficultyRank: Record<RecommendedActionDifficulty, number> = {
 
 function fallbackActions(steps: string[]): RecommendedAction[] {
   return steps.map((step, index) => ({
+    id: createStableId('action', [step, index]),
     title: step,
     description: step,
     priority: index === 0 ? 'High' : 'Moderate',
     difficulty: index === 2 || index === 3 || index === 5 ? 'Moderate' : 'Low',
     expectedOutcome: 'A clearer, more useful customer experience.',
     status: 'Not started',
+    linkedEvidenceIds: [],
   }))
 }
 

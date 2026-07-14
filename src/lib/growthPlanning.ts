@@ -1,6 +1,4 @@
 import type {
-  EvidenceItem,
-  EvidenceType,
   GrowthArchetype,
   OpportunityLevel,
   ProgressStatus,
@@ -11,6 +9,11 @@ import type {
   Scores,
   SnapshotGrowthFoundation,
 } from '../types'
+import {
+  createStableId,
+  normalizeEvidenceItem,
+  synchronizeEvidenceLinks,
+} from './evidence'
 import { getTotalScore } from './scoring'
 
 type ArchetypeBand = {
@@ -52,14 +55,6 @@ const actionStatuses: readonly RecommendedActionStatus[] = [
   'In progress',
   'Complete',
 ]
-const evidenceTypes: readonly EvidenceType[] = [
-  'Website',
-  'Google Profile',
-  'Social',
-  'Competitor',
-  'Search result',
-]
-
 function clampScore(score: number) {
   return Math.min(100, Math.max(0, Number.isFinite(score) ? score : 0))
 }
@@ -88,30 +83,24 @@ function stringArray(value: unknown) {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []
 }
 
-function normalizeRecommendedAction(value: unknown): RecommendedAction | null {
+function normalizeRecommendedAction(value: unknown, index: number): RecommendedAction | null {
   if (!isRecord(value)) return null
 
+  const title = stringValue(value.title)
+  const description = stringValue(value.description)
+
   return {
-    title: stringValue(value.title),
-    description: stringValue(value.description),
+    ...value,
+    id: stringValue(value.id, createStableId('action', [title, description, index])),
+    title,
+    description,
     priority: isOneOf(value.priority, actionPriorities) ? value.priority : 'Moderate',
     difficulty: isOneOf(value.difficulty, actionDifficulties) ? value.difficulty : 'Moderate',
     expectedOutcome: stringValue(value.expectedOutcome),
     status: isOneOf(value.status, actionStatuses) ? value.status : 'Not started',
+    linkedEvidenceIds: stringArray(value.linkedEvidenceIds),
     evidenceReference: optionalString(value.evidenceReference),
     implementationNote: optionalString(value.implementationNote),
-  }
-}
-
-function normalizeEvidenceItem(value: unknown): EvidenceItem | null {
-  if (!isRecord(value)) return null
-
-  return {
-    title: stringValue(value.title),
-    sourceUrl: stringValue(value.sourceUrl),
-    observation: stringValue(value.observation),
-    screenshotPlaceholder: optionalString(value.screenshotPlaceholder),
-    evidenceType: isOneOf(value.evidenceType, evidenceTypes) ? value.evidenceType : 'Website',
   }
 }
 
@@ -169,6 +158,7 @@ export function createGrowthFoundation(scores: Scores): SnapshotGrowthFoundation
     recommendedActions: [],
     expectedOutcomes: [],
     evidenceItems: [],
+    includeIncompleteEvidence: false,
     progressStatus: 'Not started',
     reviewDate: '',
     methodologyNote: defaultMethodologyNote,
@@ -192,6 +182,27 @@ export function normalizeGrowthFoundation(
       ? value.nextArchetype
       : defaults.nextArchetype
 
+  const recommendedActions = Array.isArray(value.recommendedActions)
+    ? value.recommendedActions
+        .map(normalizeRecommendedAction)
+        .filter((action): action is RecommendedAction => action !== null)
+    : []
+  const evidenceItems = Array.isArray(value.evidenceItems)
+    ? value.evidenceItems
+        .map(normalizeEvidenceItem)
+        .filter((item): item is NonNullable<ReturnType<typeof normalizeEvidenceItem>> => item !== null)
+    : []
+  const actionsWithLegacyLinks = recommendedActions.map((action) => {
+    if (!action.evidenceReference || action.linkedEvidenceIds.length > 0) return action
+    const legacyMatch = evidenceItems.find((item) =>
+      item.id === action.evidenceReference
+      || item.title === action.evidenceReference
+      || item.sourceUrl === action.evidenceReference,
+    )
+    return legacyMatch ? { ...action, linkedEvidenceIds: [legacyMatch.id] } : action
+  })
+  const linkedItems = synchronizeEvidenceLinks(evidenceItems, actionsWithLegacyLinks)
+
   return {
     currentScore: numberValue(value.currentScore, defaults.currentScore),
     targetScoreLow: numberValue(value.targetScoreLow, defaults.targetScoreLow),
@@ -203,17 +214,12 @@ export function normalizeGrowthFoundation(
     nextArchetype,
     strengths: stringArray(value.strengths),
     visibilityLeaks: stringArray(value.visibilityLeaks),
-    recommendedActions: Array.isArray(value.recommendedActions)
-      ? value.recommendedActions
-          .map(normalizeRecommendedAction)
-          .filter((action): action is RecommendedAction => action !== null)
-      : [],
+    recommendedActions: linkedItems.actions,
     expectedOutcomes: stringArray(value.expectedOutcomes),
-    evidenceItems: Array.isArray(value.evidenceItems)
-      ? value.evidenceItems
-          .map(normalizeEvidenceItem)
-          .filter((item): item is EvidenceItem => item !== null)
-      : [],
+    evidenceItems: linkedItems.evidenceItems,
+    includeIncompleteEvidence: typeof value.includeIncompleteEvidence === 'boolean'
+      ? value.includeIncompleteEvidence
+      : defaults.includeIncompleteEvidence,
     progressStatus: isOneOf(value.progressStatus, progressStatuses)
       ? value.progressStatus
       : defaults.progressStatus,
@@ -240,6 +246,7 @@ export function refreshGrowthFoundation(
     recommendedActions: existing.recommendedActions,
     expectedOutcomes: existing.expectedOutcomes,
     evidenceItems: existing.evidenceItems,
+    includeIncompleteEvidence: existing.includeIncompleteEvidence,
     progressStatus: existing.progressStatus,
     reviewDate: existing.reviewDate,
     methodologyNote: existing.methodologyNote,

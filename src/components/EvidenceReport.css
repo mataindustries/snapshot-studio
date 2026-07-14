@@ -1,0 +1,456 @@
+.evidence-report-page {
+  gap: 18px;
+}
+
+.evidence-report-heading {
+  max-width: 760px;
+}
+
+.evidence-summary-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.evidence-stat {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid rgba(188, 143, 68, 0.2);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.evidence-stat span {
+  color: #746555;
+  font-size: 0.67rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.evidence-stat strong {
+  overflow-wrap: anywhere;
+  color: #10233c;
+  font-size: 1.08rem;
+  line-height: 1.25;
+}
+
+.evidence-stat.wide {
+  grid-column: 1 / -1;
+}
+
+.evidence-stat.wide strong {
+  font-size: 0.86rem;
+}
+
+.evidence-sample-line {
+  margin: 0;
+  padding: 10px 12px;
+  border-left: 3px solid #b9822e;
+  background: #f7eddc;
+  color: #5c4d3d;
+  font-size: 0.82rem;
+  font-weight: 750;
+  line-height: 1.4;
+}
+
+.client-evidence-list {
+  display: grid;
+  gap: 16px;
+}
+
+.client-evidence-card {
+  display: grid;
+  gap: 15px;
+  padding: 17px;
+  border: 1px solid rgba(174, 126, 51, 0.28);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 14px 34px rgba(65, 43, 18, 0.08);
+}
+
+.client-evidence-header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 11px;
+  align-items: start;
+}
+
+.client-evidence-header > span {
+  display: inline-flex;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: #10233c;
+  color: #fffaf0;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.client-evidence-header > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.client-evidence-header h3 {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: #241d18;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.35rem;
+  line-height: 1.08;
+}
+
+.client-evidence-header small {
+  color: #9b6b23;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.client-evidence-figure {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.client-evidence-image {
+  position: relative;
+  display: grid;
+  overflow: hidden;
+  border: 1px solid #d9cfbf;
+  border-radius: 7px;
+  background: #eee9e1;
+  place-items: center;
+}
+
+.client-evidence-image img {
+  display: block;
+  width: 100%;
+  max-height: 610px;
+  object-fit: contain;
+}
+
+.client-evidence-image span {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  max-width: calc(100% - 20px);
+  padding: 6px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.36);
+  border-radius: 6px;
+  background: rgba(16, 35, 60, 0.92);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1.3;
+}
+
+.client-evidence-figure figcaption {
+  color: #6e6051;
+  font-size: 0.76rem;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.client-evidence-source {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  padding: 9px 11px;
+  border-radius: 7px;
+  background: #f2eee7;
+  color: #625344;
+}
+
+.client-evidence-source svg {
+  margin-top: 2px;
+  color: #9b6b23;
+}
+
+.client-evidence-source span {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.client-evidence-source strong {
+  font-size: 0.78rem;
+}
+
+.client-evidence-source small {
+  overflow-wrap: anywhere;
+  color: #6c5d4e;
+  font-size: 0.7rem;
+  word-break: break-word;
+}
+
+.client-evidence-findings {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 9px;
+}
+
+.evidence-finding {
+  display: grid;
+  gap: 5px;
+  padding: 11px;
+  border-left: 2px solid #d6c7af;
+  background: #faf7f1;
+}
+
+.evidence-finding.accent {
+  border-left-color: #b9822e;
+  background: #fff5e4;
+}
+
+.evidence-finding span,
+.evidence-direction-comparison span,
+.client-evidence-links small {
+  color: #8b6425;
+  font-size: 0.67rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.evidence-finding p {
+  margin: 0;
+  color: #44382d;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.evidence-direction-comparison {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+
+.evidence-direction-comparison > div {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid #ddd3c4;
+  border-radius: 7px;
+  background: #f5f1ea;
+}
+
+.evidence-direction-comparison > div:last-child {
+  border-color: #cfad75;
+  background: #fff5e3;
+}
+
+.evidence-direction-comparison p {
+  margin: 0;
+  color: #44382d;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.evidence-direction-comparison small {
+  color: #786751;
+  font-size: 0.68rem;
+  font-style: italic;
+}
+
+.client-evidence-links {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 9px;
+  align-items: start;
+  padding-top: 12px;
+  border-top: 1px solid #e1d8ca;
+  color: #10233c;
+}
+
+.client-evidence-links svg {
+  margin-top: 2px;
+  color: #9b6b23;
+}
+
+.client-evidence-links span {
+  display: grid;
+  gap: 4px;
+}
+
+.client-evidence-links strong {
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+@media (min-width: 760px) {
+  .evidence-summary-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .evidence-stat.wide {
+    grid-column: 1 / -1;
+  }
+
+  .client-evidence-card {
+    padding: 21px;
+  }
+
+  .client-evidence-findings,
+  .evidence-direction-comparison {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media print {
+  .evidence-report-page {
+    display: block !important;
+    min-height: auto !important;
+    padding: 0.24in !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .evidence-report-heading {
+    margin-bottom: 0.14in;
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .evidence-report-heading h2 {
+    font-size: 23pt !important;
+  }
+
+  .evidence-report-heading p:not(.section-kicker) {
+    font-size: 9pt !important;
+  }
+
+  .evidence-summary-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.07in;
+    margin-bottom: 0.1in;
+    break-inside: avoid;
+  }
+
+  .evidence-stat {
+    padding: 0.08in;
+    border-color: #d7c6aa !important;
+    background: #fff !important;
+  }
+
+  .evidence-stat.wide {
+    grid-column: 1 / -1;
+  }
+
+  .evidence-stat span {
+    font-size: 6pt;
+  }
+
+  .evidence-stat strong {
+    font-size: 9pt;
+  }
+
+  .evidence-sample-line {
+    margin-bottom: 0.13in;
+    background: #fff !important;
+    font-size: 7.5pt;
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .client-evidence-list {
+    display: block;
+  }
+
+  .client-evidence-card {
+    display: grid;
+    gap: 0.09in;
+    margin-bottom: 0.16in;
+    padding: 0.14in;
+    border-color: #cdb78f !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .client-evidence-header {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .client-evidence-header > span {
+    border: 1px solid #10233c;
+    background: #fff !important;
+    color: #10233c !important;
+  }
+
+  .client-evidence-header h3 {
+    font-size: 14pt;
+  }
+
+  .client-evidence-figure {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .client-evidence-image {
+    max-height: 5.2in;
+    border-color: #cfc5b6 !important;
+    background: #fff !important;
+  }
+
+  .client-evidence-image img {
+    max-height: 5.2in;
+  }
+
+  .client-evidence-image span {
+    border: 1px solid #10233c;
+    background: #fff !important;
+    color: #10233c !important;
+  }
+
+  .client-evidence-figure figcaption {
+    font-size: 7pt;
+  }
+
+  .client-evidence-source {
+    background: #fff !important;
+    border: 1px solid #ddd3c4;
+  }
+
+  .client-evidence-source small {
+    word-break: break-all;
+  }
+
+  .client-evidence-findings,
+  .evidence-direction-comparison {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.07in;
+  }
+
+  .evidence-finding,
+  .evidence-finding.accent,
+  .evidence-direction-comparison > div,
+  .evidence-direction-comparison > div:last-child {
+    padding: 0.08in;
+    background: #fff !important;
+  }
+
+  .evidence-finding p,
+  .evidence-direction-comparison p {
+    color: #342c25 !important;
+    font-size: 7.5pt;
+    line-height: 1.32;
+  }
+
+  .client-evidence-links {
+    padding-top: 0.07in;
+  }
+
+  .client-evidence-links strong {
+    font-size: 7pt;
+  }
+}

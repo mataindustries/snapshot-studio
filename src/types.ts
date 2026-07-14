@@ -48,29 +48,49 @@ export type RecommendedActionStatus =
   | 'Complete'
 
 export type RecommendedAction = {
+  id: string
   title: string
   description: string
   priority: RecommendedActionPriority
   difficulty: RecommendedActionDifficulty
   expectedOutcome: string
   status: RecommendedActionStatus
+  linkedEvidenceIds: string[]
   evidenceReference?: string
   implementationNote?: string
 }
 
 export type EvidenceType =
   | 'Website'
-  | 'Google Profile'
-  | 'Social'
+  | 'Google Business Profile'
+  | 'Social Profile'
+  | 'Search Result'
   | 'Competitor'
-  | 'Search result'
+  | 'Review Platform'
+  | 'Conversion Path'
+  | 'Other'
 
 export type EvidenceItem = {
+  id: string
+  evidenceType: EvidenceType
   title: string
   sourceUrl: string
+  pageLabel: string
   observation: string
+  whyItMatters: string
+  recommendedChange: string
+  expectedOutcome: string
+  screenshotDataUrl?: string
+  screenshotFileName?: string
+  screenshotAltText?: string
+  beforeCaption?: string
+  proposedAfterCaption?: string
+  annotationLabel?: string
+  linkedActionIds: string[]
+  createdAt: string
+  updatedAt: string
+  // Retained for backwards compatibility with Prompt 1 snapshots.
   screenshotPlaceholder?: string
-  evidenceType: EvidenceType
 }
 
 export type ProgressStatus =
@@ -93,6 +113,7 @@ export type SnapshotGrowthFoundation = {
   expectedOutcomes: string[]
   evidenceItems: EvidenceItem[]
   progressStatus: ProgressStatus
+  includeIncompleteEvidence: boolean
   reviewDate: string
   methodologyNote: string
   planningEstimateDisclaimer: string

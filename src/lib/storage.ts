@@ -1,4 +1,5 @@
 import type { SavedSnapshot } from '../types'
+import { createStableId } from './evidence'
 import { normalizeGrowthFoundation } from './growthPlanning'
 import { normalizeScores } from './scoring'
 
@@ -32,9 +33,19 @@ function normalizeBranding(value: unknown): SavedSnapshot['branding'] {
   }
 }
 
-export function migrateSnapshot(value: unknown): SavedSnapshot | null {
+export function migrateSnapshot(value: unknown, index = 0): SavedSnapshot | null {
   if (!isRecord(value)) return null
 
+  const createdAt = stringValue(value.createdAt, new Date(0).toISOString())
+  const snapshotId = stringValue(
+    value.id,
+    createStableId('snapshot', [
+      stringValue(value.businessName),
+      stringValue(value.websiteUrl),
+      createdAt,
+      index,
+    ]),
+  )
   const scores = normalizeScores(
     isRecord(value.scores) ? value.scores as Partial<SavedSnapshot['scores']> : undefined,
   )
@@ -52,8 +63,8 @@ export function migrateSnapshot(value: unknown): SavedSnapshot | null {
 
   return {
     ...value,
-    id: stringValue(value.id, crypto.randomUUID()),
-    createdAt: stringValue(value.createdAt, new Date().toISOString()),
+    id: snapshotId,
+    createdAt,
     businessName: stringValue(value.businessName),
     websiteUrl: stringValue(value.websiteUrl),
     city: stringValue(value.city),
@@ -79,7 +90,9 @@ function safelyParseSnapshots(value: string | null): SavedSnapshot[] {
   try {
     const parsed = JSON.parse(value)
     return Array.isArray(parsed)
-      ? parsed.map(migrateSnapshot).filter((snapshot): snapshot is SavedSnapshot => snapshot !== null)
+      ? parsed
+          .map((snapshot, index) => migrateSnapshot(snapshot, index))
+          .filter((snapshot): snapshot is SavedSnapshot => snapshot !== null)
       : []
   } catch {
     return []
@@ -87,7 +100,19 @@ function safelyParseSnapshots(value: string | null): SavedSnapshot[] {
 }
 
 export function loadSnapshots(): SavedSnapshot[] {
-  return safelyParseSnapshots(localStorage.getItem(storageKey))
+  try {
+    return safelyParseSnapshots(localStorage.getItem(storageKey))
+  } catch {
+    return []
+  }
+}
+
+export function isStorageQuotaError(error: unknown) {
+  if (!(error instanceof DOMException)) return false
+  return error.name === 'QuotaExceededError'
+    || error.name === 'NS_ERROR_DOM_QUOTA_REACHED'
+    || error.code === 22
+    || error.code === 1014
 }
 
 export function saveSnapshot(snapshot: SavedSnapshot): SavedSnapshot[] {

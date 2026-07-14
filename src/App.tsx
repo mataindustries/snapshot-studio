@@ -20,15 +20,23 @@ import {
   Upload,
 } from 'lucide-react'
 import './App.css'
+import { EvidenceManager } from './components/EvidenceManager'
+import { EvidenceReport } from './components/EvidenceReport'
 import { ProgressJourneyReport } from './components/ProgressJourneyReport'
-import { refreshGrowthFoundation } from './lib/growthPlanning'
+import {
+  createStableId,
+  formatEvidenceReportText,
+  getEvidenceForAction,
+  getReportEvidence,
+} from './lib/evidence'
+import { createGrowthFoundation, refreshGrowthFoundation } from './lib/growthPlanning'
 import {
   createProgressJourneyModel,
   formatProgressJourneyText,
   type ProgressJourneyModel,
 } from './lib/progressJourney'
 import { emptyScores, getRatingLabel, getTotalScore, normalizeScores, scoreLabels } from './lib/scoring'
-import { deleteSnapshot, loadSnapshots, saveSnapshot } from './lib/storage'
+import { deleteSnapshot, isStorageQuotaError, loadSnapshots, saveSnapshot } from './lib/storage'
 import {
   createLead,
   deleteLead,
@@ -46,9 +54,11 @@ import {
 import { buildBusinessHoroscope, generateOutputs } from './templates/snapshotTemplates'
 import type {
   BrandingFields,
+  EvidenceItem,
   Lead,
   LeadPriority,
   LeadStatus,
+  RecommendedAction,
   SavedSnapshot,
   ScoreKey,
   Scores,
@@ -114,6 +124,21 @@ function getRecommendedSteps(horoscope: ReturnType<typeof buildBusinessHoroscope
   return horoscope.fixPlan.slice(0, 3).map((step) => step.replace(/^Day \d: /, ''))
 }
 
+function getGeneratedRecommendedActions(
+  horoscope: ReturnType<typeof buildBusinessHoroscope>,
+): RecommendedAction[] {
+  return getRecommendedSteps(horoscope).map((step, index) => ({
+    id: createStableId('action', [step, index]),
+    title: step,
+    description: step,
+    priority: index === 0 ? 'High' : 'Moderate',
+    difficulty: index === 2 ? 'Moderate' : 'Low',
+    expectedOutcome: 'A clearer, more useful customer decision path.',
+    status: 'Not started',
+    linkedEvidenceIds: [],
+  }))
+}
+
 function buildReportText({
   form,
   branding,
@@ -123,6 +148,7 @@ function buildReportText({
   horoscope,
   scores,
   progressJourney,
+  evidenceText,
 }: {
   form: SnapshotForm
   branding: BrandingFields
@@ -132,6 +158,7 @@ function buildReportText({
   horoscope: ReturnType<typeof buildBusinessHoroscope>
   scores: Scores
   progressJourney: ProgressJourneyModel
+  evidenceText: string
 }) {
   const businessName = valueOrFallback(form.businessName, 'Business name')
   const city = valueOrFallback(form.city, 'City')
@@ -154,6 +181,7 @@ ${horoscope.archetypeSummary}
 Score: ${totalScore}/100 - ${reportRating}
 
 ${formatProgressJourneyText(progressJourney)}
+${evidenceText ? `\n\n${evidenceText}` : ''}
 
 Category scores
 ${categoryScores}
@@ -217,6 +245,7 @@ function App() {
   const [form, setForm] = useState<SnapshotForm>(emptyForm)
   const [branding, setBranding] = useState<BrandingFields>(defaultBranding)
   const [scores, setScores] = useState<Scores>(emptyScores)
+  const [foundationDraft, setFoundationDraft] = useState(() => createGrowthFoundation(emptyScores))
   const [savedSnapshots, setSavedSnapshots] = useState<SavedSnapshot[]>(() => loadSnapshots())
   const [leads, setLeads] = useState<Lead[]>(() => loadLeads())
   const [leadDraft, setLeadDraft] = useState<LeadInput>(emptyLeadInput)
@@ -230,6 +259,7 @@ function App() {
   const [activeLeadId, setActiveLeadId] = useState<string | null>(null)
   const [loadedId, setLoadedId] = useState<string | null>(null)
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
+  const [storageMessage, setStorageMessage] = useState('')
 
   const totalScore = useMemo(() => getTotalScore(scores), [scores])
   const rating = getRatingLabel(totalScore)
@@ -251,17 +281,33 @@ function App() {
     () => generateOutputs(form, scores, totalScore),
     [form, scores, totalScore],
   )
-  const loadedSnapshot = useMemo(
-    () => savedSnapshots.find((snapshot) => snapshot.id === loadedId),
-    [loadedId, savedSnapshots],
+  const generatedActions = useMemo(
+    () => getGeneratedRecommendedActions(horoscope),
+    [horoscope],
   )
-  const growthFoundation = useMemo(
-    () => refreshGrowthFoundation(scores, loadedSnapshot),
-    [loadedSnapshot, scores],
+  const growthFoundation = useMemo(() => {
+    const refreshed = refreshGrowthFoundation(scores, foundationDraft)
+    return {
+      ...refreshed,
+      recommendedActions: refreshed.recommendedActions.length > 0
+        ? refreshed.recommendedActions
+        : generatedActions,
+    }
+  }, [foundationDraft, generatedActions, scores])
+  const reportEvidence = useMemo(
+    () => getReportEvidence(
+      growthFoundation.evidenceItems,
+      growthFoundation.includeIncompleteEvidence,
+    ),
+    [growthFoundation.evidenceItems, growthFoundation.includeIncompleteEvidence],
   )
   const progressJourney = useMemo(
     () => createProgressJourneyModel(growthFoundation, horoscope.fixPlan),
     [growthFoundation, horoscope],
+  )
+  const evidenceText = useMemo(
+    () => formatEvidenceReportText(reportEvidence, growthFoundation.recommendedActions),
+    [growthFoundation.recommendedActions, reportEvidence],
   )
   const reportText = useMemo(
     () => buildReportText({
@@ -273,10 +319,20 @@ function App() {
       horoscope,
       scores,
       progressJourney,
+      evidenceText,
     }),
-    [branding, form, horoscope, progressJourney, reportDate, reportRating, scores, totalScore],
+    [
+      branding,
+      evidenceText,
+      form,
+      horoscope,
+      progressJourney,
+      reportDate,
+      reportRating,
+      scores,
+      totalScore,
+    ],
   )
-  const recommendedSteps = useMemo(() => getRecommendedSteps(horoscope), [horoscope])
   const activeLead = useMemo(
     () => leads.find((lead) => lead.id === activeLeadId) ?? null,
     [activeLeadId, leads],
@@ -318,6 +374,35 @@ function App() {
     setScores((current) => ({ ...current, [field]: value }))
   }
 
+  function updateEvidenceLayer(
+    evidenceItems: EvidenceItem[],
+    actions: RecommendedAction[],
+  ) {
+    setFoundationDraft({
+      ...growthFoundation,
+      evidenceItems,
+      recommendedActions: actions,
+    })
+    setStorageMessage('Evidence draft updated. Save the snapshot to keep it after refresh.')
+  }
+
+  function updateIncludeIncompleteEvidence(includeIncompleteEvidence: boolean) {
+    setFoundationDraft({
+      ...growthFoundation,
+      includeIncompleteEvidence,
+    })
+  }
+
+  function viewActionEvidence(actionId: string) {
+    const evidence = getEvidenceForAction(actionId, reportEvidence)[0]
+      ?? getEvidenceForAction(actionId, growthFoundation.evidenceItems)[0]
+    if (!evidence) return
+
+    const target = document.getElementById('evidence-' + evidence.id)
+      ?? document.getElementById('evidence-manager-item-' + evidence.id)
+    target?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   function updateLeadDraft<K extends keyof LeadInput>(field: K, value: LeadInput[K]) {
     setLeadDraft((current) => ({ ...current, [field]: value }))
   }
@@ -348,7 +433,7 @@ function App() {
     const snapshot: SavedSnapshot = {
       ...(existingSnapshot ?? {}),
       ...form,
-      ...refreshGrowthFoundation(scores, existingSnapshot),
+      ...growthFoundation,
       id: loadedId ?? crypto.randomUUID(),
       createdAt: now,
       scores,
@@ -356,8 +441,19 @@ function App() {
       branding,
     }
 
-    setSavedSnapshots(saveSnapshot(snapshot))
-    setLoadedId(snapshot.id)
+    try {
+      setSavedSnapshots(saveSnapshot(snapshot))
+      setLoadedId(snapshot.id)
+      setFoundationDraft(growthFoundation)
+      setStorageMessage('Snapshot saved in this browser.')
+    } catch (error) {
+      setStorageMessage(
+        isStorageQuotaError(error)
+          ? 'Browser storage is full. Remove or replace large screenshots, then save again.'
+          : 'Snapshot could not be saved in this browser. Your current draft is still open.',
+      )
+      return
+    }
 
     if (activeLeadId) {
       updateLeadList(
@@ -391,7 +487,12 @@ function App() {
     })
     setBranding(snapshot.branding ?? defaultBranding)
     setScores(normalizeScores(snapshot.scores))
+    setFoundationDraft(refreshGrowthFoundation(normalizeScores(snapshot.scores), snapshot))
     setLoadedId(snapshot.id)
+    setStorageMessage(
+      'Loaded ' + snapshot.evidenceItems.length + ' evidence item'
+        + (snapshot.evidenceItems.length === 1 ? '.' : 's.'),
+    )
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -406,7 +507,9 @@ function App() {
     setForm(emptyForm)
     setBranding(defaultBranding)
     setScores(emptyScores)
+    setFoundationDraft(createGrowthFoundation(emptyScores))
     setLoadedId(null)
+    setStorageMessage('Started a new snapshot. Evidence from the previous snapshot was not reused.')
     setActiveLeadId(null)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -950,9 +1053,19 @@ function App() {
               <Copy size={18} aria-hidden="true" />
               {copiedKey === 'all' ? 'Copied all' : 'Copy all outputs'}
             </button>
+            {storageMessage && <p className="storage-message" role="status">{storageMessage}</p>}
           </div>
         </aside>
       </section>
+
+      <EvidenceManager
+        evidenceItems={growthFoundation.evidenceItems}
+        actions={growthFoundation.recommendedActions}
+        includeIncompleteEvidence={growthFoundation.includeIncompleteEvidence}
+        onChange={updateEvidenceLayer}
+        onIncludeIncompleteChange={updateIncludeIncompleteEvidence}
+        onViewActionEvidence={viewActionEvidence}
+      />
 
       <section className="report-section" aria-label="Client-facing report preview">
         <div className="report-toolbar screen-only">
@@ -1052,6 +1165,13 @@ function App() {
             </div>
           </section>
 
+          {reportEvidence.length > 0 && (
+            <EvidenceReport
+              evidenceItems={reportEvidence}
+              actions={growthFoundation.recommendedActions}
+            />
+          )}
+
           <ProgressJourneyReport model={progressJourney} />
 
           <section className="report-page diagnosis-page" aria-label="Quick diagnosis and fixes">
@@ -1067,9 +1187,21 @@ function App() {
             </div>
 
             <div className="roadmap-grid">
-              {recommendedSteps.map((step, index) => (
-                <ReportActionCard key={step} step={step} index={index} />
-              ))}
+              {growthFoundation.recommendedActions.slice(0, 3).map((action, index) => {
+                const evidenceCount = getEvidenceForAction(
+                  action.id,
+                  reportEvidence,
+                ).length
+                return (
+                  <ReportActionCard
+                    key={action.id}
+                    action={action}
+                    index={index}
+                    evidenceCount={evidenceCount}
+                    onViewEvidence={() => viewActionEvidence(action.id)}
+                  />
+                )
+              })}
             </div>
 
             <div className="offer-box">
@@ -1130,7 +1262,10 @@ function App() {
                   <span>
                     {snapshot.city || 'No city'} - {snapshot.niche || 'No industry'}
                   </span>
-                  <small>{new Date(snapshot.createdAt).toLocaleString()}</small>
+                  <small>
+                    {new Date(snapshot.createdAt).toLocaleString()} · {snapshot.evidenceItems.length}{' '}
+                    evidence item{snapshot.evidenceItems.length === 1 ? '' : 's'}
+                  </small>
                 </button>
                 <button
                   className="icon-button danger"
@@ -1250,11 +1385,29 @@ function ReportBlock({ title, text }: { title: string; text: string }) {
   )
 }
 
-function ReportActionCard({ step, index }: { step: string; index: number }) {
+function ReportActionCard({
+  action,
+  index,
+  evidenceCount,
+  onViewEvidence,
+}: {
+  action: RecommendedAction
+  index: number
+  evidenceCount: number
+  onViewEvidence: () => void
+}) {
   return (
     <article className="roadmap-card">
       <span>Day {index + 1}</span>
-      <p>{step}</p>
+      <p>{action.title}</p>
+      <small>
+        {evidenceCount} supporting evidence item{evidenceCount === 1 ? '' : 's'}
+      </small>
+      {evidenceCount > 0 && (
+        <button className="evidence-view-button screen-only" type="button" onClick={onViewEvidence}>
+          View evidence
+        </button>
+      )}
     </article>
   )
 }
