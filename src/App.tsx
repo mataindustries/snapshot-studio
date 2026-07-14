@@ -20,7 +20,13 @@ import {
   Upload,
 } from 'lucide-react'
 import './App.css'
+import { ProgressJourneyReport } from './components/ProgressJourneyReport'
 import { refreshGrowthFoundation } from './lib/growthPlanning'
+import {
+  createProgressJourneyModel,
+  formatProgressJourneyText,
+  type ProgressJourneyModel,
+} from './lib/progressJourney'
 import { emptyScores, getRatingLabel, getTotalScore, normalizeScores, scoreLabels } from './lib/scoring'
 import { deleteSnapshot, loadSnapshots, saveSnapshot } from './lib/storage'
 import {
@@ -116,6 +122,7 @@ function buildReportText({
   reportDate,
   horoscope,
   scores,
+  progressJourney,
 }: {
   form: SnapshotForm
   branding: BrandingFields
@@ -124,6 +131,7 @@ function buildReportText({
   reportDate: string
   horoscope: ReturnType<typeof buildBusinessHoroscope>
   scores: Scores
+  progressJourney: ProgressJourneyModel
 }) {
   const businessName = valueOrFallback(form.businessName, 'Business name')
   const city = valueOrFallback(form.city, 'City')
@@ -144,6 +152,8 @@ Digital Zodiac: ${horoscope.archetype}
 Image: ${horoscope.archetypeImagePath}
 ${horoscope.archetypeSummary}
 Score: ${totalScore}/100 - ${reportRating}
+
+${formatProgressJourneyText(progressJourney)}
 
 Category scores
 ${categoryScores}
@@ -241,9 +251,30 @@ function App() {
     () => generateOutputs(form, scores, totalScore),
     [form, scores, totalScore],
   )
+  const loadedSnapshot = useMemo(
+    () => savedSnapshots.find((snapshot) => snapshot.id === loadedId),
+    [loadedId, savedSnapshots],
+  )
+  const growthFoundation = useMemo(
+    () => refreshGrowthFoundation(scores, loadedSnapshot),
+    [loadedSnapshot, scores],
+  )
+  const progressJourney = useMemo(
+    () => createProgressJourneyModel(growthFoundation, horoscope.fixPlan),
+    [growthFoundation, horoscope],
+  )
   const reportText = useMemo(
-    () => buildReportText({ form, branding, totalScore, reportRating, reportDate, horoscope, scores }),
-    [branding, form, horoscope, reportDate, reportRating, scores, totalScore],
+    () => buildReportText({
+      form,
+      branding,
+      totalScore,
+      reportRating,
+      reportDate,
+      horoscope,
+      scores,
+      progressJourney,
+    }),
+    [branding, form, horoscope, progressJourney, reportDate, reportRating, scores, totalScore],
   )
   const recommendedSteps = useMemo(() => getRecommendedSteps(horoscope), [horoscope])
   const activeLead = useMemo(
@@ -1021,6 +1052,8 @@ function App() {
             </div>
           </section>
 
+          <ProgressJourneyReport model={progressJourney} />
+
           <section className="report-page diagnosis-page" aria-label="Quick diagnosis and fixes">
             <div className="report-page-heading">
               <p className="section-kicker">Mini diagnosis</p>
@@ -1048,7 +1081,7 @@ function App() {
 
           <footer className="report-footer">
             <BarChart3 size={16} aria-hidden="true" />
-            This Business Horoscope is based on a quick public-facing website review and is built for practical business outcomes: more calls, stronger trust, clearer pages, and easier customer decisions.
+            This Business Horoscope is based on a quick public-facing website review and is designed to support clearer pages, stronger trust signals, and easier customer decisions.
           </footer>
         </article>
       </section>
