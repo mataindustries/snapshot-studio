@@ -20,7 +20,8 @@ import {
   Upload,
 } from 'lucide-react'
 import './App.css'
-import { emptyScores, getRatingLabel, getTotalScore, scoreLabels } from './lib/scoring'
+import { refreshGrowthFoundation } from './lib/growthPlanning'
+import { emptyScores, getRatingLabel, getTotalScore, normalizeScores, scoreLabels } from './lib/scoring'
 import { deleteSnapshot, loadSnapshots, saveSnapshot } from './lib/storage'
 import {
   createLead,
@@ -87,16 +88,6 @@ const scoreKeys = Object.keys(scoreLabels) as ScoreKey[]
 
 function valueOrFallback(value: string, fallback: string) {
   return value.trim() || fallback
-}
-
-function normalizeScores(scores: Partial<Scores> | undefined): Scores {
-  return scoreKeys.reduce(
-    (nextScores, key) => ({
-      ...nextScores,
-      [key]: typeof scores?.[key] === 'number' ? scores[key] : emptyScores[key],
-    }),
-    {} as Scores,
-  )
 }
 
 function normalizeToneValue(tone: Tone | undefined): Tone {
@@ -320,8 +311,13 @@ function App() {
 
   function handleSaveSnapshot() {
     const now = new Date().toISOString()
+    const existingSnapshot = loadedId
+      ? savedSnapshots.find((snapshot) => snapshot.id === loadedId)
+      : undefined
     const snapshot: SavedSnapshot = {
+      ...(existingSnapshot ?? {}),
       ...form,
+      ...refreshGrowthFoundation(scores, existingSnapshot),
       id: loadedId ?? crypto.randomUUID(),
       createdAt: now,
       scores,
