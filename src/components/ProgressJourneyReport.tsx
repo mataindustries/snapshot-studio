@@ -1,4 +1,4 @@
-import { ArrowRight, Check, Flag, Sparkles } from 'lucide-react'
+import { ArrowRight, Check, Flag } from 'lucide-react'
 import './ProgressJourneyReport.css'
 import type { ProgressJourneyModel } from '../lib/progressJourney'
 
@@ -15,13 +15,13 @@ export function ProgressJourneyReport({ model }: { model: ProgressJourneyModel }
     : model.nextArchetype
 
   return (
-    <section className="report-page progress-page" aria-label="Progress motivation and archetype journey">
+    <section className="report-page progress-page" aria-label="Progress and archetype journey">
       <div className="report-page-heading progress-page-heading">
         <p className="section-kicker">A practical path forward</p>
         <h2>Your progress journey</h2>
         <p>
-          You already have a starting point. These milestones turn the snapshot into an
-          encouraging, achievable plan for the next stage.
+          The roadmap starts from the current position and organizes each action into
+          a trackable implementation sequence.
         </p>
       </div>
 
@@ -68,90 +68,25 @@ export function ProgressJourneyReport({ model }: { model: ProgressJourneyModel }
         <div className="progress-section-heading">
           <div>
             <p className="progress-label">Progress Summary</p>
-            <h3 id="progress-summary-title">A focused plan you can track</h3>
+            <h3 id="progress-summary-title">A plan designed for future reporting</h3>
           </div>
           <Flag size={20} aria-hidden="true" />
         </div>
         <div className="progress-stat-grid">
           <ProgressStat label="Recommended actions" value={model.actionCount.toString()} />
-          <ProgressStat label="Complete" value={model.completeCount.toString()} />
+          <ProgressStat label="Completed" value={model.completeCount.toString()} />
           <ProgressStat label="Remaining" value={model.remainingCount.toString()} />
-          <ProgressStat label="Estimated effort" value={model.estimatedEffort} />
-          <ProgressStat
-            className="priority-stat"
-            label="Highest-priority action"
-            value={model.highestPriorityAction}
-          />
+          <ProgressStat label="Largest action size" value={model.estimatedEffort} />
         </div>
-      </section>
-
-      <section className="milestones-section" aria-labelledby="milestones-title">
-        <div className="progress-section-heading">
-          <div>
-            <p className="progress-label">Three Milestones</p>
-            <h3 id="milestones-title">Build momentum in useful stages</h3>
-          </div>
-        </div>
-        <div className="milestone-grid">
-          {model.milestones.map((milestone, index) => (
-            <article className="milestone-card" key={milestone.label}>
-              <span>{index + 1}</span>
-              <strong>{milestone.label}</strong>
-              <p>{milestone.action}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="future-state" aria-labelledby="future-state-title">
-        <div className="future-state-heading">
-          <div>
-            <p className="progress-label">Future State Preview</p>
-            <h3 id="future-state-title">Your next snapshot could look like this</h3>
-          </div>
-          <Sparkles size={22} aria-hidden="true" />
-        </div>
-        <div className="future-state-grid">
-          <div className="future-score-comparison">
-            <div>
-              <span>Current score</span>
-              <strong>{model.currentScore}/100</strong>
-            </div>
-            <ArrowRight size={20} aria-hidden="true" />
-            <div>
-              <span>Target planning range</span>
-              <strong>{model.targetScoreLow}–{model.targetScoreHigh}/100</strong>
-              <small>Planning estimate</small>
-            </div>
-          </div>
-          <div className="future-archetype-comparison">
-            <span>{model.currentArchetype}</span>
-            <ArrowRight size={16} aria-hidden="true" />
-            <strong>{nextLabel}</strong>
-          </div>
-          <ul className="future-improvements">
-            {model.futureImprovements.map((improvement) => (
-              <li key={improvement}>{improvement}</li>
-            ))}
-          </ul>
-        </div>
-        <p className="planning-disclaimer">{model.planningEstimateDisclaimer}</p>
+        <p className="progress-plan-note">{model.planningEstimateDisclaimer}</p>
       </section>
     </section>
   )
 }
 
-function ProgressStat({
-  label,
-  value,
-  className = '',
-}: {
-  label: string
-  value: string
-  className?: string
-}) {
+function ProgressStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className={`progress-stat ${className}`.trim()}>
+    <div className="progress-stat">
       <span>{label}</span>
       <strong>{value}</strong>
     </div>

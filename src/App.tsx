@@ -20,21 +20,24 @@ import {
   Upload,
 } from 'lucide-react'
 import './App.css'
+import { AuthorityRoadmap } from './components/AuthorityRoadmap'
+import { SprintPlan } from './components/SprintPlan'
 import { EvidenceManager } from './components/EvidenceManager'
 import { EvidenceReport } from './components/EvidenceReport'
 import { ProgressJourneyReport } from './components/ProgressJourneyReport'
 import {
-  createStableId,
   formatEvidenceReportText,
   getEvidenceForAction,
   getReportEvidence,
 } from './lib/evidence'
+import { planRecommendations } from './lib/actionPlanner'
 import { createGrowthFoundation, refreshGrowthFoundation } from './lib/growthPlanning'
 import {
   createProgressJourneyModel,
   formatProgressJourneyText,
   type ProgressJourneyModel,
 } from './lib/progressJourney'
+import { createConsultingRoadmap, formatRoadmapText, type ConsultingRoadmap } from './lib/roadmap'
 import { emptyScores, getRatingLabel, getTotalScore, normalizeScores, scoreLabels } from './lib/scoring'
 import { deleteSnapshot, isStorageQuotaError, loadSnapshots, saveSnapshot } from './lib/storage'
 import {
@@ -120,25 +123,6 @@ function getReportRating(totalScore: number) {
   return 'Needs a visibility reset'
 }
 
-function getRecommendedSteps(horoscope: ReturnType<typeof buildBusinessHoroscope>) {
-  return horoscope.fixPlan.slice(0, 3).map((step) => step.replace(/^Day \d: /, ''))
-}
-
-function getGeneratedRecommendedActions(
-  horoscope: ReturnType<typeof buildBusinessHoroscope>,
-): RecommendedAction[] {
-  return getRecommendedSteps(horoscope).map((step, index) => ({
-    id: createStableId('action', [step, index]),
-    title: step,
-    description: step,
-    priority: index === 0 ? 'High' : 'Moderate',
-    difficulty: index === 2 ? 'Moderate' : 'Low',
-    expectedOutcome: 'A clearer, more useful customer decision path.',
-    status: 'Not started',
-    linkedEvidenceIds: [],
-  }))
-}
-
 function buildReportText({
   form,
   branding,
@@ -148,6 +132,7 @@ function buildReportText({
   horoscope,
   scores,
   progressJourney,
+  roadmap,
   evidenceText,
 }: {
   form: SnapshotForm
@@ -158,6 +143,7 @@ function buildReportText({
   horoscope: ReturnType<typeof buildBusinessHoroscope>
   scores: Scores
   progressJourney: ProgressJourneyModel
+  roadmap: ConsultingRoadmap
   evidenceText: string
 }) {
   const businessName = valueOrFallback(form.businessName, 'Business name')
@@ -181,6 +167,7 @@ ${horoscope.archetypeSummary}
 Score: ${totalScore}/100 - ${reportRating}
 
 ${formatProgressJourneyText(progressJourney)}
+${formatRoadmapText(roadmap)}
 ${evidenceText ? `\n\n${evidenceText}` : ''}
 
 Category scores
@@ -200,9 +187,6 @@ ${horoscope.competitorSummary}
 
 Biggest missed opportunity
 ${horoscope.missedOpportunity}
-
-7-day fix plan
-${horoscope.fixPlan.map((item) => `- ${item}`).join('\n')}
 
 Outreach-ready summary
 ${horoscope.outreachSummary}
@@ -281,19 +265,21 @@ function App() {
     () => generateOutputs(form, scores, totalScore),
     [form, scores, totalScore],
   )
-  const generatedActions = useMemo(
-    () => getGeneratedRecommendedActions(horoscope),
-    [horoscope],
+  const plannedActions = useMemo(
+    () => planRecommendations({
+      form,
+      scores,
+      existingActions: foundationDraft.recommendedActions,
+    }),
+    [form, foundationDraft.recommendedActions, scores],
   )
   const growthFoundation = useMemo(() => {
     const refreshed = refreshGrowthFoundation(scores, foundationDraft)
     return {
       ...refreshed,
-      recommendedActions: refreshed.recommendedActions.length > 0
-        ? refreshed.recommendedActions
-        : generatedActions,
+      recommendedActions: plannedActions,
     }
-  }, [foundationDraft, generatedActions, scores])
+  }, [foundationDraft, plannedActions, scores])
   const reportEvidence = useMemo(
     () => getReportEvidence(
       growthFoundation.evidenceItems,
@@ -301,9 +287,13 @@ function App() {
     ),
     [growthFoundation.evidenceItems, growthFoundation.includeIncompleteEvidence],
   )
+  const roadmap = useMemo(
+    () => createConsultingRoadmap(growthFoundation.recommendedActions),
+    [growthFoundation.recommendedActions],
+  )
   const progressJourney = useMemo(
-    () => createProgressJourneyModel(growthFoundation, horoscope.fixPlan),
-    [growthFoundation, horoscope],
+    () => createProgressJourneyModel(growthFoundation),
+    [growthFoundation],
   )
   const evidenceText = useMemo(
     () => formatEvidenceReportText(reportEvidence, growthFoundation.recommendedActions),
@@ -319,6 +309,7 @@ function App() {
       horoscope,
       scores,
       progressJourney,
+      roadmap,
       evidenceText,
     }),
     [
@@ -327,6 +318,7 @@ function App() {
       form,
       horoscope,
       progressJourney,
+      roadmap,
       reportDate,
       reportRating,
       scores,
@@ -381,7 +373,10 @@ function App() {
     setFoundationDraft({
       ...growthFoundation,
       evidenceItems,
-      recommendedActions: actions,
+      recommendedActions: actions.map((action) => ({
+        ...action,
+        linkedEvidence: action.linkedEvidenceIds,
+      })),
     })
     setStorageMessage('Evidence draft updated. Save the snapshot to keep it after refresh.')
   }
@@ -1173,11 +1168,13 @@ function App() {
           )}
 
           <ProgressJourneyReport model={progressJourney} />
+          <SprintPlan sprint={roadmap.sprint} />
+          <AuthorityRoadmap roadmap={roadmap} />
 
-          <section className="report-page diagnosis-page" aria-label="Quick diagnosis and fixes">
+          <section className="report-page diagnosis-page" aria-label="Quick diagnosis">
             <div className="report-page-heading">
               <p className="section-kicker">Mini diagnosis</p>
-              <h2>What I would fix first</h2>
+              <h2>What the snapshot shows</h2>
               <p>{horoscope.outreachSummary}</p>
             </div>
 
@@ -1186,23 +1183,6 @@ function App() {
               <ReportBlock title="Biggest missed opportunity" text={horoscope.missedOpportunity} />
             </div>
 
-            <div className="roadmap-grid">
-              {growthFoundation.recommendedActions.slice(0, 3).map((action, index) => {
-                const evidenceCount = getEvidenceForAction(
-                  action.id,
-                  reportEvidence,
-                ).length
-                return (
-                  <ReportActionCard
-                    key={action.id}
-                    action={action}
-                    index={index}
-                    evidenceCount={evidenceCount}
-                    onViewEvidence={() => viewActionEvidence(action.id)}
-                  />
-                )
-              })}
-            </div>
 
             <div className="offer-box">
               <p className="section-kicker">Soft next step</p>
@@ -1385,32 +1365,6 @@ function ReportBlock({ title, text }: { title: string; text: string }) {
   )
 }
 
-function ReportActionCard({
-  action,
-  index,
-  evidenceCount,
-  onViewEvidence,
-}: {
-  action: RecommendedAction
-  index: number
-  evidenceCount: number
-  onViewEvidence: () => void
-}) {
-  return (
-    <article className="roadmap-card">
-      <span>Day {index + 1}</span>
-      <p>{action.title}</p>
-      <small>
-        {evidenceCount} supporting evidence item{evidenceCount === 1 ? '' : 's'}
-      </small>
-      {evidenceCount > 0 && (
-        <button className="evidence-view-button screen-only" type="button" onClick={onViewEvidence}>
-          View evidence
-        </button>
-      )}
-    </article>
-  )
-}
 
 function TextInput({
   label,

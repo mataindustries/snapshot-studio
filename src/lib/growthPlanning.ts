@@ -3,17 +3,14 @@ import type {
   OpportunityLevel,
   ProgressStatus,
   RecommendedAction,
-  RecommendedActionDifficulty,
-  RecommendedActionPriority,
-  RecommendedActionStatus,
   Scores,
   SnapshotGrowthFoundation,
 } from '../types'
 import {
-  createStableId,
   normalizeEvidenceItem,
   synchronizeEvidenceLinks,
 } from './evidence'
+import { normalizeRecommendedAction } from './actionPlanner'
 import { getTotalScore } from './scoring'
 
 type ArchetypeBand = {
@@ -47,14 +44,6 @@ const progressStatuses: readonly ProgressStatus[] = [
   'Monitoring',
   'Complete',
 ]
-const actionPriorities: readonly RecommendedActionPriority[] = ['Low', 'Moderate', 'High']
-const actionDifficulties: readonly RecommendedActionDifficulty[] = ['Low', 'Moderate', 'High']
-const actionStatuses: readonly RecommendedActionStatus[] = [
-  'Not started',
-  'Planned',
-  'In progress',
-  'Complete',
-]
 function clampScore(score: number) {
   return Math.min(100, Math.max(0, Number.isFinite(score) ? score : 0))
 }
@@ -71,37 +60,12 @@ function stringValue(value: unknown, fallback = '') {
   return typeof value === 'string' ? value : fallback
 }
 
-function optionalString(value: unknown) {
-  return typeof value === 'string' && value.length > 0 ? value : undefined
-}
-
 function numberValue(value: unknown, fallback: number) {
   return typeof value === 'number' && Number.isFinite(value) ? clampScore(value) : fallback
 }
 
 function stringArray(value: unknown) {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []
-}
-
-function normalizeRecommendedAction(value: unknown, index: number): RecommendedAction | null {
-  if (!isRecord(value)) return null
-
-  const title = stringValue(value.title)
-  const description = stringValue(value.description)
-
-  return {
-    ...value,
-    id: stringValue(value.id, createStableId('action', [title, description, index])),
-    title,
-    description,
-    priority: isOneOf(value.priority, actionPriorities) ? value.priority : 'Moderate',
-    difficulty: isOneOf(value.difficulty, actionDifficulties) ? value.difficulty : 'Moderate',
-    expectedOutcome: stringValue(value.expectedOutcome),
-    status: isOneOf(value.status, actionStatuses) ? value.status : 'Not started',
-    linkedEvidenceIds: stringArray(value.linkedEvidenceIds),
-    evidenceReference: optionalString(value.evidenceReference),
-    implementationNote: optionalString(value.implementationNote),
-  }
 }
 
 export function getCurrentArchetype(score: number): GrowthArchetype {
@@ -184,7 +148,7 @@ export function normalizeGrowthFoundation(
 
   const recommendedActions = Array.isArray(value.recommendedActions)
     ? value.recommendedActions
-        .map(normalizeRecommendedAction)
+        .map((action, index) => normalizeRecommendedAction(action, index, scores))
         .filter((action): action is RecommendedAction => action !== null)
     : []
   const evidenceItems = Array.isArray(value.evidenceItems)
@@ -214,7 +178,10 @@ export function normalizeGrowthFoundation(
     nextArchetype,
     strengths: stringArray(value.strengths),
     visibilityLeaks: stringArray(value.visibilityLeaks),
-    recommendedActions: linkedItems.actions,
+    recommendedActions: linkedItems.actions.map((action) => ({
+      ...action,
+      linkedEvidence: action.linkedEvidenceIds,
+    })),
     expectedOutcomes: stringArray(value.expectedOutcomes),
     evidenceItems: linkedItems.evidenceItems,
     includeIncompleteEvidence: typeof value.includeIncompleteEvidence === 'boolean'

@@ -37,24 +37,58 @@ export type GrowthArchetype =
   | 'Local Authority'
   | 'Market Leader'
 
-export type RecommendedActionPriority = 'Low' | 'Moderate' | 'High'
+export type ActionCategory =
+  | 'Homepage'
+  | 'Trust'
+  | 'Authority'
+  | 'Local SEO'
+  | 'Service Pages'
+  | 'Reviews'
+  | 'Conversion'
+  | 'Google Business Profile'
+  | 'Content'
+  | 'FAQ'
+  | 'Mobile UX'
+  | 'Calls To Action'
+  | 'Internal Links'
+  | 'Technical'
+  | 'Brand Positioning'
+  | 'AI Readiness'
 
-export type RecommendedActionDifficulty = 'Low' | 'Moderate' | 'High'
+export type RecommendedActionPriority = 'Low' | 'Medium' | 'High'
+
+export type RecommendedActionEffort = 'Small' | 'Medium' | 'Large'
+
+export type RecommendedActionImpact = 'Low' | 'Medium' | 'High'
 
 export type RecommendedActionStatus =
-  | 'Not started'
-  | 'Planned'
-  | 'In progress'
-  | 'Complete'
+  | 'Not Started'
+  | 'In Progress'
+  | 'Completed'
+  | 'Skipped'
+  | 'Needs Review'
 
 export type RecommendedAction = {
   id: string
   title: string
   description: string
+  category: ActionCategory
   priority: RecommendedActionPriority
-  difficulty: RecommendedActionDifficulty
+  estimatedEffort: RecommendedActionEffort
+  estimatedImpact: RecommendedActionImpact
+  estimatedHours: number
+  priorityScore: number
+  opportunityScore: number
+  reason: string
   expectedOutcome: string
+  objective: string
+  businessValue: string
   status: RecommendedActionStatus
+  blockedBy: string[]
+  unlocks: string[]
+  recommendedOrder: number
+  linkedEvidence: string[]
+  // Existing evidence features continue to use this field as their storage contract.
   linkedEvidenceIds: string[]
   evidenceReference?: string
   implementationNote?: string

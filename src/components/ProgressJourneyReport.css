@@ -237,6 +237,15 @@
   line-height: 1.4;
 }
 
+.progress-plan-note {
+  margin: 0;
+  padding-top: 10px;
+  border-top: 1px solid #e5dccf;
+  color: #756655;
+  font-size: 0.68rem;
+  line-height: 1.4;
+}
+
 .milestone-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
