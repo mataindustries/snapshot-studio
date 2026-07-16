@@ -333,11 +333,11 @@ Source: ${source}
 Observed: ${item.observation}
 Why it matters: ${item.whyItMatters}
 Recommended move: ${item.recommendedChange}
-Expected outcome: ${expectedOutcome}
+Potential business effect: ${expectedOutcome}
 Supports: ${supports}`
   }).join('\n\n')
 
-  return `Evidence Behind the Recommendations
+  return `Evidence Behind Every Recommendation
 
 Quick public-facing review: ${summary.itemCount} evidence item${summary.itemCount === 1 ? '' : 's'} sampled across ${categoryText}.
 Screenshots included: ${summary.screenshotCount}

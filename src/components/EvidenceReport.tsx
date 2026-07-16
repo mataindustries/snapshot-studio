@@ -1,10 +1,11 @@
-import { ExternalLink, Link2 } from 'lucide-react'
+import { ExternalLink, Link2, Search } from 'lucide-react'
 import {
   getActionsForEvidence,
   getEvidenceSummary,
 } from '../lib/evidence'
 import type { EvidenceItem, RecommendedAction } from '../types'
 import './EvidenceReport.css'
+import './EvidenceReportPolish.css'
 
 export function EvidenceReport({
   evidenceItems,
@@ -23,11 +24,11 @@ export function EvidenceReport({
       aria-labelledby="evidence-report-title"
     >
       <div className="report-page-heading evidence-report-heading">
-        <p className="section-kicker">Primary observations</p>
-        <h2 id="evidence-report-title">Evidence Behind the Recommendations</h2>
+        <p className="section-kicker">Documented rationale</p>
+        <h2 id="evidence-report-title">Evidence Behind Every Recommendation</h2>
         <p>
-          This quick public-facing review samples the clearest observable signals behind the
-          recommended moves. It is a focused review, not an exhaustive technical audit.
+          Each documented observation connects the current public-facing experience to
+          a practical recommendation. This is a focused review, not an exhaustive technical audit.
         </p>
       </div>
 
@@ -35,27 +36,43 @@ export function EvidenceReport({
         <EvidenceStat label="Evidence items reviewed" value={summary.itemCount.toString()} />
         <EvidenceStat label="Screenshots included" value={summary.screenshotCount.toString()} />
         <EvidenceStat
-          label="Recommendations supported"
+          label="Recommendations linked"
           value={summary.supportedActionCount.toString()}
         />
-        <EvidenceStat label="Sources sampled" value={categoryText || 'Public-facing sources'} wide />
+        <EvidenceStat label="Sources sampled" value={categoryText || 'Public-facing review'} wide />
       </div>
 
-      <p className="evidence-sample-line">
-        {summary.itemCount} evidence item{summary.itemCount === 1 ? '' : 's'} reviewed across{' '}
-        {categoryText || 'public-facing sources'}.
-      </p>
+      {evidenceItems.length > 0 ? (
+        <>
+          <p className="evidence-sample-line">
+            {summary.itemCount} evidence item{summary.itemCount === 1 ? '' : 's'} reviewed across{' '}
+            {categoryText || 'public-facing sources'}.
+          </p>
 
-      <div className="client-evidence-list">
-        {evidenceItems.map((item, index) => (
-          <ClientEvidenceCard
-            key={item.id}
-            item={item}
-            number={index + 1}
-            actions={actions}
-          />
-        ))}
-      </div>
+          <div className="client-evidence-list">
+            {evidenceItems.map((item, index) => (
+              <ClientEvidenceCard
+                key={item.id}
+                item={item}
+                number={index + 1}
+                actions={actions}
+              />
+            ))}
+          </div>
+        </>
+      ) : (
+        <aside className="evidence-review-basis">
+          <Search size={21} aria-hidden="true" />
+          <span>
+            <strong>Review basis</strong>
+            <p>
+              No screenshot evidence was included in this Snapshot. Recommendations are
+              based on the five manually assessed categories and should be validated against
+              current public-facing pages before implementation.
+            </p>
+          </span>
+        </aside>
+      )}
     </section>
   )
 }
@@ -112,7 +129,7 @@ function ClientEvidenceCard({
         <EvidenceFinding label="Why it matters" text={item.whyItMatters} />
         <EvidenceFinding label="Recommended move" text={item.recommendedChange} accent />
         {item.expectedOutcome && (
-          <EvidenceFinding label="Expected outcome" text={item.expectedOutcome} />
+          <EvidenceFinding label="Potential business effect" text={item.expectedOutcome} />
         )}
       </div>
 

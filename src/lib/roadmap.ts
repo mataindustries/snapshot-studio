@@ -4,9 +4,10 @@ import type {
   RecommendedActionEffort,
 } from '../types'
 
-export type SprintDay = {
-  day: 1 | 2 | 3
-  actionId?: string
+export type SprintPhase = {
+  day: 1 | 2
+  window: 'Hours 0–24' | 'Hours 24–48'
+  actionIds: string[]
   headline: string
   description: string
   deliverable: string
@@ -27,7 +28,7 @@ export type AuthorityWeek = {
 }
 
 export type ConsultingRoadmap = {
-  sprint: [SprintDay, SprintDay, SprintDay]
+  sprint: [SprintPhase, SprintPhase]
   weeks: [AuthorityWeek, AuthorityWeek, AuthorityWeek, AuthorityWeek]
   priorityMatrix: RecommendedAction[]
   dependencies: RecommendedAction[]
@@ -68,56 +69,51 @@ export function createConsultingRoadmap(
       left.recommendedOrder - right.recommendedOrder
       || right.priorityScore - left.priorityScore,
   )
+  const remaining = ordered.filter(
+    (action) => action.status !== 'Completed' && action.status !== 'Skipped',
+  )
+  const sprintActions = remaining.length > 0 ? remaining : ordered
   const usedIds = new Set<string>()
-  const homepage = findAction(ordered, ['Homepage', 'Brand Positioning'], usedIds)
-  if (homepage) usedIds.add(homepage.id)
-  const trust = findAction(ordered, ['Trust', 'Reviews'], usedIds)
-  if (trust) usedIds.add(trust.id)
-  const authority = findAction(
-    ordered,
-    ['Service Pages', 'Authority', 'FAQ', 'Content', 'Google Business Profile'],
+  const clarity = findAction(
+    sprintActions,
+    ['Homepage', 'Brand Positioning', 'Calls To Action'],
+    usedIds,
+  )
+  if (clarity) usedIds.add(clarity.id)
+  const proof = findAction(
+    sprintActions,
+    ['Trust', 'Reviews', 'Conversion', 'Mobile UX'],
     usedIds,
   )
 
-  const sprint: [SprintDay, SprintDay, SprintDay] = [
+  const sprint: [SprintPhase, SprintPhase] = [
     {
       day: 1,
-      actionId: homepage?.id,
-      headline: 'Make the offer obvious in five seconds',
-      description: homepage?.description
+      window: 'Hours 0–24',
+      actionIds: clarity ? [clarity.id] : [],
+      headline: 'Review the evidence and clarify the decision path',
+      description: clarity?.description
         ?? 'Tighten the first screen around the primary service, location, proof, and next step.',
-      deliverable: 'Approved homepage headline, support line, proof cue, and primary button copy.',
-      whyItMatters: homepage?.reason
-        ?? 'Clarity gives every later proof and authority improvement a stronger foundation.',
-      estimatedEffort: homepage?.estimatedEffort ?? 'Small',
-      expectedBusinessEffect: homepage?.businessValue
+      deliverable: 'An approved first-screen message, support line, proof cue, and primary action.',
+      whyItMatters: clarity?.reason
+        ?? 'Clarity gives every later trust and authority improvement a stronger foundation.',
+      estimatedEffort: clarity?.estimatedEffort ?? 'Small',
+      expectedBusinessEffect: clarity?.businessValue
         ?? 'Visitors can decide faster whether the business fits their need.',
     },
     {
       day: 2,
-      actionId: trust?.id,
-      headline: 'Put credible proof beside the decision',
-      description: trust?.description
-        ?? 'Choose the strongest reviews, credentials, process proof, or customer outcomes.',
-      deliverable: 'One scannable proof section ready to place beside the primary CTA.',
-      whyItMatters: trust?.reason
-        ?? 'Specific proof answers the concerns that often delay first contact.',
-      estimatedEffort: trust?.estimatedEffort ?? 'Small',
-      expectedBusinessEffect: trust?.businessValue
+      window: 'Hours 24–48',
+      actionIds: proof ? [proof.id] : [],
+      headline: 'Implement the highest-priority trust improvement',
+      description: proof?.description
+        ?? 'Place the strongest relevant proof beside the primary contact decision.',
+      deliverable: 'One implemented trust or contact-path improvement, checked on desktop and mobile.',
+      whyItMatters: proof?.reason
+        ?? 'Specific proof and a clear next step reduce hesitation before first contact.',
+      estimatedEffort: proof?.estimatedEffort ?? 'Small',
+      expectedBusinessEffect: proof?.businessValue
         ?? 'Potential customers have fewer unanswered credibility concerns.',
-    },
-    {
-      day: 3,
-      actionId: authority?.id,
-      headline: 'Publish one useful expertise asset',
-      description: authority?.description
-        ?? 'Build a focused service or answer page around one important customer need.',
-      deliverable: 'A structured page brief with audience, process, proof, questions, and next step.',
-      whyItMatters: authority?.reason
-        ?? 'Useful specificity makes expertise visible without relying on broad claims.',
-      estimatedEffort: authority?.estimatedEffort ?? 'Medium',
-      expectedBusinessEffect: authority?.businessValue
-        ?? 'The business is easier to recognize as a knowledgeable specialist.',
     },
   ]
 
@@ -206,47 +202,24 @@ export function createConsultingRoadmap(
 }
 
 export function formatRoadmapText(roadmap: ConsultingRoadmap) {
-  const sprint = roadmap.sprint.map((day) => `Day ${day.day}: ${day.headline}
-- Description: ${day.description}
-- Deliverable: ${day.deliverable}
-- Why it matters: ${day.whyItMatters}
-- Estimated effort: ${day.estimatedEffort}
-- Expected business effect: ${day.expectedBusinessEffect}`).join('\n\n')
+  const sprint = roadmap.sprint.map((phase) => `${phase.window}: ${phase.headline}
+- Description: ${phase.description}
+- Deliverable: ${phase.deliverable}
+- Why it matters: ${phase.whyItMatters}
+- Estimated effort: ${phase.estimatedEffort}
+- Potential business effect: ${phase.expectedBusinessEffect}`).join('\n\n')
   const weeks = roadmap.weeks.map((week) => `Week ${week.week} — ${week.theme}
 - Goal: ${week.goal}
 - Recommended work: ${week.recommendedWork.join('; ')}
 - Estimated effort: ${week.estimatedEffort}
 - Milestone: ${week.milestone}
 - Success signal: ${week.successSignal}`).join('\n\n')
-  const priorities = roadmap.priorityMatrix.map((action) =>
-    `${action.recommendedOrder}. ${action.title} — ${action.category} — Impact ${action.estimatedImpact} — Effort ${action.estimatedEffort} — Priority ${action.priorityScore}/100 — Opportunity ${action.opportunityScore}/100`,
-  ).join('\n')
-  const titleById = new Map(
-    roadmap.businessOutcomes.map((action) => [action.id, action.title]),
-  )
-  const dependencies = roadmap.dependencies.map((action) => {
-    const blockedBy = action.blockedBy.map((id) => titleById.get(id)).filter(Boolean)
-    const unlocks = action.unlocks.map((id) => titleById.get(id)).filter(Boolean)
-    return `- ${action.title}: blocked by ${blockedBy.join(', ') || 'nothing'}; unlocks ${unlocks.join(', ') || 'no later action'}`
-  }).join('\n')
-  const outcomes = roadmap.businessOutcomes.map((action) =>
-    `- ${action.title}: ${action.expectedOutcome}`,
-  ).join('\n')
 
-  return `Three Day Visibility Sprint
+  return `48-Hour Visibility Sprint
 
 ${sprint}
 
-30 Day Local Authority Plan
+30-Day Local Authority Blueprint
 
-${weeks}
-
-Priority Matrix
-${priorities}
-
-Dependencies
-${dependencies || '- No dependencies in this plan.'}
-
-Business Outcomes
-${outcomes}`
+${weeks}`
 }

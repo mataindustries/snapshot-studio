@@ -1,16 +1,8 @@
 import type {
   GrowthArchetype,
-  RecommendedActionEffort,
   SnapshotGrowthFoundation,
 } from '../types'
 import { growthArchetypeBands } from './growthPlanning'
-
-export type JourneyLevelStatus = 'completed' | 'current' | 'next' | 'future'
-
-export type JourneyLevel = {
-  archetype: GrowthArchetype
-  status: JourneyLevelStatus
-}
 
 export type ProgressJourneyModel = {
   currentArchetype: GrowthArchetype
@@ -21,12 +13,13 @@ export type ProgressJourneyModel = {
   targetScoreLow: number
   targetScoreHigh: number
   nextLevelMeaning: string
-  levels: JourneyLevel[]
-  actionCount: number
+  longTermGoal: string
+  longTermGoalMeaning: string
   completeCount: number
   remainingCount: number
-  estimatedEffort: RecommendedActionEffort
+  nextRecommendedAction: string
   planningEstimateDisclaimer: string
+  verificationNote: string
 }
 
 const currentPositionMeanings: Record<GrowthArchetype, string> = {
@@ -47,30 +40,26 @@ const nextLevelMeanings: Record<GrowthArchetype, string> = {
   'Market Leader': 'A complete, well-supported presence makes the business easier to recognize as a category leader.',
 }
 
-const effortRank: Record<RecommendedActionEffort, number> = {
-  Small: 1,
-  Medium: 2,
-  Large: 3,
-}
-
 export function createProgressJourneyModel(
   foundation: SnapshotGrowthFoundation,
 ): ProgressJourneyModel {
-  const actions = foundation.recommendedActions
+  const actions = [...foundation.recommendedActions].sort(
+    (left, right) =>
+      left.recommendedOrder - right.recommendedOrder
+      || right.priorityScore - left.priorityScore,
+  )
   const remainingActions = actions.filter(
     (action) => action.status !== 'Completed' && action.status !== 'Skipped',
-  )
-  const estimatedEffort = remainingActions.reduce<RecommendedActionEffort>(
-    (highest, action) =>
-      effortRank[action.estimatedEffort] > effortRank[highest]
-        ? action.estimatedEffort
-        : highest,
-    'Small',
   )
   const currentIndex = growthArchetypeBands.findIndex(
     (band) => band.name === foundation.currentArchetype,
   )
   const nextArchetype = foundation.nextArchetype ?? foundation.currentArchetype
+  const longTermGoal = currentIndex < 3
+    ? 'Local Authority'
+    : currentIndex === 3
+      ? 'Market Leader'
+      : 'Sustained Market Leadership'
 
   return {
     currentArchetype: foundation.currentArchetype,
@@ -83,21 +72,18 @@ export function createProgressJourneyModel(
     nextLevelMeaning: foundation.nextArchetype
       ? nextLevelMeanings[foundation.nextArchetype]
       : 'The focus shifts to maintaining a clear, trusted, and useful presence as the market evolves.',
-    levels: growthArchetypeBands.map((band, index) => ({
-      archetype: band.name,
-      status: index < currentIndex
-        ? 'completed'
-        : index === currentIndex
-          ? 'current'
-          : index === currentIndex + 1
-            ? 'next'
-            : 'future',
-    })),
-    actionCount: actions.length,
+    longTermGoal,
+    longTermGoalMeaning: longTermGoal === 'Local Authority'
+      ? 'Build a consistent local presence where clarity, proof, expertise, and useful answers reinforce one another.'
+      : longTermGoal === 'Market Leader'
+        ? 'Extend local authority into a complete, well-supported category-leading presence.'
+        : 'Maintain clarity, current proof, useful information, and regular review as the market evolves.',
     completeCount: actions.filter((action) => action.status === 'Completed').length,
     remainingCount: remainingActions.length,
-    estimatedEffort,
+    nextRecommendedAction: remainingActions[0]?.title
+      ?? 'Run an updated Snapshot to verify progress and identify the next refinement.',
     planningEstimateDisclaimer: foundation.planningEstimateDisclaimer,
+    verificationNote: 'Verified progress requires another Snapshot after implementation.',
   }
 }
 
@@ -106,26 +92,27 @@ export function formatProgressJourneyText(model: ProgressJourneyModel) {
     ? `${model.nextArchetype} (maintenance focus)`
     : model.nextArchetype
 
-  return `Progress and Archetype Journey
+  return `Current → Next Level Journey
 
-Current Position
+Current archetype
 - Current archetype: ${model.currentArchetype}
 - Current score: ${model.currentScore}/100
 - ${model.currentPositionMeaning}
 
-Next Achievable Level
+Next archetype
 - Next archetype: ${nextLabel}
-- Target planning range: ${model.targetScoreLow}-${model.targetScoreHigh}/100 (planning estimate)
+- Projected planning range: ${model.targetScoreLow}-${model.targetScoreHigh}/100
 - ${model.nextLevelMeaning}
 
-Progress Journey
-${model.levels.map((level) => `- ${level.archetype}: ${level.status}`).join('\n')}
+Long-term goal
+- ${model.longTermGoal}
+- ${model.longTermGoalMeaning}
 
 Progress Summary
-- Recommended actions: ${model.actionCount}
 - Completed: ${model.completeCount}
 - Remaining: ${model.remainingCount}
-- Largest action size: ${model.estimatedEffort}
+- Next recommended action: ${model.nextRecommendedAction}
 
-${model.planningEstimateDisclaimer}`
+${model.planningEstimateDisclaimer}
+${model.verificationNote}`
 }

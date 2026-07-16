@@ -140,14 +140,14 @@ function buildShareSummary(form: SnapshotForm, archetype: Archetype) {
   const service = valueOrFallback(form.mainService, 'the main service')
 
   const summaries: Record<Archetype, string> = {
-    'The Hidden Gem': `Strong trust signals, but ${localAudience} may not see them fast enough.`,
-    'The Local Legend': `A credible local contender that can win more calls with sharper proof.`,
-    'The Sleeping Giant': `Real business value, but the site is not turning enough visitors into inquiries.`,
-    'The Invisible Expert': `The expertise is there; the ${service} story needs to be easier to spot.`,
-    'The Trust Magnet': `The site has credibility, but the next step should feel more obvious.`,
-    'The Wandering Generalist': `The offer needs a clearer lane so buyers know exactly why to choose it.`,
-    'The AI Blind Spot': `The business needs cleaner answers for search, AI, and fast-moving buyers.`,
-    'The Competitor Snack': `Competitors may be making the buying decision feel easier right now.`,
+    'The Hidden Gem': `A useful trust foundation is present, but ${localAudience} may not see it early enough.`,
+    'The Local Legend': 'A credible local presence with room to make proof and next steps easier to evaluate.',
+    'The Sleeping Giant': 'Useful business value is present, but the inquiry path still creates avoidable friction.',
+    'The Invisible Expert': `The expertise is credible; the ${service} story needs to be easier to recognize.`,
+    'The Trust Magnet': 'The site has credibility, and the next step can be made more explicit.',
+    'The Wandering Generalist': 'The offer needs a clearer focus so buyers understand why it fits their need.',
+    'The AI Blind Spot': 'Service, location, and proof need clearer structure for people and AI systems.',
+    'The Competitor Snack': 'Nearby alternatives may currently make the customer decision feel more straightforward.',
   }
 
   return summaries[archetype]
@@ -159,17 +159,17 @@ function buildArchetypeSummary(form: SnapshotForm, archetype: Archetype, scores:
   const service = valueOrFallback(form.mainService, 'its core service')
 
   const profiles: Record<Archetype, string> = {
-    'The Hidden Gem': `${businessName} already has signs of a business people could trust, but too much of that value is hidden from searchers and first-time visitors. The outreach angle is simple: make the best proof and ${city} relevance impossible to miss.`,
-    'The Local Legend': `${businessName} has category-leader potential because visibility and competitor position are both carrying weight. The next move is not a rebuild; it is protecting the lead with sharper proof, cleaner CTAs, and a clearer reason to choose ${service}.`,
-    'The Sleeping Giant': `${businessName} has useful business substance, but the site is leaving money in the handoff from visitor to inquiry. This is a strong fix-plan prospect because better CTAs, process copy, and mobile flow can change the outcome quickly.`,
-    'The Invisible Expert': `${businessName} may know the work, but the site is not broadcasting that expertise loudly enough for ${getAudiencePhrase(form)}. This archetype needs clearer service pages, stronger local language, and answer-style sections that make expertise visible.`,
-    'The Trust Magnet': `${businessName} has credibility to work with. The best opportunity is turning that trust into action by placing proof closer to forms, phone numbers, pricing/process cues, and the first step.`,
-    'The Wandering Generalist': `${businessName} is giving visitors too many broad signals and too few sharp ones. The outreach-worthy opportunity is to pick a buyer, a service, and a local promise so the site feels easier to choose.`,
-    'The AI Blind Spot': `${businessName} may be understandable to a person who already knows the company, but AI/search systems need cleaner answers. The fix is plain-language service, location, FAQ, and proof sections that can be summarized confidently.`,
-    'The Competitor Snack': `${businessName} is vulnerable in side-by-side comparison. That does not mean the business is weak; it means competitors may be making the decision feel easier with clearer proof, offers, process, or local fit.`,
+    'The Hidden Gem': `${businessName} already shows signs of a business people could trust, but that value is not yet prominent enough for first-time visitors. The priority is to bring the strongest proof and ${city} relevance closer to the first interaction.`,
+    'The Local Legend': `${businessName} has a strong public-facing foundation. The next move is focused refinement: clearer proof, a more explicit contact path, and a supportable reason to choose ${service}.`,
+    'The Sleeping Giant': `${businessName} has useful business substance, but the handoff from visitor to inquiry creates conversion friction. Clearer next-step language, process detail, and mobile flow can improve decision confidence.`,
+    'The Invisible Expert': `${businessName} has expertise that is not yet visible enough to ${getAudiencePhrase(form)}. Clearer service pages, local context, and direct answers can turn that knowledge into stronger local authority.`,
+    'The Trust Magnet': `${businessName} has credibility to work with. The practical opportunity is to place relevant proof closer to forms, phone numbers, process cues, and the first step.`,
+    'The Wandering Generalist': `${businessName} presents several broad signals without one clear focus. Making the primary audience, service, and local promise explicit will make the offer easier to evaluate.`,
+    'The AI Blind Spot': `${businessName} may be understandable to someone who already knows the company, but AI systems need more explicit facts. Plain-language service, location, FAQ, and proof sections will reduce ambiguity.`,
+    'The Competitor Snack': `${businessName} faces conversion friction in a side-by-side comparison. Nearby alternatives may feel easier to choose when their proof, offer, process, or local fit is more explicit.`,
   }
 
-  return `${profiles[archetype]} Current read: ${totalScore}/100, with the biggest pressure coming from ${scoreNames[getLowestScore(scores)]}.`
+  return `${profiles[archetype]} Current assessment: ${totalScore}/100, with the primary improvement pressure in ${scoreNames[getLowestScore(scores)]}.`
 }
 
 function scoreRead(score: number) {
@@ -273,26 +273,20 @@ function buildMissedOpportunity(form: SnapshotForm, scores: Scores) {
     visibility: `Create or tighten a dedicated ${service} page for ${city} so high-intent visitors and search systems can connect the business to the exact need.`,
     trust: `Move the best proof near the decision point: reviews, credentials, before/after examples, guarantees, financing, awards, or real customer/patient outcomes.`,
     conversion: `Turn the primary CTA into a decision helper: what happens after they call, how fast they hear back, and why the first step is easy.`,
-    aiSearchReadiness: `Add plain-language FAQs, service schema-friendly structure, and answer-style sections that AI/search tools can quote confidently.`,
+    aiSearchReadiness: 'Add plain-language FAQs and clearly labeled service, location, process, and proof sections that reduce ambiguity for people and AI systems.',
     competitorPosition: `Spell out why this business is the safer or easier choice versus nearby alternatives, using proof instead of broad claims.`,
   }
 
   return map[lowest]
 }
 
-function buildFixPlan(form: SnapshotForm, scores: Scores) {
+function buildFixPlan(form: SnapshotForm) {
   const service = valueOrFallback(form.mainService, 'primary service')
   const city = valueOrFallback(form.city, 'service city')
-  const weakest = scoreNames[getLowestScore(scores)]
 
   return [
-    `Day 1: Rewrite the top section so ${service}, ${city}, proof, and the call/request action are visible immediately.`,
-    'Day 2: Add three trust assets near the CTA: reviews, credentials, before/after examples, guarantees, financing, awards, or real customer/patient outcomes.',
-    `Day 3: Build or improve one focused ${service} page with process, service area, FAQs, and who it is best for.`,
-    'Day 4: Add answer-style FAQ sections for the questions buyers ask before contacting the business.',
-    'Day 5: Compare the strongest competitor page and add one proof point or differentiator they make clearer.',
-    'Day 6: Clean up buttons, forms, phone visibility, and page flow so the next step feels low-friction on mobile.',
-    `Day 7: Review ${weakest} again and publish the smallest fix that would make a buyer choose faster.`,
+    `Hours 0–24: Review the evidence and clarify the first screen around ${service}, ${city}, credible proof, and one next step.`,
+    'Hours 24–48: Implement the highest-priority trust or contact-path improvement, then check it on desktop and mobile.',
   ]
 }
 
@@ -305,7 +299,6 @@ export function buildBusinessHoroscope(
   const archetype = getDigitalZodiac(scores, totalScore)
   const missedOpportunity = buildMissedOpportunity(form, scores)
   const competitorSummary = buildCompetitorSummary(form, scores)
-  const tone = normalizeTone(form.tone)
 
   return {
     archetype,
@@ -318,13 +311,10 @@ export function buildBusinessHoroscope(
     weaknesses: buildWeaknesses(form, scores),
     competitorSummary,
     missedOpportunity,
-    fixPlan: buildFixPlan(form, scores),
-    outreachSummary: `${businessName} scored ${totalScore}/100 and came through as ${archetype}. The practical opportunity is to help ${getAudiencePhrase(form)} understand the offer faster, trust the page sooner, compare with less doubt, and reach out from a phone.`,
-    cta: `The next useful step is a screenshot-backed mini plan: the first three proof, copy, and mobile CTA fixes I would make so ${getAudiencePhrase(form)} can choose faster.`,
-    premiumUpsell:
-      tone === 'premium'
-        ? `Soft next step: a screenshot-backed competitor snapshot showing exactly where the site is being out-positioned, plus the first page fixes most likely to produce more calls.`
-        : `Soft next step: a $297 competitor snapshot or 7-day fix plan with screenshots, competitor receipts, service-page copy fixes, and the first updates most likely to make the business easier to contact.`,
+    fixPlan: buildFixPlan(form),
+    outreachSummary: `${businessName} scored ${totalScore}/100 and came through as ${archetype}. The practical opportunity is to help ${getAudiencePhrase(form)} understand the offer faster, evaluate relevant proof, compare with confidence, and complete the next step on a phone.`,
+    cta: 'A useful next conversation would confirm the first implementation move, the evidence behind it, and who will own the work.',
+    premiumUpsell: 'Optional implementation path: a screenshot-backed 48-Hour Visibility Sprint focused on the highest-priority improvements. Scope and investment can be tailored before the report is shared.',
   }
 }
 
@@ -358,25 +348,25 @@ ${categoryScores}
 Score explanations
 ${formatList(report.scoreExplanations)}
 
-4. 3 strengths
+4. Strategic assets
 ${formatList(report.strengths)}
 
-5. 3 weaknesses
+5. Priority observations
 ${formatList(report.weaknesses)}
 
 6. Competitor comparison summary
 ${report.competitorSummary}
 
-7. Biggest missed opportunity
+7. Biggest opportunity
 ${report.missedOpportunity}
 
-8. 7-day fix plan
+8. 48-Hour Visibility Sprint
 ${formatList(report.fixPlan)}
 
 9. Outreach-ready summary
 ${report.outreachSummary}
 
-10. CTA section
+10. Implementation conversation
 ${report.cta}
 
 Share card

@@ -6,93 +6,107 @@
   max-width: 720px;
 }
 
-.position-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 12px;
-}
-
-.position-card,
-.journey-section,
-.progress-summary,
-.milestones-section {
-  border: 1px solid rgba(188, 143, 68, 0.22);
+.premium-journey-card,
+.progress-summary {
+  border: 1px solid rgba(188, 143, 68, 0.24);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.74);
-  box-shadow: 0 12px 28px rgba(75, 52, 24, 0.06);
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: 0 14px 34px rgba(75, 52, 24, 0.07);
 }
 
-.position-card {
+.premium-journey-card {
   display: grid;
+  justify-items: stretch;
   gap: 8px;
-  padding: 17px;
+  padding: 18px;
 }
 
-.next-position-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(244, 232, 209, 0.8));
+.journey-stage {
+  display: grid;
+  gap: 6px;
+  padding: 15px;
+  border: 1px solid #ddd3c4;
+  border-radius: 8px;
+  background: #faf7f1;
 }
 
-.progress-label {
-  margin: 0;
-  color: #9b6b23;
-  font-size: 0.72rem;
+.journey-stage.highlighted {
+  border: 2px solid #b9822e;
+  background: #fff5e3;
+}
+
+.journey-stage.goal {
+  border-color: #10233c;
+  background: #10233c;
+}
+
+.journey-stage > span,
+.progress-label,
+.next-action-callout small {
+  color: #8b6425;
+  font-size: 0.68rem;
   font-weight: 900;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
 }
 
-.position-archetype {
+.journey-stage h3 {
+  margin: 0;
   color: #10233c;
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: 1.45rem;
-  line-height: 1.05;
+  font-size: 1.42rem;
+  line-height: 1.08;
 }
 
-.position-score,
-.planning-score {
-  width: fit-content;
-  padding: 5px 9px;
-  border-radius: 999px;
-  font-size: 0.8rem;
-  font-weight: 900;
+.journey-stage > strong {
+  color: #6f4c1d;
+  font-size: 0.76rem;
+  line-height: 1.35;
 }
 
-.position-score {
-  background: #10233c;
+.journey-stage p {
+  margin: 0;
+  color: #4b3f34;
+  font-size: 0.84rem;
+  line-height: 1.48;
+}
+
+.journey-stage.goal > span,
+.journey-stage.goal > strong {
+  color: #f0c778;
+}
+
+.journey-stage.goal h3 {
   color: #fffaf0;
 }
 
-.planning-score {
-  border: 1px solid rgba(155, 107, 35, 0.3);
-  background: #f5ead7;
-  color: #7b541e;
+.journey-stage.goal p {
+  color: #dce5ef;
 }
 
-.position-card > p:last-child {
-  margin: 0;
-  color: #4b3f34;
-  font-size: 0.9rem;
-  line-height: 1.5;
+.journey-arrow {
+  justify-self: center;
+  color: #b9822e;
 }
 
-.journey-section,
-.progress-summary,
-.milestones-section {
+.progress-summary {
   display: grid;
   gap: 14px;
   padding: 17px;
 }
 
-.progress-section-heading,
-.future-state-heading {
+.progress-section-heading {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
 }
 
-.progress-section-heading h3,
-.future-state-heading h3 {
+.progress-label {
+  margin: 0;
+}
+
+.progress-section-heading h3 {
   margin: 4px 0 0;
   color: #241d18;
   font-family: Georgia, 'Times New Roman', serif;
@@ -103,99 +117,6 @@
 .progress-section-heading > svg {
   flex-shrink: 0;
   color: #9b6b23;
-}
-
-.archetype-path {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 8px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.archetype-level {
-  position: relative;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 2px 10px;
-  align-items: center;
-  min-width: 0;
-  padding: 9px;
-  border: 1px solid #ded5c7;
-  border-radius: 7px;
-  background: #faf7f1;
-}
-
-.level-marker {
-  display: inline-grid;
-  grid-row: 1 / 3;
-  width: 28px;
-  height: 28px;
-  border: 1px solid #cfc4b3;
-  border-radius: 999px;
-  background: #fff;
-  color: #756655;
-  font-size: 0.76rem;
-  font-weight: 900;
-  place-items: center;
-}
-
-.archetype-level strong {
-  min-width: 0;
-  color: #3e352d;
-  font-size: 0.8rem;
-  line-height: 1.15;
-}
-
-.archetype-level small {
-  color: #756a5e;
-  font-size: 0.68rem;
-  font-weight: 850;
-  text-transform: uppercase;
-}
-
-.archetype-level.completed .level-marker {
-  border-color: #9b6b23;
-  background: #f0dfbd;
-  color: #714a14;
-}
-
-.archetype-level.current {
-  border: 2px solid #10233c;
-  background: #eef2f6;
-}
-
-.archetype-level.current .level-marker {
-  border-color: #10233c;
-  background: #10233c;
-  color: #fff;
-}
-
-.archetype-level.current strong,
-.archetype-level.current small {
-  color: #10233c;
-}
-
-.archetype-level.next {
-  border: 2px dashed #9b6b23;
-  background: #fff8ea;
-}
-
-.archetype-level.next .level-marker {
-  border-color: #9b6b23;
-  background: #f5ead7;
-  color: #7b541e;
-}
-
-.archetype-level.next strong,
-.archetype-level.next small {
-  color: #7b541e;
-}
-
-.archetype-level.future {
-  border-style: dotted;
-  opacity: 0.72;
 }
 
 .progress-stat-grid {
@@ -215,7 +136,7 @@
 
 .progress-stat span {
   color: #756655;
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   font-weight: 900;
   text-transform: uppercase;
 }
@@ -223,217 +144,94 @@
 .progress-stat strong {
   overflow-wrap: anywhere;
   color: #10233c;
-  font-size: 1.08rem;
+  font-size: 1.02rem;
   line-height: 1.2;
 }
 
-.priority-stat {
-  grid-column: 1 / -1;
+.next-action-callout {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 13px;
+  border: 1px solid #d5c19e;
+  border-radius: 7px;
+  background: #fff8ea;
+  color: #10233c;
+}
+
+.next-action-callout > svg {
+  margin-top: 2px;
+  color: #9b6b23;
+}
+
+.next-action-callout > span {
+  display: grid;
+  gap: 4px;
+}
+
+.next-action-callout strong {
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.planning-estimate-note {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 13px 14px;
+  border-left: 3px solid #10233c;
   background: #eef2f6;
 }
 
-.priority-stat strong {
-  font-size: 0.86rem;
-  line-height: 1.4;
-}
-
-.progress-plan-note {
-  margin: 0;
-  padding-top: 10px;
-  border-top: 1px solid #e5dccf;
-  color: #756655;
-  font-size: 0.68rem;
-  line-height: 1.4;
-}
-
-.milestone-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 9px;
-}
-
-.milestone-card {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 5px 9px;
-  align-items: center;
-  padding: 12px;
-  border-left: 3px solid #c69238;
-  border-radius: 6px;
-  background: #faf6ee;
-}
-
-.milestone-card > span {
-  display: inline-grid;
-  grid-row: 1 / 3;
-  width: 26px;
-  height: 26px;
-  border-radius: 999px;
-  background: #f0dfbd;
-  color: #714a14;
-  font-size: 0.76rem;
-  font-weight: 900;
-  place-items: center;
-}
-
-.milestone-card strong {
+.planning-estimate-note svg {
+  margin-top: 1px;
   color: #10233c;
-  font-size: 0.82rem;
 }
 
-.milestone-card p {
+.planning-estimate-note p {
   margin: 0;
-  color: #4b3f34;
-  font-size: 0.8rem;
-  line-height: 1.4;
+  color: #4d5867;
+  font-size: 0.75rem;
+  line-height: 1.45;
 }
 
-.future-state {
-  display: grid;
-  gap: 15px;
-  padding: 19px;
-  border: 1px solid #10233c;
-  border-radius: 8px;
-  background:
-    radial-gradient(circle at top right, rgba(240, 199, 120, 0.18), transparent 35%),
-    #10233c;
-  box-shadow: 0 18px 40px rgba(16, 35, 60, 0.16);
-  color: #fffaf0;
-}
-
-.future-state .progress-label,
-.future-state-heading > svg {
-  color: #f0c778;
-}
-
-.future-state-heading h3 {
-  color: #fffaf0;
-  font-size: 1.35rem;
-}
-
-.future-state-grid {
-  display: grid;
-  gap: 12px;
-}
-
-.future-score-comparison {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  gap: 9px;
-  align-items: center;
-}
-
-.future-score-comparison > div {
-  display: grid;
-  gap: 3px;
-}
-
-.future-score-comparison span,
-.future-score-comparison small {
-  color: #cdd8e5;
-  font-size: 0.7rem;
-  font-weight: 800;
-}
-
-.future-score-comparison strong {
-  color: #fffaf0;
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 1.35rem;
-}
-
-.future-score-comparison > svg,
-.future-archetype-comparison > svg {
-  color: #f0c778;
-}
-
-.future-archetype-comparison {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.16);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
-  color: #dce5ef;
-  font-size: 0.82rem;
-}
-
-.future-archetype-comparison strong {
-  color: #f0c778;
-}
-
-.future-improvements {
-  display: grid;
-  gap: 7px;
-  margin: 0;
-  padding-left: 19px;
-}
-
-.future-improvements li {
-  color: #eef3f8;
-  font-size: 0.8rem;
-  line-height: 1.4;
-}
-
-.planning-disclaimer {
-  margin: 0;
-  padding-top: 11px;
-  border-top: 1px solid rgba(255, 255, 255, 0.16);
-  color: #cdd8e5;
-  font-size: 0.68rem;
-  line-height: 1.4;
+.planning-estimate-note strong {
+  color: #10233c;
 }
 
 @media (min-width: 760px) {
-  .position-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .premium-journey-card {
+    padding: 22px;
   }
 
-  .archetype-path {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    gap: 7px;
+  .journey-stage {
+    grid-template-columns: minmax(180px, 0.55fr) minmax(0, 1fr);
+    column-gap: 18px;
+    align-items: center;
   }
 
-  .archetype-level {
-    grid-template-columns: minmax(0, 1fr);
-    justify-items: start;
-    align-content: start;
-    padding: 10px 8px;
+  .journey-stage > span,
+  .journey-stage h3 {
+    grid-column: 1;
   }
 
-  .level-marker {
-    grid-row: auto;
+  .journey-stage > strong,
+  .journey-stage p {
+    grid-column: 2;
+  }
+
+  .journey-stage > strong {
+    grid-row: 1;
+  }
+
+  .journey-stage p {
+    grid-row: 2;
   }
 
   .progress-stat-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  .milestone-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .milestone-card {
-    grid-template-columns: minmax(0, 1fr);
-    align-content: start;
-  }
-
-  .milestone-card > span {
-    grid-row: auto;
-  }
-
-  .future-state-grid {
-    grid-template-columns: minmax(230px, 0.8fr) minmax(0, 1.2fr);
-  }
-
-  .future-archetype-comparison {
-    grid-column: 1;
-  }
-
-  .future-improvements {
-    grid-column: 2;
-    grid-row: 1 / 3;
-    align-content: center;
   }
 }
 
@@ -457,71 +255,81 @@
     line-height: 1.3 !important;
   }
 
-  .position-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.1in;
-  }
-
-  .position-card,
-  .journey-section,
+  .premium-journey-card,
   .progress-summary,
-  .milestones-section,
-  .future-state {
+  .planning-estimate-note,
+  .journey-stage,
+  .next-action-callout {
     break-inside: avoid;
+    page-break-inside: avoid;
     box-shadow: none !important;
   }
 
-  .position-card {
+  .premium-journey-card {
     gap: 0.04in;
-    padding: 0.11in !important;
+    padding: 0.11in;
   }
 
-  .position-archetype {
-    font-size: 13pt;
+  .journey-stage {
+    grid-template-columns: 1.75in minmax(0, 1fr);
+    gap: 0.03in 0.12in;
+    padding: 0.08in;
   }
 
-  .position-card > p:last-child {
-    font-size: 7.8pt;
-    line-height: 1.25;
+  .journey-stage > span,
+  .journey-stage h3 {
+    grid-column: 1;
   }
 
-  .journey-section,
-  .progress-summary,
-  .milestones-section {
+  .journey-stage > strong,
+  .journey-stage p {
+    grid-column: 2;
+  }
+
+  .journey-stage > strong {
+    grid-row: 1;
+  }
+
+  .journey-stage p {
+    grid-row: 2;
+    font-size: 7.2pt;
+    line-height: 1.28;
+  }
+
+  .journey-stage h3 {
+    font-size: 12pt;
+  }
+
+  .journey-stage.goal {
+    border-color: #10233c !important;
+    background: #10233c !important;
+  }
+
+  .journey-stage.goal > span,
+  .journey-stage.goal > strong {
+    color: #f0c778 !important;
+  }
+
+  .journey-stage.goal h3 {
+    color: #fffaf0 !important;
+  }
+
+  .journey-stage.goal p {
+    color: #dce5ef !important;
+  }
+
+  .journey-arrow {
+    width: 0.18in;
+    height: 0.18in;
+  }
+
+  .progress-summary {
     gap: 0.07in;
-    padding: 0.11in !important;
+    padding: 0.1in;
   }
 
-  .progress-section-heading h3,
-  .future-state-heading h3 {
-    font-size: 11pt;
-  }
-
-  .archetype-path {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    gap: 0.04in;
-  }
-
-  .archetype-level {
-    grid-template-columns: minmax(0, 1fr);
-    justify-items: start;
-    align-content: start;
-    min-height: 0;
-    padding: 0.06in;
-  }
-
-  .level-marker {
-    grid-row: auto;
-    width: 0.22in;
-    height: 0.22in;
-  }
-
-  .archetype-level strong {
-    font-size: 6.8pt;
-  }
-
-  .archetype-level small {
-    font-size: 5.8pt;
+  .progress-section-heading h3 {
+    font-size: 10pt;
   }
 
   .progress-stat-grid {
@@ -535,99 +343,27 @@
   }
 
   .progress-stat span {
-    font-size: 5.8pt;
+    font-size: 5.6pt;
   }
 
   .progress-stat strong {
-    font-size: 9pt;
+    font-size: 8.5pt;
   }
 
-  .priority-stat strong {
-    font-size: 7pt;
-    line-height: 1.25;
-  }
-
-  .milestone-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.05in;
-  }
-
-  .milestone-card {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0.03in;
+  .next-action-callout {
     padding: 0.07in;
   }
 
-  .milestone-card > span {
-    grid-row: auto;
-    width: 0.2in;
-    height: 0.2in;
-  }
-
-  .milestone-card strong {
+  .next-action-callout strong {
     font-size: 7pt;
   }
 
-  .milestone-card p {
-    font-size: 6.7pt;
-    line-height: 1.25;
+  .planning-estimate-note {
+    padding: 0.08in;
   }
 
-  .future-state {
-    gap: 0.07in;
-    padding: 0.12in !important;
-    border-color: #10233c !important;
-    background: #10233c !important;
-  }
-
-  .future-state-grid {
-    grid-template-columns: minmax(220px, 0.8fr) minmax(0, 1.2fr);
-    gap: 0.07in;
-  }
-
-  .future-score-comparison strong {
-    font-size: 12pt;
-  }
-
-  .future-archetype-comparison {
-    grid-column: 1;
-    padding: 0.05in 0;
-    font-size: 7pt;
-  }
-
-  .future-improvements {
-    grid-column: 2;
-    grid-row: 1 / 3;
-    gap: 0.04in;
-    align-content: center;
-  }
-
-  .future-improvements li {
-    color: #eef3f8 !important;
-    font-size: 6.8pt;
-    line-height: 1.25;
-  }
-
-  .future-state-heading h3,
-  .future-score-comparison strong {
-    color: #fffaf0 !important;
-  }
-
-  .future-state .progress-label,
-  .future-archetype-comparison strong,
-  .future-state-heading > svg {
-    color: #f0c778 !important;
-  }
-
-  .future-score-comparison span,
-  .future-score-comparison small,
-  .future-archetype-comparison,
-  .planning-disclaimer {
-    color: #dce5ef !important;
-  }
-
-  .planning-disclaimer {
-    padding-top: 0.05in;
-    font-size: 5.8pt;
+  .planning-estimate-note p {
+    font-size: 6.3pt;
+    line-height: 1.3;
   }
 }

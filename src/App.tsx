@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
 import {
-  BarChart3,
   Briefcase,
   CalendarDays,
   Clipboard,
@@ -25,6 +24,12 @@ import { SprintPlan } from './components/SprintPlan'
 import { EvidenceManager } from './components/EvidenceManager'
 import { EvidenceReport } from './components/EvidenceReport'
 import { ProgressJourneyReport } from './components/ProgressJourneyReport'
+import { ImplementationPathsReport } from './components/ImplementationPathsReport'
+import { PoweredByFooter } from './components/PoweredByFooter'
+import {
+  BiggestOpportunityReport,
+  StrategicAssetsReport,
+} from './components/ReportStrategy'
 import {
   formatEvidenceReportText,
   getEvidenceForAction,
@@ -38,6 +43,14 @@ import {
   type ProgressJourneyModel,
 } from './lib/progressJourney'
 import { createConsultingRoadmap, formatRoadmapText, type ConsultingRoadmap } from './lib/roadmap'
+import {
+  createReportStory,
+  formatFeaturedOpportunityText,
+  formatImplementationPathsText,
+  formatStrategicAssetsText,
+  upgradeOsSupportingText,
+  type ReportStory,
+} from './lib/reportStory'
 import { emptyScores, getRatingLabel, getTotalScore, normalizeScores, scoreLabels } from './lib/scoring'
 import { deleteSnapshot, isStorageQuotaError, loadSnapshots, saveSnapshot } from './lib/storage'
 import {
@@ -117,10 +130,10 @@ function normalizeToneValue(tone: Tone | undefined): Tone {
 }
 
 function getReportRating(totalScore: number) {
-  if (totalScore >= 82) return 'Category leader energy'
-  if (totalScore >= 66) return 'Strong growth window'
-  if (totalScore >= 46) return 'Clear fix opportunity'
-  return 'Needs a visibility reset'
+  if (totalScore >= 82) return 'Strong local authority'
+  if (totalScore >= 66) return 'Established growth foundation'
+  if (totalScore >= 46) return 'Practical improvement opportunity'
+  return 'Foundation-building stage'
 }
 
 function buildReportText({
@@ -131,6 +144,7 @@ function buildReportText({
   reportDate,
   horoscope,
   scores,
+  reportStory,
   progressJourney,
   roadmap,
   evidenceText,
@@ -142,6 +156,7 @@ function buildReportText({
   reportDate: string
   horoscope: ReturnType<typeof buildBusinessHoroscope>
   scores: Scores
+  reportStory: ReportStory
   progressJourney: ProgressJourneyModel
   roadmap: ConsultingRoadmap
   evidenceText: string
@@ -154,8 +169,9 @@ function buildReportText({
   const contactLine = branding.contactLine.trim()
   const contact = contactLine ? `\n${contactLine}` : ''
   const categoryScores = scoreKeys.map((key) => `- ${scoreLabels[key]}: ${scores[key]}/20`).join('\n')
+  const evidenceSection = evidenceText || 'Evidence Behind Every Recommendation\n\nNo screenshot evidence was included in this Snapshot. Recommendations should be validated against current public-facing pages before implementation.'
 
-  return `Business Horoscope Website Audit
+  return `Business Horoscope
 
 Business: ${businessName}
 Market: ${city} - ${industry}
@@ -166,42 +182,24 @@ Image: ${horoscope.archetypeImagePath}
 ${horoscope.archetypeSummary}
 Score: ${totalScore}/100 - ${reportRating}
 
-${formatProgressJourneyText(progressJourney)}
-${formatRoadmapText(roadmap)}
-${evidenceText ? `\n\n${evidenceText}` : ''}
-
 Category scores
 ${categoryScores}
 
-Score explanations
-${horoscope.scoreExplanations.map((item) => `- ${item}`).join('\n')}
+${formatStrategicAssetsText(reportStory.strategicAssets)}
 
-3 strengths
-${horoscope.strengths.map((item) => `- ${item}`).join('\n')}
+${formatFeaturedOpportunityText(reportStory.featuredOpportunity)}
 
-3 weaknesses
-${horoscope.weaknesses.map((item) => `- ${item}`).join('\n')}
+${formatProgressJourneyText(progressJourney)}
 
-Competitor comparison
-${horoscope.competitorSummary}
+${formatRoadmapText(roadmap)}
 
-Biggest missed opportunity
-${horoscope.missedOpportunity}
+${evidenceSection}
 
-Outreach-ready summary
-${horoscope.outreachSummary}
+${formatImplementationPathsText()}
 
-CTA
-${horoscope.cta}
-
-Share card
-Image: ${horoscope.archetypeImagePath}
-Archetype: ${horoscope.archetype}
-Summary: ${horoscope.shareSummary}
-Score: ${totalScore}/100
-CTA: ${horoscope.shareCta}
-
-${horoscope.premiumUpsell}`
+Snapshot Studio
+Powered by UpgradeOS
+${upgradeOsSupportingText}`
 }
 
 function formatDate(value: string) {
@@ -291,6 +289,15 @@ function App() {
     () => createConsultingRoadmap(growthFoundation.recommendedActions),
     [growthFoundation.recommendedActions],
   )
+  const reportStory = useMemo(
+    () => createReportStory({
+      form,
+      scores,
+      actions: roadmap.priorityMatrix,
+      evidenceItems: reportEvidence,
+    }),
+    [form, reportEvidence, roadmap.priorityMatrix, scores],
+  )
   const progressJourney = useMemo(
     () => createProgressJourneyModel(growthFoundation),
     [growthFoundation],
@@ -308,6 +315,7 @@ function App() {
       reportDate,
       horoscope,
       scores,
+      reportStory,
       progressJourney,
       roadmap,
       evidenceText,
@@ -318,6 +326,7 @@ function App() {
       form,
       horoscope,
       progressJourney,
+      reportStory,
       roadmap,
       reportDate,
       reportRating,
@@ -1160,41 +1169,20 @@ function App() {
             </div>
           </section>
 
-          {reportEvidence.length > 0 && (
-            <EvidenceReport
-              evidenceItems={reportEvidence}
-              actions={growthFoundation.recommendedActions}
-            />
-          )}
+          <StrategicAssetsReport assets={reportStory.strategicAssets} />
+          <BiggestOpportunityReport
+            opportunity={reportStory.featuredOpportunity}
+          />
 
           <ProgressJourneyReport model={progressJourney} />
           <SprintPlan sprint={roadmap.sprint} />
           <AuthorityRoadmap roadmap={roadmap} />
-
-          <section className="report-page diagnosis-page" aria-label="Quick diagnosis">
-            <div className="report-page-heading">
-              <p className="section-kicker">Mini diagnosis</p>
-              <h2>What the snapshot shows</h2>
-              <p>{horoscope.outreachSummary}</p>
-            </div>
-
-            <div className="diagnosis-spotlight">
-              <ReportBlock title="Quick read" text={horoscope.archetypeSummary} />
-              <ReportBlock title="Biggest missed opportunity" text={horoscope.missedOpportunity} />
-            </div>
-
-
-            <div className="offer-box">
-              <p className="section-kicker">Soft next step</p>
-              <h3>Want the 3 screenshot-backed fixes I’d make first?</h3>
-              <p>{horoscope.cta}</p>
-            </div>
-          </section>
-
-          <footer className="report-footer">
-            <BarChart3 size={16} aria-hidden="true" />
-            This Business Horoscope is based on a quick public-facing website review and is designed to support clearer pages, stronger trust signals, and easier customer decisions.
-          </footer>
+          <EvidenceReport
+            evidenceItems={reportEvidence}
+            actions={growthFoundation.recommendedActions}
+          />
+          <ImplementationPathsReport />
+          <PoweredByFooter />
         </article>
       </section>
 
@@ -1355,16 +1343,6 @@ function LeadEditor({
     </div>
   )
 }
-
-function ReportBlock({ title, text }: { title: string; text: string }) {
-  return (
-    <section className="report-block">
-      <h3>{title}</h3>
-      <p>{text}</p>
-    </section>
-  )
-}
-
 
 function TextInput({
   label,

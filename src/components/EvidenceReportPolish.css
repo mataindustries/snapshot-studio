@@ -1,0 +1,57 @@
+.evidence-review-basis {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 11px;
+  align-items: start;
+  padding: 16px;
+  border: 1px solid rgba(188, 143, 68, 0.24);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #10233c;
+}
+
+.evidence-review-basis > svg {
+  color: #9b6b23;
+}
+
+.evidence-review-basis > span {
+  display: grid;
+  gap: 5px;
+}
+
+.evidence-review-basis strong {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1rem;
+}
+
+.evidence-review-basis p {
+  margin: 0;
+  color: #5b4f43;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.client-evidence-image img {
+  image-rendering: auto;
+}
+
+@media print {
+  .evidence-review-basis {
+    padding: 0.12in;
+    border-color: #d7c6aa !important;
+    background: #fff !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .evidence-review-basis p {
+    font-size: 7.5pt;
+    line-height: 1.35;
+  }
+
+  .client-evidence-image img {
+    image-rendering: auto;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
