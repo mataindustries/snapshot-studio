@@ -1,4 +1,11 @@
 import type { ScoreKey, Scores, SnapshotForm, SnapshotOutputs, Tone } from '../types'
+import {
+  getClientFacingCategoryLabel,
+  getDisplayBusinessName,
+  getDisplayCity,
+  getRecommendationSubject,
+  hasClientFacingValue,
+} from '../lib/reportDisplay'
 
 type Archetype =
   | 'The Hidden Gem'
@@ -45,10 +52,6 @@ const toneLine: Record<Tone, string> = {
   blunt: 'direct, punchy, and a little spicy',
 }
 
-function valueOrFallback(value: string, fallback: string) {
-  return value.trim() || fallback
-}
-
 function normalizeTone(tone: Tone): Tone {
   if (tone === 'friendly') return 'fun'
   if (tone === 'expert') return 'professional'
@@ -80,16 +83,18 @@ function isPatientIndustry(form: SnapshotForm) {
 }
 
 function getAudiencePhrase(form: SnapshotForm, style: 'local-first' | 'in-city' = 'in-city') {
-  const city = valueOrFallback(form.city, 'the local market')
-  const industry = valueOrFallback(form.niche, 'the category')
+  const city = getDisplayCity(form)
+  const industry = getClientFacingCategoryLabel(form)
+  const hasCity = hasClientFacingValue(form.city)
+  const hasCategory = hasClientFacingValue(form.mainService) || hasClientFacingValue(form.niche)
 
   if (isPatientIndustry(form)) {
-    if (city === 'the local market') return 'local patients'
+    if (!hasCity) return 'local patients'
     return style === 'local-first' ? `${city} patients` : `patients in ${city}`
   }
 
-  if (industry === 'the category') return city === 'the local market' ? 'local buyers' : `buyers in ${city}`
-  if (city === 'the local market') return `${industry.toLowerCase()} buyers in the local market`
+  if (!hasCategory) return hasCity ? 'buyers in ' + city : 'local buyers'
+  if (!hasCity) return industry.toLowerCase() + ' buyers in the local market'
   return style === 'local-first' ? `${city} ${industry.toLowerCase()} buyers` : `${industry.toLowerCase()} buyers in ${city}`
 }
 
@@ -137,7 +142,7 @@ function getArchetypeImagePath(archetype: Archetype) {
 
 function buildShareSummary(form: SnapshotForm, archetype: Archetype) {
   const localAudience = getAudiencePhrase(form, 'local-first')
-  const service = valueOrFallback(form.mainService, 'the main service')
+  const service = getRecommendationSubject(form)
 
   const summaries: Record<Archetype, string> = {
     'The Hidden Gem': `A useful trust foundation is present, but ${localAudience} may not see it early enough.`,
@@ -154,9 +159,9 @@ function buildShareSummary(form: SnapshotForm, archetype: Archetype) {
 }
 
 function buildArchetypeSummary(form: SnapshotForm, archetype: Archetype, scores: Scores, totalScore: number) {
-  const businessName = valueOrFallback(form.businessName, 'This business')
-  const city = valueOrFallback(form.city, 'its market')
-  const service = valueOrFallback(form.mainService, 'its core service')
+  const businessName = getDisplayBusinessName(form)
+  const city = getDisplayCity(form)
+  const service = getRecommendationSubject(form)
 
   const profiles: Record<Archetype, string> = {
     'The Hidden Gem': `${businessName} already shows signs of a business people could trust, but that value is not yet prominent enough for first-time visitors. The priority is to bring the strongest proof and ${city} relevance closer to the first interaction.`,
@@ -180,9 +185,9 @@ function scoreRead(score: number) {
 }
 
 function buildScoreExplanations(form: SnapshotForm, scores: Scores) {
-  const city = valueOrFallback(form.city, 'the local market')
-  const industry = valueOrFallback(form.niche, 'the category')
-  const service = valueOrFallback(form.mainService, 'the primary service')
+  const city = getDisplayCity(form)
+  const industry = getClientFacingCategoryLabel(form)
+  const service = getRecommendationSubject(form)
 
   const map: Record<ScoreKey, string> = {
     visibility: `Visibility measures whether a ready buyer can quickly connect the site to ${industry}, ${service}, and ${city}.`,
@@ -199,10 +204,10 @@ function buildScoreExplanations(form: SnapshotForm, scores: Scores) {
 }
 
 function buildStrengths(form: SnapshotForm, scores: Scores) {
-  const businessName = valueOrFallback(form.businessName, 'The business')
-  const city = valueOrFallback(form.city, 'the local market')
-  const industry = valueOrFallback(form.niche, 'its industry')
-  const service = valueOrFallback(form.mainService, 'its core offer')
+  const businessName = getDisplayBusinessName(form)
+  const city = getDisplayCity(form)
+  const industry = getClientFacingCategoryLabel(form)
+  const service = getRecommendationSubject(form)
 
   const strengthMap: Record<ScoreKey, string> = {
     visibility: `${businessName} already gives buyers a way to connect ${industry}, ${service}, and ${city} without starting from a blank page.`,
@@ -220,9 +225,9 @@ function buildStrengths(form: SnapshotForm, scores: Scores) {
 }
 
 function buildWeaknesses(form: SnapshotForm, scores: Scores) {
-  const city = valueOrFallback(form.city, 'the target city')
-  const industry = valueOrFallback(form.niche, 'the market')
-  const service = valueOrFallback(form.mainService, 'the main service')
+  const city = getDisplayCity(form)
+  const industry = getClientFacingCategoryLabel(form)
+  const service = getRecommendationSubject(form)
 
   const weaknessMap: Record<ScoreKey, string> = {
     visibility: `The page may not say ${industry}, ${service}, and ${city} quickly enough for a ready buyer scanning on a phone.`,
@@ -247,8 +252,8 @@ function buildCompetitorSummary(form: SnapshotForm, scores: Scores) {
     .map(formatUrlLabel)
     .filter(Boolean)
   const note = form.competitorNote.trim()
-  const city = valueOrFallback(form.city, 'the local market')
-  const service = valueOrFallback(form.mainService, 'the main service')
+  const city = getDisplayCity(form)
+  const service = getRecommendationSubject(form)
 
   if (competitors.length > 0) {
     const position =
@@ -266,8 +271,8 @@ function buildCompetitorSummary(form: SnapshotForm, scores: Scores) {
 
 function buildMissedOpportunity(form: SnapshotForm, scores: Scores) {
   const lowest = getLowestScore(scores)
-  const service = valueOrFallback(form.mainService, 'high-value service')
-  const city = valueOrFallback(form.city, 'the local market')
+  const service = getRecommendationSubject(form)
+  const city = getDisplayCity(form)
 
   const map: Record<ScoreKey, string> = {
     visibility: `Create or tighten a dedicated ${service} page for ${city} so high-intent visitors and search systems can connect the business to the exact need.`,
@@ -281,8 +286,8 @@ function buildMissedOpportunity(form: SnapshotForm, scores: Scores) {
 }
 
 function buildFixPlan(form: SnapshotForm) {
-  const service = valueOrFallback(form.mainService, 'primary service')
-  const city = valueOrFallback(form.city, 'service city')
+  const service = getRecommendationSubject(form)
+  const city = getDisplayCity(form)
 
   return [
     `Hours 0–24: Review the evidence and clarify the first screen around ${service}, ${city}, credible proof, and one next step.`,
@@ -295,7 +300,7 @@ export function buildBusinessHoroscope(
   scores: Scores,
   totalScore: number,
 ): BusinessHoroscope {
-  const businessName = valueOrFallback(form.businessName, 'Business name')
+  const businessName = getDisplayBusinessName(form)
   const archetype = getDigitalZodiac(scores, totalScore)
   const missedOpportunity = buildMissedOpportunity(form, scores)
   const competitorSummary = buildCompetitorSummary(form, scores)
@@ -320,21 +325,20 @@ export function buildBusinessHoroscope(
 
 function buildSnapshot(form: SnapshotForm, scores: Scores, totalScore: number) {
   const report = buildBusinessHoroscope(form, scores, totalScore)
-  const businessName = valueOrFallback(form.businessName, 'Business name')
-  const websiteUrl = valueOrFallback(form.websiteUrl, 'Website URL')
-  const city = valueOrFallback(form.city, 'City')
-  const industry = valueOrFallback(form.niche, 'Industry')
+  const businessName = getDisplayBusinessName(form)
+  const websiteLine = form.websiteUrl.trim() ? "\nWebsite: " + form.websiteUrl.trim() : ""
+  const city = getDisplayCity(form)
+  const industry = getClientFacingCategoryLabel(form)
   const tone = toneLine[normalizeTone(form.tone)]
   const categoryScores = (Object.keys(scores) as ScoreKey[])
     .map((key) => `- ${scoreNames[key]}: ${scores[key]}/20`)
     .join('\n')
 
-  return `Business Horoscope: ${businessName}
-Website: ${websiteUrl}
-Market: ${city} - ${industry}
+  return `Business Horoscope: ${businessName}${websiteLine}
+Market: ${city} | ${industry}
 Tone: ${tone}
 
-1. Business Digital Zodiac archetype
+1. Business Horoscope
 ${report.archetype}
 Image: ${report.archetypeImagePath}
 ${report.archetypeSummary}
@@ -371,7 +375,7 @@ ${report.cta}
 
 Share card
 Image: ${report.archetypeImagePath}
-Archetype: ${report.archetype}
+Business Horoscope: ${report.archetype}
 Summary: ${report.shareSummary}
 Score: ${totalScore}/100
 CTA: ${report.shareCta}
@@ -380,7 +384,7 @@ ${report.premiumUpsell}`
 }
 
 function buildText(form: SnapshotForm, totalScore: number, archetype: Archetype) {
-  const businessName = valueOrFallback(form.businessName, 'your business')
+  const businessName = getDisplayBusinessName(form)
   const shareSummary = buildShareSummary(form, archetype)
   const message = `Hi, I made a quick website snapshot for ${businessName}: ${totalScore}/100, ${archetype}. ${shareSummary} Want me to send the 3 fixes I’d make first?`
 
@@ -388,8 +392,8 @@ function buildText(form: SnapshotForm, totalScore: number, archetype: Archetype)
 }
 
 function buildEmail(form: SnapshotForm, totalScore: number, archetype: Archetype) {
-  const businessName = valueOrFallback(form.businessName, 'your business')
-  const service = valueOrFallback(form.mainService, 'your main service')
+  const businessName = getDisplayBusinessName(form)
+  const service = getRecommendationSubject(form)
   const shareSummary = buildShareSummary(form, archetype)
 
   return `Subject: Quick website snapshot for ${businessName}
@@ -406,7 +410,7 @@ Want me to send the 3 fixes I’d make first?`
 }
 
 function buildShareable(form: SnapshotForm, totalScore: number, archetype: Archetype) {
-  const businessName = valueOrFallback(form.businessName, 'This business')
+  const businessName = getDisplayBusinessName(form)
   const imagePath = getArchetypeImagePath(archetype)
   const shareSummary = buildShareSummary(form, archetype)
 

@@ -29,7 +29,7 @@ export type BrandingFields = {
 
 export type OpportunityLevel = 'Low' | 'Moderate' | 'Strong' | 'High'
 
-export type GrowthArchetype =
+export type GrowthStage =
   | 'Emerging Presence'
   | 'Clear Provider'
   | 'Trusted Specialist'
@@ -104,9 +104,12 @@ export type EvidenceType =
   | 'Conversion Path'
   | 'Other'
 
+export type EvidenceSentiment = 'Strength' | 'Opportunity' | 'Neutral'
+
 export type EvidenceItem = {
   id: string
   evidenceType: EvidenceType
+  sentiment: EvidenceSentiment
   title: string
   sourceUrl: string
   pageLabel: string
@@ -139,8 +142,8 @@ export type SnapshotGrowthFoundation = {
   targetScoreLow: number
   targetScoreHigh: number
   opportunityLevel: OpportunityLevel
-  currentArchetype: GrowthArchetype
-  nextArchetype: GrowthArchetype | null
+  currentArchetype: GrowthStage
+  nextArchetype: GrowthStage | null
   strengths: string[]
   visibilityLeaks: string[]
   recommendedActions: RecommendedAction[]
@@ -168,7 +171,21 @@ export type SnapshotForm = {
   ctaStyle: CtaStyle
 }
 
-export type SavedSnapshot = SnapshotForm & SnapshotGrowthFoundation & {
+export type OfferMode = 'Conversation' | 'Fixed Price' | 'Custom Estimate' | 'Hide Pricing'
+
+export type ReportOfferFields = {
+  offerMode: OfferMode
+  fixedPrice: string
+  currency: string
+  customInvestmentText: string
+  ctaHeadline: string
+  ctaBody: string
+  ctaLabel: string
+  ctaContactLine: string
+  bookingUrl: string
+}
+
+export type SavedSnapshot = SnapshotForm & SnapshotGrowthFoundation & ReportOfferFields & {
   id: string
   createdAt: string
   scores: Scores

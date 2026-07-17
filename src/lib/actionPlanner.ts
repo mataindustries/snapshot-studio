@@ -8,6 +8,7 @@ import type {
   SnapshotForm,
 } from '../types'
 import { createStableId } from './evidence'
+import { getDisplayCity, getRecommendationSubject } from './reportDisplay'
 import { scoreAction } from './prioritization'
 import { emptyScores } from './scoring'
 
@@ -145,10 +146,6 @@ const profileByCategory: Record<ActionCategory, ActionProfile> = {
   },
 }
 
-function valueOrFallback(value: string, fallback: string) {
-  return value.trim() || fallback
-}
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
@@ -275,8 +272,8 @@ export function normalizeRecommendedAction(
 }
 
 function buildCandidates(form: SnapshotForm): ActionCandidate[] {
-  const service = valueOrFallback(form.mainService, 'primary service')
-  const city = valueOrFallback(form.city, 'primary service area')
+  const service = getRecommendationSubject(form)
+  const city = getDisplayCity(form)
 
   return [
     {
@@ -390,12 +387,28 @@ export function planRecommendations(input: {
   scores: Scores
   existingActions?: RecommendedAction[]
 }) {
+  const candidates = buildCandidates(input.form)
   const existing = (input.existingActions ?? [])
     .map((action, index) => normalizeRecommendedAction(action, index, input.scores))
     .filter((action): action is RecommendedAction => action !== null)
   const source = existing.length > 0
-    ? existing
-    : buildCandidates(input.form).map((candidate, index) => {
+    ? existing.map((action) => {
+        const generated = candidates.find((candidate) =>
+          createStableId('action', [candidate.category, candidate.objective]) === action.id,
+        )
+        return generated
+          ? {
+              ...action,
+              title: generated.title,
+              description: generated.description,
+              objective: generated.objective,
+              businessValue: generated.businessValue,
+              reason: generated.reason,
+              expectedOutcome: generated.expectedOutcome,
+            }
+          : action
+      })
+    : candidates.map((candidate, index) => {
         const scoring = scoreAction({
           category: candidate.category,
           scores: input.scores,

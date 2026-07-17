@@ -1,6 +1,7 @@
 import type { SavedSnapshot } from '../types'
 import { createStableId } from './evidence'
 import { normalizeGrowthFoundation } from './growthPlanning'
+import { defaultReportOffer, normalizeOfferMode } from './reportOffer'
 import { normalizeScores } from './scoring'
 
 const storageKey = 'snapshot-studio:snapshots'
@@ -33,6 +34,27 @@ function normalizeBranding(value: unknown): SavedSnapshot['branding'] {
   }
 }
 
+function normalizeReportOffer(
+  value: Record<string, unknown>,
+  branding: SavedSnapshot['branding'],
+) {
+  const fixedPrice = typeof value.fixedPrice === 'number' && Number.isFinite(value.fixedPrice)
+    ? value.fixedPrice.toString()
+    : stringValue(value.fixedPrice)
+
+  return {
+    offerMode: normalizeOfferMode(value.offerMode),
+    fixedPrice,
+    currency: stringValue(value.currency, defaultReportOffer.currency),
+    customInvestmentText: stringValue(value.customInvestmentText),
+    ctaHeadline: stringValue(value.ctaHeadline, defaultReportOffer.ctaHeadline),
+    ctaBody: stringValue(value.ctaBody, defaultReportOffer.ctaBody),
+    ctaLabel: stringValue(value.ctaLabel, defaultReportOffer.ctaLabel),
+    ctaContactLine: stringValue(value.ctaContactLine, branding?.contactLine || ''),
+    bookingUrl: stringValue(value.bookingUrl),
+  }
+}
+
 export function migrateSnapshot(value: unknown, index = 0): SavedSnapshot | null {
   if (!isRecord(value)) return null
 
@@ -60,6 +82,8 @@ export function migrateSnapshot(value: unknown, index = 0): SavedSnapshot | null
   )
     ? value.ctaStyle as SavedSnapshot['ctaStyle']
     : 'ask-permission'
+  const branding = normalizeBranding(value.branding)
+  const reportOffer = normalizeReportOffer(value, branding)
 
   return {
     ...value,
@@ -79,7 +103,8 @@ export function migrateSnapshot(value: unknown, index = 0): SavedSnapshot | null
     ctaStyle,
     scores,
     outputs: normalizeOutputs(value.outputs),
-    branding: normalizeBranding(value.branding),
+    branding,
+    ...reportOffer,
     ...growthFoundation,
   }
 }

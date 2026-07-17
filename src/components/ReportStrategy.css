@@ -261,3 +261,15 @@
     color: #dce5ef !important;
   }
 }
+
+.strategic-asset-source {
+  width: fit-content;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: #f7eddc;
+  color: #7b541e;
+  font-size: 0.64rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}

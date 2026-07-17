@@ -2,11 +2,12 @@ import { useState } from 'react'
 import { ChevronDown, ChevronUp, ImagePlus, Trash2 } from 'lucide-react'
 import {
   EvidenceImageError,
+  evidenceSentiments,
   evidenceTypes,
   isEvidenceReportReady,
   optimizeScreenshot,
 } from '../lib/evidence'
-import type { EvidenceItem, EvidenceType, RecommendedAction } from '../types'
+import type { EvidenceItem, EvidenceSentiment, EvidenceType, RecommendedAction } from '../types'
 
 type EvidenceCardProps = {
   item: EvidenceItem
@@ -135,6 +136,11 @@ export function EvidenceCard({
               label="Evidence type"
               value={item.evidenceType}
               onChange={(value) => updateField('evidenceType', value)}
+            />
+            <EvidenceSentimentSelect
+              label="Observation classification"
+              value={item.sentiment}
+              onChange={(value) => updateField('sentiment', value)}
             />
             <EvidenceInput
               label="Source URL"
@@ -379,6 +385,25 @@ function EvidenceTextArea({
         placeholder={placeholder}
         onChange={(event) => onChange(event.target.value)}
       />
+    </label>
+  )
+}
+
+function EvidenceSentimentSelect({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: EvidenceSentiment
+  onChange: (value: EvidenceSentiment) => void
+}) {
+  return (
+    <label className="field">
+      <span>{label}</span>
+      <select value={value} onChange={(event) => onChange(event.target.value as EvidenceSentiment)}>
+        {evidenceSentiments.map((option) => <option key={option}>{option}</option>)}
+      </select>
     </label>
   )
 }

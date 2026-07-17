@@ -2396,3 +2396,70 @@ button:disabled {
     font-size: 7pt;
   }
 }
+
+/* Phase 4C operator-only report readiness */
+.report-readiness {
+  display: grid;
+  gap: 7px;
+  width: min(100%, 440px);
+  padding: 10px 12px;
+  border: 1px solid #d8c49f;
+  border-radius: 8px;
+  background: #fff9ec;
+  color: #634b28;
+}
+
+.report-readiness > div {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.report-readiness.ready-to-share {
+  border-color: #aac9b2;
+  background: #f1f8f3;
+  color: #285d36;
+}
+
+.report-readiness.preliminary-snapshot {
+  border-color: #b9c9d7;
+  background: #f2f6fa;
+  color: #31536d;
+}
+
+.report-readiness ul {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.73rem;
+  line-height: 1.35;
+}
+
+.offer-settings-panel .field-grid {
+  gap: 8px;
+}
+
+@media (min-width: 760px) {
+  .report-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .report-readiness {
+    order: 3;
+    width: 100%;
+  }
+}
+
+@media (min-width: 1080px) {
+  .report-readiness {
+    order: initial;
+    width: min(100%, 390px);
+  }
+}
+
+@media print {
+  .report-readiness {
+    display: none !important;
+  }
+}

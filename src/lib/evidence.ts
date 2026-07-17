@@ -1,4 +1,4 @@
-import type { EvidenceItem, EvidenceType, RecommendedAction } from '../types'
+import type { EvidenceItem, EvidenceSentiment, EvidenceType, RecommendedAction } from '../types'
 
 export const evidenceTypes: readonly EvidenceType[] = [
   'Website',
@@ -10,6 +10,8 @@ export const evidenceTypes: readonly EvidenceType[] = [
   'Conversion Path',
   'Other',
 ] as const
+
+export const evidenceSentiments: readonly EvidenceSentiment[] = ['Strength', 'Opportunity', 'Neutral'] as const
 
 export const maximumScreenshotFileBytes = 12 * 1024 * 1024
 export const maximumStoredScreenshotLength = 1_800_000
@@ -83,6 +85,12 @@ export function normalizeEvidenceType(value: unknown): EvidenceType {
   return legacyTypes[value] ?? 'Other'
 }
 
+export function normalizeEvidenceSentiment(value: unknown): EvidenceSentiment {
+  return typeof value === 'string' && evidenceSentiments.includes(value as EvidenceSentiment)
+    ? value as EvidenceSentiment
+    : 'Neutral'
+}
+
 export function isSafeScreenshotDataUrl(value: unknown): value is string {
   if (
     typeof value !== 'string'
@@ -118,6 +126,7 @@ export function normalizeEvidenceItem(value: unknown, index = 0): EvidenceItem |
     id,
     title,
     evidenceType: normalizeEvidenceType(value.evidenceType),
+    sentiment: normalizeEvidenceSentiment(value.sentiment),
     sourceUrl,
     pageLabel: stringValue(value.pageLabel),
     observation,
@@ -144,6 +153,7 @@ export function createEvidenceItem(): EvidenceItem {
     id: crypto.randomUUID(),
     title: '',
     evidenceType: 'Website',
+    sentiment: 'Neutral',
     sourceUrl: '',
     pageLabel: '',
     observation: '',
@@ -294,7 +304,9 @@ export function removeActionAndLinks(
 }
 
 export function getReportEvidence(items: EvidenceItem[], includeIncomplete: boolean) {
-  return includeIncomplete ? items : items.filter(isEvidenceReportReady)
+  const reportReady = items.filter(isEvidenceReportReady)
+  if (reportReady.length === 0) return []
+  return includeIncomplete ? items : reportReady
 }
 
 export function getEvidenceSummary(items: EvidenceItem[], actions: RecommendedAction[]) {
@@ -323,7 +335,8 @@ export function formatEvidenceReportText(
     : 'public-facing sources'
   const evidenceText = items.map((item, index) => {
     const linkedActions = getActionsForEvidence(item, actions)
-    const source = [item.pageLabel, item.sourceUrl].filter(Boolean).join(' — ') || 'Not specified'
+    const safeSourceUrl = /^data:/i.test(item.sourceUrl.trim()) ? '' : item.sourceUrl
+    const source = [item.pageLabel, safeSourceUrl].filter(Boolean).join(' — ') || 'Not specified'
     const expectedOutcome = item.expectedOutcome.trim() || 'Not specified'
     const supports = linkedActions.map((action) => action.title).filter(Boolean).join('; ')
       || 'No recommendation linked'

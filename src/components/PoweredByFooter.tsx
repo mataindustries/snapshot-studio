@@ -1,8 +1,8 @@
 import { BarChart3 } from 'lucide-react'
-import { upgradeOsSupportingText } from '../lib/reportStory'
+import { preliminaryEvidenceNote, upgradeOsSupportingText } from '../lib/reportStory'
 import './PoweredByFooter.css'
 
-export function PoweredByFooter() {
+export function PoweredByFooter({ preliminary = false }: { preliminary?: boolean }) {
   return (
     <footer className="report-footer upgradeos-footer">
       <div className="upgradeos-brand-lockup">
@@ -15,6 +15,7 @@ export function PoweredByFooter() {
         </span>
       </div>
       <p>{upgradeOsSupportingText}</p>
+      {preliminary && <p className="preliminary-evidence-note">{preliminaryEvidenceNote}</p>}
     </footer>
   )
 }

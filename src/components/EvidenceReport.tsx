@@ -1,4 +1,4 @@
-import { ExternalLink, Link2, Search } from 'lucide-react'
+import { ExternalLink, Link2 } from 'lucide-react'
 import {
   getActionsForEvidence,
   getEvidenceSummary,
@@ -14,6 +14,8 @@ export function EvidenceReport({
   evidenceItems: EvidenceItem[]
   actions: RecommendedAction[]
 }) {
+  if (evidenceItems.length === 0) return null
+
   const summary = getEvidenceSummary(evidenceItems, actions)
   const categoryText = formatCategoryList(summary.categories)
 
@@ -42,37 +44,21 @@ export function EvidenceReport({
         <EvidenceStat label="Sources sampled" value={categoryText || 'Public-facing review'} wide />
       </div>
 
-      {evidenceItems.length > 0 ? (
-        <>
-          <p className="evidence-sample-line">
-            {summary.itemCount} evidence item{summary.itemCount === 1 ? '' : 's'} reviewed across{' '}
-            {categoryText || 'public-facing sources'}.
-          </p>
+      <p className="evidence-sample-line">
+        {summary.itemCount} evidence item{summary.itemCount === 1 ? '' : 's'} reviewed across{' '}
+        {categoryText || 'public-facing sources'}.
+      </p>
 
-          <div className="client-evidence-list">
-            {evidenceItems.map((item, index) => (
-              <ClientEvidenceCard
-                key={item.id}
-                item={item}
-                number={index + 1}
-                actions={actions}
-              />
-            ))}
-          </div>
-        </>
-      ) : (
-        <aside className="evidence-review-basis">
-          <Search size={21} aria-hidden="true" />
-          <span>
-            <strong>Review basis</strong>
-            <p>
-              No screenshot evidence was included in this Snapshot. Recommendations are
-              based on the five manually assessed categories and should be validated against
-              current public-facing pages before implementation.
-            </p>
-          </span>
-        </aside>
-      )}
+      <div className="client-evidence-list">
+        {evidenceItems.map((item, index) => (
+          <ClientEvidenceCard
+            key={item.id}
+            item={item}
+            number={index + 1}
+            actions={actions}
+          />
+        ))}
+      </div>
     </section>
   )
 }

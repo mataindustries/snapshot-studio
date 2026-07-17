@@ -6,12 +6,25 @@ import type {
   Scores,
   SnapshotForm,
 } from '../types'
+import {
+  getDisplayBusinessName,
+  getDisplayCity,
+  getRecommendationSubject,
+  hasClientFacingValue,
+} from './reportDisplay'
+import { isEvidenceReportReady } from './evidence'
+
+export type StrategicAssetSource =
+  | 'Verified observation'
+  | 'Operator-provided'
+  | 'Measured Foundation'
 
 export type StrategicAsset = {
   title: string
   explanation: string
   whyItMatters: string
   leverage: string
+  sourceLabel: StrategicAssetSource
 }
 
 export type FeaturedOpportunity = {
@@ -65,6 +78,9 @@ export const implementationPaths: readonly ImplementationPath[] = [
 export const upgradeOsSupportingText =
   'UpgradeOS helps local businesses become easier to discover, easier to trust, and easier to choose through structured improvement plans.'
 
+export const preliminaryEvidenceNote =
+  'This preliminary Snapshot is based on a manual public-facing review. Screenshot-backed evidence can be added during implementation planning.'
+
 const scoreKeys: ScoreKey[] = [
   'visibility',
   'trust',
@@ -81,10 +97,6 @@ const scoreLabel: Record<ScoreKey, string> = {
   competitorPosition: 'market position',
 }
 
-function valueOrFallback(value: string, fallback: string) {
-  return value.trim() || fallback
-}
-
 function assetTitle(key: ScoreKey, score: number) {
   const titles: Record<ScoreKey, [string, string]> = {
     visibility: ['Local relevance to build on', 'Strong local visibility'],
@@ -97,95 +109,128 @@ function assetTitle(key: ScoreKey, score: number) {
   return titles[key][score >= 16 ? 1 : 0]
 }
 
-function assetExplanation(
-  key: ScoreKey,
-  score: number,
-  form: SnapshotForm,
-) {
-  const businessName = valueOrFallback(form.businessName, 'The business')
-  const service = valueOrFallback(form.mainService, 'the primary service')
-  const city = valueOrFallback(form.city, 'the local market')
+function measuredAsset(key: ScoreKey, score: number, form: SnapshotForm): StrategicAsset {
+  const businessName = getDisplayBusinessName(form)
+  const service = getRecommendationSubject(form)
+  const city = getDisplayCity(form)
   const focus: Record<ScoreKey, string> = {
-    visibility: `how clearly ${service} connects to ${city}`,
+    visibility: 'how clearly ' + service + ' connects to ' + city,
     trust: 'the credibility signals available to a first-time visitor',
     conversion: 'the path from interest to a call or request',
     aiSearchReadiness: 'how explicitly services, location, proof, and common questions are explained',
     competitorPosition: 'how confidently the offer can be compared with nearby alternatives',
   }
+  const why: Record<ScoreKey, string> = {
+    visibility: 'Clear local relevance helps the right customer recognize fit without extra searching.',
+    trust: 'Credible proof reduces uncertainty at the moment a visitor is deciding what to do next.',
+    conversion: 'A usable contact path preserves intent and reduces avoidable conversion friction.',
+    aiSearchReadiness: 'Explicit business information improves understanding for both people and AI systems.',
+    competitorPosition: 'A supportable point of difference gives comparison shoppers more decision confidence.',
+  }
+  const leverage: Record<ScoreKey, string> = {
+    visibility: 'Repeat the strongest service-and-location language across the homepage, service pages, and local profile.',
+    trust: 'Place the most relevant reviews, credentials, and outcomes beside primary calls to action.',
+    conversion: 'Standardize the next-step promise across buttons, forms, phone links, and mobile layouts.',
+    aiSearchReadiness: 'Turn core facts and customer questions into short, direct, well-labeled answers.',
+    competitorPosition: 'Carry the clearest differentiator into headlines, proof sections, and service comparisons.',
+  }
 
-  return `${businessName}'s ${scoreLabel[key]} score is ${score}/20, making ${focus[key]} one of the measured foundations this plan can build on.`
+  return {
+    title: assetTitle(key, score),
+    explanation: businessName + "'s " + scoreLabel[key] + ' score is ' + score + '/20. This is a measured planning signal about ' + focus[key] + ', not a verified factual claim.',
+    whyItMatters: why[key],
+    leverage: leverage[key],
+    sourceLabel: 'Measured Foundation',
+  }
 }
 
-const assetWhyItMatters: Record<ScoreKey, string> = {
-  visibility: 'Clear local relevance helps the right customer recognize fit without extra searching.',
-  trust: 'Credible proof reduces uncertainty at the moment a visitor is deciding what to do next.',
-  conversion: 'A usable contact path preserves intent and reduces avoidable conversion friction.',
-  aiSearchReadiness: 'Explicit business information improves understanding for both people and AI systems.',
-  competitorPosition: 'A supportable point of difference gives comparison shoppers more decision confidence.',
-}
+function buildStrategicAssets(form: SnapshotForm, scores: Scores, evidenceItems: EvidenceItem[]) {
+  const assets: StrategicAsset[] = []
+  const seen = new Set<string>()
+  const add = (asset: StrategicAsset) => {
+    const key = asset.title.trim().toLocaleLowerCase()
+    if (!key || seen.has(key) || assets.length >= 5) return
+    seen.add(key)
+    assets.push(asset)
+  }
 
-const assetLeverage: Record<ScoreKey, string> = {
-  visibility: 'Repeat the strongest service-and-location language across the homepage, service pages, and local profile.',
-  trust: 'Place the most relevant reviews, credentials, and outcomes beside primary calls to action.',
-  conversion: 'Standardize the next-step promise across buttons, forms, phone links, and mobile layouts.',
-  aiSearchReadiness: 'Turn core facts and customer questions into short, direct, well-labeled answers.',
-  competitorPosition: 'Carry the clearest differentiator into headlines, proof sections, and service comparisons.',
-}
+  evidenceItems
+    .filter((item) => item.sentiment === 'Strength' && isEvidenceReportReady(item))
+    .forEach((item) => add({
+      title: item.observation.trim(),
+      explanation: item.title.trim() + (item.pageLabel.trim() ? ' — ' + item.pageLabel.trim() : ''),
+      whyItMatters: item.whyItMatters.trim(),
+      leverage: item.recommendedChange.trim(),
+      sourceLabel: 'Verified observation',
+    }))
 
-function buildStrategicAssets(form: SnapshotForm, scores: Scores) {
+  if (form.notes.trim()) {
+    add({
+      title: form.notes.trim(),
+      explanation: 'This strength was recorded directly in the operator review notes.',
+      whyItMatters: 'Operator-entered context can identify credible details that should remain visible in the improvement plan.',
+      leverage: 'Confirm the detail against the public-facing experience and place it near the most relevant customer decision point.',
+      sourceLabel: 'Operator-provided',
+    })
+  }
+
+  if (hasClientFacingValue(form.mainService)) {
+    const service = getRecommendationSubject(form)
+    add({
+      title: service + ' focus',
+      explanation: service + ' is the specific primary service recorded for this Snapshot.',
+      whyItMatters: 'A specific service focus makes recommendations and customer-facing copy more decision-ready.',
+      leverage: 'Use the same service language consistently across the homepage, focused service page, proof, and calls to action.',
+      sourceLabel: 'Operator-provided',
+    })
+  }
+
+  if (hasClientFacingValue(form.city)) {
+    const city = getDisplayCity(form)
+    add({
+      title: city + ' service area',
+      explanation: city + ' is the market recorded for this Snapshot.',
+      whyItMatters: 'Clear market context helps local customers recognize whether the business serves their area.',
+      leverage: 'Connect the city to the specific service wherever local fit affects the customer decision.',
+      sourceLabel: 'Operator-provided',
+    })
+  }
+
   const ranked = scoreKeys
     .map((key, index) => ({ key, score: scores[key], index }))
     .sort((left, right) => right.score - left.score || left.index - right.index)
-  const establishedCount = ranked.filter(({ score }) => score >= 11).length
-  const assetCount = Math.min(5, Math.max(3, establishedCount))
 
-  return ranked.slice(0, assetCount).map(({ key, score }) => ({
-    title: assetTitle(key, score),
-    explanation: assetExplanation(key, score, form),
-    whyItMatters: assetWhyItMatters[key],
-    leverage: assetLeverage[key],
-  }))
+  ranked.forEach(({ key, score }) => {
+    if (assets.length < 3) add(measuredAsset(key, score, form))
+  })
+
+  return assets
 }
 
-function currentSituationFor(
-  category: ActionCategory,
-  form: SnapshotForm,
-) {
-  const service = valueOrFallback(form.mainService, 'the primary service')
-  const city = valueOrFallback(form.city, 'the service area')
+function currentSituationFor(category: ActionCategory, form: SnapshotForm) {
+  const service = getRecommendationSubject(form)
+  const city = getDisplayCity(form)
 
   if (category === 'Homepage' || category === 'Brand Positioning') {
-    return `The first screen can state ${service}, ${city}, credible proof, and the next step more clearly.`
+    return 'The first screen can state ' + service + ', ' + city + ', credible proof, and the next step more clearly.'
   }
   if (category === 'Trust' || category === 'Reviews') {
     return 'Relevant proof can sit closer to the point where a visitor decides whether to make contact.'
   }
-  if (
-    category === 'Service Pages'
-    || category === 'Authority'
-    || category === 'Content'
-    || category === 'FAQ'
-  ) {
-    return 'Expertise and service detail can be organized into a more complete decision resource.'
+  if (category === 'Service Pages' || category === 'Authority' || category === 'Content' || category === 'FAQ') {
+    return service + ' expertise and service detail can be organized into a more complete decision resource.'
   }
-  if (
-    category === 'Conversion'
-    || category === 'Calls To Action'
-    || category === 'Mobile UX'
-  ) {
+  if (category === 'Conversion' || category === 'Calls To Action' || category === 'Mobile UX') {
     return 'The contact path can explain the next step with less uncertainty and less conversion friction.'
   }
   if (category === 'Local SEO' || category === 'Google Business Profile') {
-    return 'Service and location details can be made more consistent across the website and local profile.'
+    return service + ' and ' + city + ' details can be made more consistent across the website and local profile.'
   }
 
-  return 'Core business facts can be structured more explicitly so visitors and AI systems interpret them consistently.'
+  return 'Core ' + service + ' facts can be structured more explicitly so visitors and AI systems interpret them consistently.'
 }
 
-function findSupportingEvidence(
-  action: RecommendedAction,
-  evidenceItems: EvidenceItem[],
-) {
+function findSupportingEvidence(action: RecommendedAction, evidenceItems: EvidenceItem[]) {
   return evidenceItems.find(
     (item) => action.linkedEvidenceIds.includes(item.id) || item.linkedActionIds.includes(action.id),
   )
@@ -201,11 +246,12 @@ function buildFeaturedOpportunity(
   ) ?? actions[0]
 
   if (!action) {
+    const service = getRecommendationSubject(form)
     return {
-      title: 'Clarify the primary customer decision path',
+      title: 'Clarify the ' + service + ' customer decision path',
       currentSituation: 'The Snapshot has identified an opportunity to connect the offer, proof, and next step more clearly.',
       whyItMatters: 'Clarity and trust give every later visibility improvement a stronger foundation.',
-      recommendedFirstMove: 'Choose one primary service and make its audience, local fit, proof, and next step explicit on the first screen.',
+      recommendedFirstMove: 'Make the audience, local fit, proof, and next step for ' + service + ' explicit on the first screen.',
       potentialBusinessBenefit: 'Potential customers can evaluate fit with greater confidence and less friction.',
     }
   }
@@ -229,38 +275,19 @@ export function createReportStory(input: {
   evidenceItems: EvidenceItem[]
 }): ReportStory {
   return {
-    strategicAssets: buildStrategicAssets(input.form, input.scores),
-    featuredOpportunity: buildFeaturedOpportunity(
-      input.form,
-      input.actions,
-      input.evidenceItems,
-    ),
+    strategicAssets: buildStrategicAssets(input.form, input.scores, input.evidenceItems),
+    featuredOpportunity: buildFeaturedOpportunity(input.form, input.actions, input.evidenceItems),
   }
 }
 
 export function formatStrategicAssetsText(assets: StrategicAsset[]) {
-  return `Strategic Assets
-
-${assets.map((asset) => `${asset.title}
-- What we see: ${asset.explanation}
-- Why it matters: ${asset.whyItMatters}
-- How to leverage it: ${asset.leverage}`).join('\n\n')}`
+  return 'Strategic Assets\n\n' + assets.map((asset) => asset.title + '\n- Basis: ' + asset.sourceLabel + '\n- What we see: ' + asset.explanation + '\n- Why it matters: ' + asset.whyItMatters + '\n- How to leverage it: ' + asset.leverage).join('\n\n')
 }
 
 export function formatFeaturedOpportunityText(opportunity: FeaturedOpportunity) {
-  return `Biggest Opportunity
-
-${opportunity.title}
-- Current situation: ${opportunity.currentSituation}
-- Why it matters: ${opportunity.whyItMatters}
-- Recommended first move: ${opportunity.recommendedFirstMove}
-- Potential business benefit: ${opportunity.potentialBusinessBenefit}${opportunity.evidenceTitle ? `\n- Supporting evidence: ${opportunity.evidenceTitle}` : ''}`
+  return 'Biggest Opportunity\n\n' + opportunity.title + '\n- Current situation: ' + opportunity.currentSituation + '\n- Why it matters: ' + opportunity.whyItMatters + '\n- Recommended first move: ' + opportunity.recommendedFirstMove + '\n- Potential business benefit: ' + opportunity.potentialBusinessBenefit + (opportunity.evidenceTitle ? '\n- Supporting evidence: ' + opportunity.evidenceTitle : '')
 }
 
 export function formatImplementationPathsText() {
-  return `DIY vs Done-For-You
-
-${implementationPaths.map((path) => `${path.option} — ${path.title}
-${path.description}
-${path.includes.map((item) => `- ${item}`).join('\n')}`).join('\n\n')}`
+  return 'DIY vs Done-For-You\n\n' + implementationPaths.map((path) => path.option + ' — ' + path.title + '\n' + path.description + '\n' + path.includes.map((item) => '- ' + item).join('\n')).join('\n\n')
 }

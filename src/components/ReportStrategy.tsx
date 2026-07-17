@@ -26,6 +26,7 @@ export function StrategicAssetsReport({ assets }: { assets: StrategicAsset[] }) 
                 <Gem size={18} aria-hidden="true" />
               </header>
               <h3>{asset.title}</h3>
+              <small className="strategic-asset-source">{asset.sourceLabel}</small>
               <p>{asset.explanation}</p>
               <dl>
                 <div>

@@ -93,7 +93,7 @@ export function createConsultingRoadmap(
       actionIds: clarity ? [clarity.id] : [],
       headline: 'Review the evidence and clarify the decision path',
       description: clarity?.description
-        ?? 'Tighten the first screen around the primary service, location, proof, and next step.',
+        ?? 'Tighten the first screen around the recorded offer, location, proof, and next step.',
       deliverable: 'An approved first-screen message, support line, proof cue, and primary action.',
       whyItMatters: clarity?.reason
         ?? 'Clarity gives every later trust and authority improvement a stronger foundation.',
@@ -164,7 +164,7 @@ export function createConsultingRoadmap(
         'Publish one decision-ready service resource with proof and process detail.',
       ),
       estimatedEffort: totalHours(authorityActions),
-      milestone: 'The primary service has a complete page that can stand on its own.',
+      milestone: 'The priority offer has a complete page that can stand on its own.',
       successSignal: 'The page answers who it is for, how it works, why to trust it, and what to do next.',
       actionIds: authorityActions.map((action) => action.id),
     },

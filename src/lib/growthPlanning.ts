@@ -1,5 +1,5 @@
 import type {
-  GrowthArchetype,
+  GrowthStage,
   OpportunityLevel,
   ProgressStatus,
   RecommendedAction,
@@ -13,13 +13,13 @@ import {
 import { normalizeRecommendedAction } from './actionPlanner'
 import { getTotalScore } from './scoring'
 
-type ArchetypeBand = {
-  name: GrowthArchetype
+type GrowthStageBand = {
+  name: GrowthStage
   scoreLow: number
   scoreHigh: number
 }
 
-export const growthArchetypeBands: readonly ArchetypeBand[] = [
+export const growthStageBands: readonly GrowthStageBand[] = [
   { name: 'Emerging Presence', scoreLow: 0, scoreHigh: 34 },
   { name: 'Clear Provider', scoreLow: 35, scoreHigh: 49 },
   { name: 'Trusted Specialist', scoreLow: 50, scoreHigh: 64 },
@@ -28,10 +28,10 @@ export const growthArchetypeBands: readonly ArchetypeBand[] = [
   { name: 'Market Leader', scoreLow: 90, scoreHigh: 100 },
 ] as const
 
-export const growthArchetypes = growthArchetypeBands.map((band) => band.name)
+export const growthStages = growthStageBands.map((band) => band.name)
 
 export const defaultMethodologyNote =
-  'Scores and archetypes are planning aids derived from Snapshot Studio\'s five manually assessed visibility categories. Validate the assessment against dated evidence and review it again after changes are implemented.'
+  'Scores and growth stages are planning aids derived from Snapshot Studio\'s five manually assessed visibility categories. Validate the assessment against dated evidence and review it again after changes are implemented.'
 
 export const defaultPlanningEstimateDisclaimer =
   'Target score ranges are planning estimates only. They do not guarantee search rankings, revenue, lead volume, or inclusion in AI-generated results.'
@@ -68,24 +68,24 @@ function stringArray(value: unknown) {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []
 }
 
-export function getCurrentArchetype(score: number): GrowthArchetype {
+export function getCurrentGrowthStage(score: number): GrowthStage {
   const normalizedScore = clampScore(score)
-  return growthArchetypeBands.find((band) => normalizedScore <= band.scoreHigh)?.name
+  return growthStageBands.find((band) => normalizedScore <= band.scoreHigh)?.name
     ?? 'Market Leader'
 }
 
-export function getNextArchetype(currentArchetype: GrowthArchetype): GrowthArchetype | null {
-  const currentIndex = growthArchetypeBands.findIndex((band) => band.name === currentArchetype)
-  return growthArchetypeBands[currentIndex + 1]?.name ?? null
+export function getNextGrowthStage(currentGrowthStage: GrowthStage): GrowthStage | null {
+  const currentIndex = growthStageBands.findIndex((band) => band.name === currentGrowthStage)
+  return growthStageBands[currentIndex + 1]?.name ?? null
 }
 
-export function recommendArchetypes(scores: Scores) {
+export function recommendGrowthStages(scores: Scores) {
   const currentScore = clampScore(getTotalScore(scores))
-  const currentArchetype = getCurrentArchetype(currentScore)
+  const currentGrowthStage = getCurrentGrowthStage(currentScore)
   return {
     currentScore,
-    currentArchetype,
-    nextArchetype: getNextArchetype(currentArchetype),
+    currentArchetype: currentGrowthStage,
+    nextArchetype: getNextGrowthStage(currentGrowthStage),
   }
 }
 
@@ -97,11 +97,11 @@ export function getOpportunityLevel(score: number): OpportunityLevel {
   return 'High'
 }
 
-export function getPlanningTargetRange(currentArchetype: GrowthArchetype) {
-  const nextArchetype = getNextArchetype(currentArchetype)
-  const targetBand = growthArchetypeBands.find(
-    (band) => band.name === (nextArchetype ?? currentArchetype),
-  ) ?? growthArchetypeBands[growthArchetypeBands.length - 1]
+export function getPlanningTargetRange(currentGrowthStage: GrowthStage) {
+  const nextGrowthStage = getNextGrowthStage(currentGrowthStage)
+  const targetBand = growthStageBands.find(
+    (band) => band.name === (nextGrowthStage ?? currentGrowthStage),
+  ) ?? growthStageBands[growthStageBands.length - 1]
 
   return {
     targetScoreLow: targetBand.scoreLow,
@@ -110,13 +110,13 @@ export function getPlanningTargetRange(currentArchetype: GrowthArchetype) {
 }
 
 export function createGrowthFoundation(scores: Scores): SnapshotGrowthFoundation {
-  const archetypes = recommendArchetypes(scores)
-  const targetRange = getPlanningTargetRange(archetypes.currentArchetype)
+  const growthStagePlan = recommendGrowthStages(scores)
+  const targetRange = getPlanningTargetRange(growthStagePlan.currentArchetype)
 
   return {
-    ...archetypes,
+    ...growthStagePlan,
     ...targetRange,
-    opportunityLevel: getOpportunityLevel(archetypes.currentScore),
+    opportunityLevel: getOpportunityLevel(growthStagePlan.currentScore),
     strengths: [],
     visibilityLeaks: [],
     recommendedActions: [],
@@ -137,12 +137,12 @@ export function normalizeGrowthFoundation(
   const defaults = createGrowthFoundation(scores)
   if (!isRecord(value)) return defaults
 
-  const currentArchetype = isOneOf(value.currentArchetype, growthArchetypes)
+  const currentArchetype = isOneOf(value.currentArchetype, growthStages)
     ? value.currentArchetype
     : defaults.currentArchetype
   const nextArchetype = value.nextArchetype === null
     ? null
-    : isOneOf(value.nextArchetype, growthArchetypes)
+    : isOneOf(value.nextArchetype, growthStages)
       ? value.nextArchetype
       : defaults.nextArchetype
 

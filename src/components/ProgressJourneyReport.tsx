@@ -4,11 +4,11 @@ import type { ProgressJourneyModel } from '../lib/progressJourney'
 
 export function ProgressJourneyReport({ model }: { model: ProgressJourneyModel }) {
   const nextLabel = model.isMaintainingTopLevel
-    ? `${model.nextArchetype} · maintenance focus`
-    : model.nextArchetype
+    ? `${model.nextGrowthStage} · maintenance focus`
+    : model.nextGrowthStage
 
   return (
-    <section className="report-page progress-page" aria-label="Progress and archetype journey">
+    <section className="report-page progress-page" aria-label="Progress and growth stage journey">
       <div className="report-page-heading progress-page-heading">
         <p className="section-kicker">A practical path forward</p>
         <h2>Current → Next Level</h2>
@@ -18,16 +18,16 @@ export function ProgressJourneyReport({ model }: { model: ProgressJourneyModel }
         </p>
       </div>
 
-      <section className="premium-journey-card" aria-label="Current to long-term archetype path">
+      <section className="premium-journey-card" aria-label="Current to long-term growth stage path">
         <JourneyStage
-          label="Current archetype"
-          title={model.currentArchetype}
+          label="Current Growth Stage"
+          title={model.currentGrowthStage}
           detail={`${model.currentScore}/100 current score`}
           description={model.currentPositionMeaning}
         />
         <ArrowDown className="journey-arrow" size={22} aria-hidden="true" />
         <JourneyStage
-          label="Next archetype"
+          label="Next Growth Stage"
           title={nextLabel}
           detail={`${model.targetScoreLow}–${model.targetScoreHigh}/100 projected planning range`}
           description={model.nextLevelMeaning}
@@ -35,10 +35,10 @@ export function ProgressJourneyReport({ model }: { model: ProgressJourneyModel }
         />
         <ArrowDown className="journey-arrow" size={22} aria-hidden="true" />
         <JourneyStage
-          label="Long-term goal"
-          title={model.longTermGoal}
+          label="Long-Term Growth Goal"
+          title={model.longTermGrowthGoal}
           detail="Built through verified, sequenced improvements"
-          description={model.longTermGoalMeaning}
+          description={model.longTermGrowthGoalMeaning}
           goal
         />
       </section>

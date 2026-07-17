@@ -24,6 +24,7 @@ import { SprintPlan } from './components/SprintPlan'
 import { EvidenceManager } from './components/EvidenceManager'
 import { EvidenceReport } from './components/EvidenceReport'
 import { ProgressJourneyReport } from './components/ProgressJourneyReport'
+import { ReportReadiness } from './components/ReportReadiness'
 import { ImplementationPathsReport } from './components/ImplementationPathsReport'
 import { PoweredByFooter } from './components/PoweredByFooter'
 import {
@@ -48,9 +49,21 @@ import {
   formatFeaturedOpportunityText,
   formatImplementationPathsText,
   formatStrategicAssetsText,
+  preliminaryEvidenceNote,
   upgradeOsSupportingText,
   type ReportStory,
 } from './lib/reportStory'
+import {
+  getClientFacingCategoryLabel,
+  getDisplayBusinessName,
+  getDisplayCity,
+  getMarketLabel,
+} from './lib/reportDisplay'
+import {
+  defaultReportOffer,
+  formatOfferAndCtaText,
+} from './lib/reportOffer'
+import { getReportReadiness } from './lib/reportReadiness'
 import { emptyScores, getRatingLabel, getTotalScore, normalizeScores, scoreLabels } from './lib/scoring'
 import { deleteSnapshot, isStorageQuotaError, loadSnapshots, saveSnapshot } from './lib/storage'
 import {
@@ -74,6 +87,8 @@ import type {
   Lead,
   LeadPriority,
   LeadStatus,
+  OfferMode,
+  ReportOfferFields,
   RecommendedAction,
   SavedSnapshot,
   ScoreKey,
@@ -139,6 +154,7 @@ function getReportRating(totalScore: number) {
 function buildReportText({
   form,
   branding,
+  offer,
   totalScore,
   reportRating,
   reportDate,
@@ -151,6 +167,7 @@ function buildReportText({
 }: {
   form: SnapshotForm
   branding: BrandingFields
+  offer: ReportOfferFields
   totalScore: number
   reportRating: string
   reportDate: string
@@ -161,23 +178,24 @@ function buildReportText({
   roadmap: ConsultingRoadmap
   evidenceText: string
 }) {
-  const businessName = valueOrFallback(form.businessName, 'Business name')
-  const city = valueOrFallback(form.city, 'City')
-  const industry = valueOrFallback(form.niche, 'Industry')
+  const businessName = getDisplayBusinessName(form)
+  const city = getDisplayCity(form)
+  const industry = getClientFacingCategoryLabel(form)
   const preparedBy = valueOrFallback(branding.preparedBy, defaultBranding.preparedBy)
   const brandName = valueOrFallback(branding.brandName, defaultBranding.brandName)
   const contactLine = branding.contactLine.trim()
   const contact = contactLine ? `\n${contactLine}` : ''
   const categoryScores = scoreKeys.map((key) => `- ${scoreLabels[key]}: ${scores[key]}/20`).join('\n')
-  const evidenceSection = evidenceText || 'Evidence Behind Every Recommendation\n\nNo screenshot evidence was included in this Snapshot. Recommendations should be validated against current public-facing pages before implementation.'
+  const evidenceSection = evidenceText ? '\n\n' + evidenceText : ''
+  const preliminarySection = evidenceText ? '' : '\n' + preliminaryEvidenceNote
 
   return `Business Horoscope
 
 Business: ${businessName}
-Market: ${city} - ${industry}
+Market: ${city} | ${industry}
 Prepared by: ${preparedBy}, ${brandName}${contact}
 Date: ${reportDate}
-Digital Zodiac: ${horoscope.archetype}
+Business Horoscope: ${horoscope.archetype}
 Image: ${horoscope.archetypeImagePath}
 ${horoscope.archetypeSummary}
 Score: ${totalScore}/100 - ${reportRating}
@@ -192,11 +210,14 @@ ${formatFeaturedOpportunityText(reportStory.featuredOpportunity)}
 ${formatProgressJourneyText(progressJourney)}
 
 ${formatRoadmapText(roadmap)}
-
 ${evidenceSection}
 
 ${formatImplementationPathsText()}
 
+${formatOfferAndCtaText(offer)}
+
+
+${preliminarySection}
 Snapshot Studio
 Powered by UpgradeOS
 ${upgradeOsSupportingText}`
@@ -226,6 +247,7 @@ function downloadCsv(filename: string, leads: Lead[]) {
 function App() {
   const [form, setForm] = useState<SnapshotForm>(emptyForm)
   const [branding, setBranding] = useState<BrandingFields>(defaultBranding)
+  const [reportOffer, setReportOffer] = useState<ReportOfferFields>(defaultReportOffer)
   const [scores, setScores] = useState<Scores>(emptyScores)
   const [foundationDraft, setFoundationDraft] = useState(() => createGrowthFoundation(emptyScores))
   const [savedSnapshots, setSavedSnapshots] = useState<SavedSnapshot[]>(() => loadSnapshots())
@@ -285,6 +307,15 @@ function App() {
     ),
     [growthFoundation.evidenceItems, growthFoundation.includeIncompleteEvidence],
   )
+  const reportReadiness = useMemo(
+    () => getReportReadiness({
+      form,
+      scores,
+      offer: reportOffer,
+      reportEvidenceCount: reportEvidence.length,
+    }),
+    [form, reportEvidence.length, reportOffer, scores],
+  )
   const roadmap = useMemo(
     () => createConsultingRoadmap(growthFoundation.recommendedActions),
     [growthFoundation.recommendedActions],
@@ -310,6 +341,7 @@ function App() {
     () => buildReportText({
       form,
       branding,
+      offer: reportOffer,
       totalScore,
       reportRating,
       reportDate,
@@ -322,6 +354,7 @@ function App() {
     }),
     [
       branding,
+      reportOffer,
       evidenceText,
       form,
       horoscope,
@@ -369,6 +402,13 @@ function App() {
 
   function updateBranding<K extends keyof BrandingFields>(field: K, value: BrandingFields[K]) {
     setBranding((current) => ({ ...current, [field]: value }))
+  }
+
+  function updateReportOffer<K extends keyof ReportOfferFields>(
+    field: K,
+    value: ReportOfferFields[K],
+  ) {
+    setReportOffer((current) => ({ ...current, [field]: value }))
   }
 
   function updateScore(field: ScoreKey, value: number) {
@@ -438,6 +478,7 @@ function App() {
       ...(existingSnapshot ?? {}),
       ...form,
       ...growthFoundation,
+      ...reportOffer,
       id: loadedId ?? crypto.randomUUID(),
       createdAt: now,
       scores,
@@ -490,6 +531,17 @@ function App() {
       ctaStyle: snapshot.ctaStyle,
     })
     setBranding(snapshot.branding ?? defaultBranding)
+    setReportOffer({
+      offerMode: snapshot.offerMode,
+      fixedPrice: snapshot.fixedPrice,
+      currency: snapshot.currency,
+      customInvestmentText: snapshot.customInvestmentText,
+      ctaHeadline: snapshot.ctaHeadline,
+      ctaBody: snapshot.ctaBody,
+      ctaLabel: snapshot.ctaLabel,
+      ctaContactLine: snapshot.ctaContactLine,
+      bookingUrl: snapshot.bookingUrl,
+    })
     setScores(normalizeScores(snapshot.scores))
     setFoundationDraft(refreshGrowthFoundation(normalizeScores(snapshot.scores), snapshot))
     setLoadedId(snapshot.id)
@@ -510,6 +562,7 @@ function App() {
   function handleNewSnapshot() {
     setForm(emptyForm)
     setBranding(defaultBranding)
+    setReportOffer(defaultReportOffer)
     setScores(emptyScores)
     setFoundationDraft(createGrowthFoundation(emptyScores))
     setLoadedId(null)
@@ -929,7 +982,7 @@ function App() {
               onChange={(value) => updateField('city', value)}
             />
             <TextInput
-              label="Industry"
+              label="Niche"
               value={form.niche}
               onChange={(value) => updateField('niche', value)}
             />
@@ -1042,9 +1095,78 @@ function App() {
               onChange={(value) => updateBranding('brandName', value)}
             />
             <TextInput
-              label="Optional contact line"
+              label="Header contact line (optional)"
               value={branding.contactLine}
               onChange={(value) => updateBranding('contactLine', value)}
+            />
+          </section>
+
+          <section className="panel branding-panel offer-settings-panel">
+            <div className="section-heading compact-heading">
+              <div>
+                <p className="section-kicker">Client next step</p>
+                <h2>Offer & CTA</h2>
+              </div>
+            </div>
+            <SelectField
+              label="Offer mode"
+              value={reportOffer.offerMode}
+              onChange={(value) => updateReportOffer('offerMode', value as OfferMode)}
+              options={[
+                ['Conversation', 'Conversation'],
+                ['Fixed Price', 'Fixed Price'],
+                ['Custom Estimate', 'Custom Estimate'],
+                ['Hide Pricing', 'Hide Pricing'],
+              ]}
+            />
+            {reportOffer.offerMode === 'Fixed Price' && (
+              <div className="field-grid">
+                <TextInput
+                  label="Fixed price"
+                  value={reportOffer.fixedPrice}
+                  onChange={(value) => updateReportOffer('fixedPrice', value)}
+                />
+                <TextInput
+                  label="Currency"
+                  value={reportOffer.currency}
+                  onChange={(value) => updateReportOffer('currency', value)}
+                />
+              </div>
+            )}
+            {reportOffer.offerMode === 'Custom Estimate' && (
+              <TextInput
+                label="Custom investment text (optional)"
+                value={reportOffer.customInvestmentText}
+                placeholder="Custom estimate after evidence review."
+                onChange={(value) => updateReportOffer('customInvestmentText', value)}
+              />
+            )}
+            <TextInput
+              label="CTA headline"
+              value={reportOffer.ctaHeadline}
+              onChange={(value) => updateReportOffer('ctaHeadline', value)}
+            />
+            <TextArea
+              label="CTA body"
+              value={reportOffer.ctaBody}
+              onChange={(value) => updateReportOffer('ctaBody', value)}
+            />
+            <TextInput
+              label="CTA label"
+              value={reportOffer.ctaLabel}
+              onChange={(value) => updateReportOffer('ctaLabel', value)}
+            />
+            <TextInput
+              label="CTA contact line"
+              value={reportOffer.ctaContactLine}
+              placeholder="Email or phone"
+              onChange={(value) => updateReportOffer('ctaContactLine', value)}
+            />
+            <TextInput
+              label="Booking URL (optional)"
+              inputMode="url"
+              value={reportOffer.bookingUrl}
+              onChange={(value) => updateReportOffer('bookingUrl', value)}
             />
           </section>
 
@@ -1077,6 +1199,7 @@ function App() {
             <p className="section-kicker">Client preview</p>
             <h2>Business Horoscope Preview</h2>
           </div>
+          <ReportReadiness readiness={reportReadiness} />
           <div className="report-actions">
             <button
               className="secondary-button"
@@ -1109,14 +1232,14 @@ function App() {
               <div className="share-card-copy">
                 <p className="share-card-kicker">Business Horoscope</p>
                 <div className="share-card-business">
-                  <strong>{valueOrFallback(form.businessName, 'Business name')}</strong>
+                  <strong>{getDisplayBusinessName(form)}</strong>
                   <small>
-                    {valueOrFallback(form.city, 'City')} | {valueOrFallback(form.niche, 'Industry')}
+                    {getMarketLabel(form)}
                   </small>
                 </div>
                 <div className="share-card-result">
                   <div>
-                    <span>Digital Zodiac</span>
+                    <span>Business Horoscope</span>
                     <h3>{horoscope.archetype}</h3>
                   </div>
                   <div className="share-card-score" aria-label={`Report score ${totalScore} out of 100`}>
@@ -1177,12 +1300,14 @@ function App() {
           <ProgressJourneyReport model={progressJourney} />
           <SprintPlan sprint={roadmap.sprint} />
           <AuthorityRoadmap roadmap={roadmap} />
-          <EvidenceReport
-            evidenceItems={reportEvidence}
-            actions={growthFoundation.recommendedActions}
-          />
-          <ImplementationPathsReport />
-          <PoweredByFooter />
+          {reportEvidence.length > 0 && (
+            <EvidenceReport
+              evidenceItems={reportEvidence}
+              actions={growthFoundation.recommendedActions}
+            />
+          )}
+          <ImplementationPathsReport offer={reportOffer} />
+          <PoweredByFooter preliminary={reportEvidence.length === 0} />
         </article>
       </section>
 

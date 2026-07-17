@@ -94,7 +94,7 @@
   color: #e8eef5;
 }
 
-.editable-investment-line {
+.investment-line {
   display: flex;
   align-items: end;
   justify-content: space-between;
@@ -104,27 +104,10 @@
   border-top: 1px solid rgba(255, 255, 255, 0.18);
 }
 
-.editable-investment-line span {
-  color: #f0c778;
-  font-size: 0.68rem;
-  font-weight: 900;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.editable-investment-line strong {
-  min-width: 140px;
+.investment-line strong {
   color: #fffaf0;
-  cursor: text;
   font-size: 1rem;
-  letter-spacing: 0.08em;
-  text-align: right;
-}
-
-.editable-investment-line strong:focus {
-  border-radius: 4px;
-  outline: 2px solid #f0c778;
-  outline-offset: 3px;
+  line-height: 1.4;
 }
 
 .implementation-choice-note {
@@ -185,13 +168,8 @@
   }
 
   .implementation-path-card.featured h3,
-  .editable-investment-line strong {
+  .investment-line strong {
     color: #fffaf0 !important;
-  }
-
-  .editable-investment-line strong {
-    cursor: default;
-    outline: none !important;
   }
 
   .implementation-path-card.featured > p,
@@ -202,7 +180,7 @@
   .implementation-path-card.featured header,
   .implementation-path-card.featured header > span,
   .implementation-path-card.featured li svg,
-  .editable-investment-line span {
+  .investment-line strong {
     color: #f0c778 !important;
   }
 
@@ -210,4 +188,96 @@
     background: #fff !important;
     font-size: 7pt;
   }
+}
+
+.final-report-cta {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  padding: 18px;
+  border: 1px solid rgba(188, 143, 68, 0.34);
+  border-radius: 8px;
+  background: #fffaf0;
+}
+
+.final-cta-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  background: #10233c;
+  color: #f0c778;
+  place-items: center;
+}
+
+.final-report-cta h2,
+.final-report-cta p {
+  margin: 0;
+}
+
+.final-report-cta h2 {
+  color: #10233c;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.45rem;
+}
+
+.final-report-cta > div {
+  display: grid;
+  gap: 8px;
+}
+
+.final-report-cta > div > p:not(.section-kicker) {
+  color: #55493d;
+  line-height: 1.5;
+}
+
+.final-cta-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.final-cta-link,
+.final-cta-label {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: 6px;
+  background: #10233c;
+  color: #fffaf0;
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.final-cta-contact {
+  color: #6d5129;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+@media print {
+  .final-report-cta {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    padding: 0.13in;
+  }
+
+  .final-cta-link::after {
+    display: block;
+    content: attr(href);
+    margin-left: 0.08in;
+    color: #fffaf0;
+    font-size: 6.5pt;
+    font-weight: 700;
+  }
+}
+
+.final-cta-link {
+  flex-wrap: wrap;
+  overflow-wrap: anywhere;
 }

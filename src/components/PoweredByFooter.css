@@ -88,3 +88,9 @@
     font-size: 6.6pt;
   }
 }
+
+.preliminary-evidence-note {
+  grid-column: 1 / -1;
+  font-size: 0.7rem !important;
+  font-weight: 600 !important;
+}

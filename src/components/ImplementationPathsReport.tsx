@@ -1,8 +1,21 @@
-import { Check, Wrench } from 'lucide-react'
+import { Check, MoveUpRight, Wrench } from 'lucide-react'
 import { implementationPaths } from '../lib/reportStory'
+import {
+  defaultReportOffer,
+  getInvestmentLine,
+  getSafeBookingUrl,
+} from '../lib/reportOffer'
+import type { ReportOfferFields } from '../types'
 import './ImplementationPathsReport.css'
 
-export function ImplementationPathsReport() {
+export function ImplementationPathsReport({ offer }: { offer: ReportOfferFields }) {
+  const investmentLine = getInvestmentLine(offer)
+  const bookingUrl = getSafeBookingUrl(offer.bookingUrl)
+  const headline = offer.ctaHeadline.trim() || defaultReportOffer.ctaHeadline
+  const body = offer.ctaBody.trim() || defaultReportOffer.ctaBody
+  const ctaLabel = offer.ctaLabel.trim() || defaultReportOffer.ctaLabel
+  const contactLine = offer.ctaContactLine.trim()
+
   return (
     <section
       className="report-page implementation-paths-page"
@@ -20,7 +33,7 @@ export function ImplementationPathsReport() {
       <div className="implementation-path-grid">
         {implementationPaths.map((path) => (
           <article
-            className={`implementation-path-card ${path.featured ? 'featured' : ''}`}
+            className={'implementation-path-card ' + (path.featured ? 'featured' : '')}
             key={path.option}
           >
             <header>
@@ -37,18 +50,9 @@ export function ImplementationPathsReport() {
                 </li>
               ))}
             </ul>
-            {path.featured && (
-              <div className="editable-investment-line">
-                <span>Investment</span>
-                <strong
-                  aria-label="Edit implementation investment"
-                  contentEditable
-                  suppressContentEditableWarning
-                  spellCheck={false}
-                  title="Click to edit before printing"
-                >
-                  ________________
-                </strong>
+            {path.featured && investmentLine && (
+              <div className="investment-line">
+                <strong>{investmentLine}</strong>
               </div>
             )}
           </article>
@@ -59,6 +63,27 @@ export function ImplementationPathsReport() {
         Either path should end with a new Snapshot. That follow-up provides the verified
         before-and-after view; projected scores are not guarantees.
       </p>
+
+      <section className="final-report-cta" aria-labelledby="final-cta-title">
+        <span className="final-cta-icon" aria-hidden="true">
+          <MoveUpRight size={22} />
+        </span>
+        <div>
+          <p className="section-kicker">Next step</p>
+          <h2 id="final-cta-title">{headline}</h2>
+          <p>{body}</p>
+          <div className="final-cta-action-row">
+            {bookingUrl ? (
+              <a className="final-cta-link" href={bookingUrl} target="_blank" rel="noreferrer">
+                {ctaLabel}
+              </a>
+            ) : (
+              <strong className="final-cta-label">{ctaLabel}</strong>
+            )}
+            {contactLine && <span className="final-cta-contact">{contactLine}</span>}
+          </div>
+        </div>
+      </section>
     </section>
   )
 }
