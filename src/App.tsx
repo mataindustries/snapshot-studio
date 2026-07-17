@@ -5,6 +5,7 @@ import {
   Clipboard,
   Copy,
   Download,
+  FilePlus2,
   FileText,
   Filter,
   ListChecks,
@@ -31,6 +32,10 @@ import { ProgressJourneyReport } from './components/ProgressJourneyReport'
 import { ReportReadiness } from './components/ReportReadiness'
 import { ImplementationPathsReport } from './components/ImplementationPathsReport'
 import { PoweredByFooter } from './components/PoweredByFooter'
+import {
+  ProposalWorkspace,
+  type ProposalCreationRequest,
+} from './components/ProposalWorkspace'
 import {
   BiggestOpportunityReport,
   StrategicAssetsReport,
@@ -286,6 +291,7 @@ function App() {
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
   const [storageMessage, setStorageMessage] = useState('')
   const [intakeStorageMessage, setIntakeStorageMessage] = useState('')
+  const [proposalCreationRequest, setProposalCreationRequest] = useState<ProposalCreationRequest>()
 
   const totalScore = useMemo(() => getTotalScore(scores), [scores])
   const rating = getRatingLabel(totalScore)
@@ -679,7 +685,7 @@ function App() {
     void copyText('all', allOutputs)
   }
 
-  function handleSaveSnapshot() {
+  function handleSaveSnapshot(): SavedSnapshot | null {
     const now = new Date().toISOString()
     const existingSnapshot = loadedId
       ? savedSnapshots.find((snapshot) => snapshot.id === loadedId)
@@ -707,7 +713,7 @@ function App() {
           ? 'Browser storage is full. Remove or replace large screenshots, then save again.'
           : 'Snapshot could not be saved in this browser. Your current draft is still open.',
       )
-      return
+      return null
     }
 
     if (activeLeadId) {
@@ -750,6 +756,18 @@ function App() {
         )
       }
     }
+
+    return snapshot
+  }
+
+  function requestProposal(snapshot: SavedSnapshot, lead?: Lead) {
+    setProposalCreationRequest({ nonce: Date.now(), snapshot, lead })
+  }
+
+  function handleCreateProposal() {
+    const snapshot = handleSaveSnapshot()
+    if (!snapshot) return
+    requestProposal(snapshot, activeLead || undefined)
   }
 
   function handleLoadSnapshot(snapshot: SavedSnapshot) {
@@ -1482,6 +1500,10 @@ function App() {
               <Copy size={18} aria-hidden="true" />
               {copiedKey === 'report' ? 'Copied report' : 'Copy full report'}
             </button>
+            <button className="secondary-button" type="button" onClick={handleCreateProposal}>
+              <FilePlus2 size={18} aria-hidden="true" />
+              Create proposal
+            </button>
             <button className="primary-button" type="button" onClick={() => window.print()}>
               <Printer size={18} aria-hidden="true" />
               Print / Save PDF
@@ -1634,6 +1656,18 @@ function App() {
                   </small>
                 </button>
                 <button
+                  className="icon-button"
+                  type="button"
+                  aria-label={`Create proposal for ${snapshot.businessName || 'snapshot'}`}
+                  title="Create proposal"
+                  onClick={() => requestProposal(
+                    snapshot,
+                    leads.find((lead) => lead.linkedSnapshotId === snapshot.id),
+                  )}
+                >
+                  <FilePlus2 size={17} aria-hidden="true" />
+                </button>
+                <button
                   className="icon-button danger"
                   type="button"
                   aria-label={`Delete ${snapshot.businessName || 'snapshot'}`}
@@ -1647,6 +1681,11 @@ function App() {
           </div>
         )}
       </section>
+
+      <ProposalWorkspace
+        snapshots={savedSnapshots}
+        creationRequest={proposalCreationRequest}
+      />
     </main>
   )
 }
