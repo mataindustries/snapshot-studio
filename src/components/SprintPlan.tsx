@@ -9,7 +9,7 @@ export function SprintPlan({
   sprint: ConsultingRoadmap['sprint']
 }) {
   return (
-    <section className="report-page roadmap-page sprint-plan-page" aria-label="48-Hour Visibility Sprint">
+    <section className="report-page roadmap-page sprint-plan-page report-action-group" aria-label="48-Hour Visibility Sprint">
       <div className="report-page-heading">
         <p className="section-kicker">Focused implementation</p>
         <h2>48-Hour Visibility Sprint</h2>

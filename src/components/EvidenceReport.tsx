@@ -21,7 +21,7 @@ export function EvidenceReport({
 
   return (
     <section
-      className="report-page evidence-report-page"
+      className="report-page evidence-report-page report-evidence-group"
       id="report-evidence"
       aria-labelledby="evidence-report-title"
     >

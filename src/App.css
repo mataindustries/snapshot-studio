@@ -835,7 +835,7 @@ button {
 @media print {
   @page {
     size: letter;
-    margin: 0.45in;
+    margin: 0.32in;
   }
 
   :root,
@@ -1843,7 +1843,7 @@ button:disabled {
 @media print {
   @page {
     size: letter;
-    margin: 0.42in;
+    margin: 0.32in;
   }
 
   :root,
@@ -1864,14 +1864,14 @@ button:disabled {
   }
 
   .report-page {
-    min-height: calc(11in - 0.84in);
+    min-height: auto;
     margin: 0 !important;
-    padding: 0.28in !important;
+    padding: 0.16in !important;
     border: 1px solid #ead9b8 !important;
     background: #fffaf0 !important;
     box-shadow: none !important;
-    break-after: page;
-    page-break-after: always;
+    break-after: auto;
+    page-break-after: auto;
   }
 
   .share-page {
@@ -2216,17 +2216,19 @@ button:disabled {
 @media print {
   @page {
     size: letter;
-    margin: 0.18in;
+    margin: 0.32in;
   }
 
   .report-page {
-    min-height: calc(11in - 0.36in) !important;
-    padding: 0.2in !important;
-    break-after: page;
-    page-break-after: always;
+    min-height: auto !important;
+    padding: 0.14in !important;
+    break-after: auto;
+    page-break-after: auto;
   }
 
   .share-page {
+    min-height: calc(11in - 0.64in) !important;
+    box-sizing: border-box;
     break-after: page !important;
     page-break-after: always !important;
     padding: 0 !important;
@@ -2257,9 +2259,9 @@ button:disabled {
 
   .report-share-hero .share-card {
     grid-template-columns: minmax(0, 1fr) !important;
-    grid-template-rows: minmax(0, 6.6in) auto;
+    grid-template-rows: minmax(0, 6.25in) auto;
     width: 100%;
-    min-height: calc(11in - 0.36in);
+    min-height: 0;
     margin: 0 !important;
     border-color: #d8bf8a !important;
     border-radius: 8px !important;
@@ -2374,7 +2376,7 @@ button:disabled {
 }
 
 @media print {
-  .report-page {
+  .report-page:not(.report-cover-group) {
     min-height: auto !important;
   }
 
@@ -2461,5 +2463,123 @@ button:disabled {
 @media print {
   .report-readiness {
     display: none !important;
+  }
+}
+
+/* Phase 4D print pagination: explicit groups replace per-section page forcing. */
+@media print {
+  .report-page {
+    min-height: auto !important;
+    gap: 0.12in !important;
+    padding: 0.14in !important;
+    break-before: auto;
+    page-break-before: auto;
+    break-after: auto;
+    page-break-after: auto;
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  .report-page + .report-page {
+    margin-top: 0.1in !important;
+  }
+
+  .report-cover-group {
+    min-height: calc(11in - 0.64in) !important;
+    box-sizing: border-box;
+    padding: 0 !important;
+    break-after: page !important;
+    page-break-after: always !important;
+  }
+
+  .report-cover-group .share-card {
+    min-height: 0;
+  }
+
+  .progress-page,
+  .authority-roadmap-page,
+  .implementation-paths-page {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  .evidence-report-page {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  .implementation-paths-page {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  .report-overview-group,
+  .report-action-group,
+  .report-roadmap-group,
+  .report-evidence-group,
+  .report-closing-group {
+    min-height: auto !important;
+  }
+
+  .report-page-heading {
+    gap: 0.04in;
+    break-after: avoid;
+    page-break-after: avoid;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .report-page-heading h2 {
+    font-size: 20pt;
+  }
+
+  .report-page-heading p:not(.section-kicker) {
+    font-size: 8.5pt !important;
+    line-height: 1.32 !important;
+  }
+
+  .report-shell h2,
+  .report-shell h3,
+  .report-shell dt,
+  .report-shell figcaption {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .report-shell p,
+  .report-shell li,
+  .report-shell dd,
+  .report-shell figcaption {
+    orphans: 3;
+    widows: 3;
+  }
+
+  .strategic-asset-card,
+  .opportunity-spotlight,
+  .journey-stage,
+  .progress-summary,
+  .planning-estimate-note,
+  .sprint-day-card,
+  .authority-week-card,
+  .blueprint-sequence-note,
+  .client-evidence-card,
+  .client-evidence-figure,
+  .implementation-path-card,
+  .implementation-choice-note,
+  .final-report-cta,
+  .report-footer.upgradeos-footer {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .authority-roadmap-page,
+  .evidence-report-page,
+  .client-evidence-list {
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  .client-evidence-list {
+    display: block;
   }
 }

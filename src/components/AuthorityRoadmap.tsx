@@ -9,7 +9,7 @@ export function AuthorityRoadmap({
   roadmap: ConsultingRoadmap
 }) {
   return (
-    <section className="report-page roadmap-page authority-roadmap-page" aria-label="30-Day Local Authority Blueprint">
+    <section className="report-page roadmap-page authority-roadmap-page report-roadmap-group" aria-label="30-Day Local Authority Blueprint">
       <div className="report-page-heading">
         <p className="section-kicker">A sequenced month of progress</p>
         <h2>30-Day Local Authority Blueprint</h2>

@@ -17,6 +17,16 @@ type Archetype =
   | 'The AI Blind Spot'
   | 'The Competitor Snack'
 
+type ArchetypeArtworkKey =
+  | 'hiddengem'
+  | 'locallegend'
+  | 'sleepinggiant'
+  | 'invisibleexpert'
+  | 'trustmagnet'
+  | 'wanderinggeneralist'
+  | 'aiblindspot'
+  | 'competitorsnack'
+
 type BusinessHoroscope = {
   archetype: Archetype
   archetypeSummary: string
@@ -125,19 +135,50 @@ export function getDigitalZodiac(scores: Scores, totalScore: number): Archetype 
   return 'The Wandering Generalist'
 }
 
-function getArchetypeImagePath(archetype: Archetype) {
-  const filenames: Record<Archetype, string> = {
-    'The Hidden Gem': 'hidden-gem.png',
-    'The Local Legend': 'local-legend.png',
-    'The Sleeping Giant': 'sleeping-giant.png',
-    'The Invisible Expert': 'invisible-expert.png',
-    'The Trust Magnet': 'trust-magnet.png',
-    'The Wandering Generalist': 'wandering-generalist.png',
-    'The AI Blind Spot': 'ai-blind-spot.png',
-    'The Competitor Snack': 'competitor-snack.png',
+const archetypeArtworkKeys = {
+  'The Hidden Gem': 'hiddengem',
+  'The Local Legend': 'locallegend',
+  'The Sleeping Giant': 'sleepinggiant',
+  'The Invisible Expert': 'invisibleexpert',
+  'The Trust Magnet': 'trustmagnet',
+  'The Wandering Generalist': 'wanderinggeneralist',
+  'The AI Blind Spot': 'aiblindspot',
+  'The Competitor Snack': 'competitorsnack',
+} as const satisfies Record<Archetype, ArchetypeArtworkKey>
+
+const archetypeArtworkPaths = {
+  hiddengem: '/archetypes/hidden-gem.png',
+  locallegend: '/archetypes/local-legend.png',
+  sleepinggiant: '/archetypes/sleeping-giant.png',
+  invisibleexpert: '/archetypes/invisible-expert.png',
+  trustmagnet: '/archetypes/trust-magnet.png',
+  wanderinggeneralist: '/archetypes/wandering-generalist.png',
+  aiblindspot: '/archetypes/ai-blind-spot.png',
+  competitorsnack: '/archetypes/competitor-snack.png',
+} as const satisfies Record<ArchetypeArtworkKey, string>
+
+const knownArchetypeArtworkKeys = new Set<ArchetypeArtworkKey>(
+  Object.values(archetypeArtworkKeys),
+)
+const fallbackArchetypeArtworkPath = archetypeArtworkPaths.wanderinggeneralist
+
+function normalizeArchetypeArtworkKey(identity: string) {
+  return identity
+    .normalize('NFKC')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '')
+    .replace(/^the/, '')
+}
+
+export function getArchetypeImagePath(archetype: string) {
+  const artworkKey = normalizeArchetypeArtworkKey(archetype)
+
+  if (knownArchetypeArtworkKeys.has(artworkKey as ArchetypeArtworkKey)) {
+    return archetypeArtworkPaths[artworkKey as ArchetypeArtworkKey]
   }
 
-  return `/archetypes/${filenames[archetype]}`
+  return fallbackArchetypeArtworkPath
 }
 
 function buildShareSummary(form: SnapshotForm, archetype: Archetype) {

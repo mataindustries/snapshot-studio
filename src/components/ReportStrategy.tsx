@@ -5,7 +5,7 @@ import './ReportStrategy.css'
 export function StrategicAssetsReport({ assets }: { assets: StrategicAsset[] }) {
   return (
     <section
-      className="report-page strategic-assets-page"
+      className="report-page strategic-assets-page report-overview-group"
       aria-labelledby="strategic-assets-title"
     >
       <div className="report-page-heading">
@@ -53,7 +53,7 @@ export function BiggestOpportunityReport({
 }) {
   return (
     <section
-      className="report-page opportunity-page"
+      className="report-page opportunity-page report-overview-group"
       aria-labelledby="biggest-opportunity-title"
     >
       <div className="report-page-heading">

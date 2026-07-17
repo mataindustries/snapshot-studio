@@ -8,7 +8,7 @@ export function ProgressJourneyReport({ model }: { model: ProgressJourneyModel }
     : model.nextGrowthStage
 
   return (
-    <section className="report-page progress-page" aria-label="Progress and growth stage journey">
+    <section className="report-page progress-page report-action-group" aria-label="Progress and growth stage journey">
       <div className="report-page-heading progress-page-heading">
         <p className="section-kicker">A practical path forward</p>
         <h2>Current → Next Level</h2>

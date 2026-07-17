@@ -18,7 +18,7 @@ export function ImplementationPathsReport({ offer }: { offer: ReportOfferFields 
 
   return (
     <section
-      className="report-page implementation-paths-page"
+      className="report-page implementation-paths-page report-closing-group"
       aria-labelledby="implementation-paths-title"
     >
       <div className="report-page-heading">

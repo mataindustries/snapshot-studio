@@ -308,7 +308,7 @@
   .evidence-report-page {
     display: block !important;
     min-height: auto !important;
-    padding: 0.24in !important;
+    padding: 0.14in !important;
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
   }
@@ -320,7 +320,7 @@
   }
 
   .evidence-report-heading h2 {
-    font-size: 23pt !important;
+    font-size: 20pt !important;
   }
 
   .evidence-report-heading p:not(.section-kicker) {
@@ -345,7 +345,7 @@
   }
 
   .evidence-stat span {
-    font-size: 6pt;
+    font-size: 6.5pt;
   }
 
   .evidence-stat strong {
@@ -413,7 +413,7 @@
   }
 
   .client-evidence-figure figcaption {
-    font-size: 7pt;
+    font-size: 7.5pt;
   }
 
   .client-evidence-source {
@@ -451,6 +451,6 @@
   }
 
   .client-evidence-links strong {
-    font-size: 7pt;
+    font-size: 7.5pt;
   }
 }

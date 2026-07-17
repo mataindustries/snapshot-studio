@@ -288,7 +288,7 @@
 
   .sprint-day-card > p,
   .week-goal {
-    font-size: 6.8pt;
+    font-size: 7.2pt;
     line-height: 1.25;
   }
 
@@ -302,16 +302,16 @@
   }
 
   .roadmap-detail-list dt {
-    font-size: 5.4pt;
+    font-size: 6.4pt;
   }
 
   .roadmap-detail-list dd {
-    font-size: 6.2pt;
+    font-size: 6.8pt;
     line-height: 1.22;
   }
 
   .priority-table {
-    font-size: 6pt;
+    font-size: 6.7pt;
   }
 
   .priority-table th,
@@ -321,7 +321,7 @@
 
   .priority-table th,
   .priority-table td small {
-    font-size: 5pt;
+    font-size: 6.2pt;
   }
 
   .dependency-list,
@@ -337,12 +337,12 @@
 
   .dependency-list strong,
   .outcome-list strong {
-    font-size: 6pt;
+    font-size: 6.7pt;
   }
 
   .dependency-list span,
   .outcome-list span {
-    font-size: 5.6pt;
+    font-size: 6.5pt;
     line-height: 1.2;
   }
 }

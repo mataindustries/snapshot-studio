@@ -62,9 +62,9 @@
   .report-footer.upgradeos-footer {
     display: grid !important;
     grid-template-columns: 2.2in minmax(0, 1fr);
-    gap: 0.12in;
-    margin-top: 0.12in;
-    padding: 0.12in 0 0 !important;
+    gap: 0.08in;
+    margin-top: 0.08in;
+    padding: 0.08in 0 0 !important;
     border-top: 1px solid #d7c6aa !important;
     break-inside: avoid;
     page-break-inside: avoid;
@@ -85,7 +85,7 @@
 
   .upgradeos-footer p {
     color: #5b4f43 !important;
-    font-size: 6.6pt;
+    font-size: 7pt;
   }
 }
 

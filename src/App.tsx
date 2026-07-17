@@ -1217,7 +1217,7 @@ function App() {
         </div>
 
         <article className="report-shell">
-          <section className="report-page share-page report-share-hero" aria-label="Share-ready Business Horoscope result">
+          <section className="report-page share-page report-share-hero report-cover-group" aria-label="Share-ready Business Horoscope result">
             <div className="share-page-topline">
               <p className="report-brand">
                 {valueOrFallback(branding.brandName, defaultBranding.brandName)}

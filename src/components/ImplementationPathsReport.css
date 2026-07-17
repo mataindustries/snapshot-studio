@@ -128,9 +128,9 @@
 
 @media print {
   .implementation-paths-page {
-    break-after: auto !important;
-    page-break-after: auto !important;
-    gap: 0.14in !important;
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+    gap: 0.1in !important;
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
   }
@@ -149,7 +149,7 @@
 
   .implementation-path-card {
     gap: 0.08in;
-    padding: 0.14in;
+    padding: 0.11in;
   }
 
   .implementation-path-card.featured {
@@ -158,12 +158,12 @@
   }
 
   .implementation-path-card h3 {
-    font-size: 16pt;
+    font-size: 14pt;
   }
 
   .implementation-path-card > p,
   .implementation-path-card li {
-    font-size: 7.5pt;
+    font-size: 8pt;
     line-height: 1.3;
   }
 
@@ -186,7 +186,7 @@
 
   .implementation-choice-note {
     background: #fff !important;
-    font-size: 7pt;
+    font-size: 7.5pt;
   }
 }
 
@@ -264,8 +264,41 @@
   .final-report-cta {
     break-inside: avoid;
     page-break-inside: avoid;
-    padding: 0.13in;
+    grid-template-columns: 0.34in minmax(0, 1fr);
+    gap: 0.08in;
+    padding: 0.1in;
   }
+
+  .final-cta-icon {
+    width: 0.34in;
+    height: 0.34in;
+  }
+
+  .final-report-cta > div {
+    gap: 0.04in;
+  }
+
+  .final-report-cta h2 {
+    font-size: 13pt;
+  }
+
+  .final-report-cta > div > p:not(.section-kicker) {
+    font-size: 8pt;
+    line-height: 1.32;
+  }
+
+  .final-cta-action-row {
+    gap: 0.06in;
+    margin-top: 0;
+  }
+
+  .final-cta-link,
+  .final-cta-label {
+    min-height: 0.3in;
+    padding: 0.05in 0.1in;
+    font-size: 8pt;
+  }
+
 
   .final-cta-link::after {
     display: block;
