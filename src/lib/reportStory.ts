@@ -144,7 +144,12 @@ function measuredAsset(key: ScoreKey, score: number, form: SnapshotForm): Strate
   }
 }
 
-function buildStrategicAssets(form: SnapshotForm, scores: Scores, evidenceItems: EvidenceItem[]) {
+function buildStrategicAssets(
+  form: SnapshotForm,
+  scores: Scores,
+  evidenceItems: EvidenceItem[],
+  operatorStrengths: string[] = [],
+) {
   const assets: StrategicAsset[] = []
   const seen = new Set<string>()
   const add = (asset: StrategicAsset) => {
@@ -163,6 +168,17 @@ function buildStrategicAssets(form: SnapshotForm, scores: Scores, evidenceItems:
       leverage: item.recommendedChange.trim(),
       sourceLabel: 'Verified observation',
     }))
+
+  operatorStrengths.forEach((strength) => {
+    if (!strength.trim()) return
+    add({
+      title: strength.trim(),
+      explanation: 'This Strategic Asset was approved in the operator assessment.',
+      whyItMatters: 'A supportable business asset can strengthen customer confidence when it is connected to relevant proof.',
+      leverage: 'Confirm the detail against public-facing evidence and place it near the decision point it supports.',
+      sourceLabel: 'Operator-provided',
+    })
+  })
 
   if (form.notes.trim()) {
     add({
@@ -240,6 +256,7 @@ function buildFeaturedOpportunity(
   form: SnapshotForm,
   actions: RecommendedAction[],
   evidenceItems: EvidenceItem[],
+  operatorOpportunity = '',
 ): FeaturedOpportunity {
   const action = actions.find(
     (candidate) => candidate.status !== 'Completed' && candidate.status !== 'Skipped',
@@ -249,7 +266,7 @@ function buildFeaturedOpportunity(
     const service = getRecommendationSubject(form)
     return {
       title: 'Clarify the ' + service + ' customer decision path',
-      currentSituation: 'The Snapshot has identified an opportunity to connect the offer, proof, and next step more clearly.',
+      currentSituation: operatorOpportunity.trim() || 'The Snapshot has identified an opportunity to connect the offer, proof, and next step more clearly.',
       whyItMatters: 'Clarity and trust give every later visibility improvement a stronger foundation.',
       recommendedFirstMove: 'Make the audience, local fit, proof, and next step for ' + service + ' explicit on the first screen.',
       potentialBusinessBenefit: 'Potential customers can evaluate fit with greater confidence and less friction.',
@@ -260,7 +277,7 @@ function buildFeaturedOpportunity(
 
   return {
     title: action.title,
-    currentSituation: evidence?.observation || currentSituationFor(action.category, form),
+    currentSituation: evidence?.observation || operatorOpportunity.trim() || currentSituationFor(action.category, form),
     whyItMatters: evidence?.whyItMatters || action.reason,
     recommendedFirstMove: action.implementationNote || action.description,
     potentialBusinessBenefit: action.businessValue,
@@ -273,10 +290,22 @@ export function createReportStory(input: {
   scores: Scores
   actions: RecommendedAction[]
   evidenceItems: EvidenceItem[]
+  operatorStrengths?: string[]
+  operatorOpportunity?: string
 }): ReportStory {
   return {
-    strategicAssets: buildStrategicAssets(input.form, input.scores, input.evidenceItems),
-    featuredOpportunity: buildFeaturedOpportunity(input.form, input.actions, input.evidenceItems),
+    strategicAssets: buildStrategicAssets(
+      input.form,
+      input.scores,
+      input.evidenceItems,
+      input.operatorStrengths,
+    ),
+    featuredOpportunity: buildFeaturedOpportunity(
+      input.form,
+      input.actions,
+      input.evidenceItems,
+      input.operatorOpportunity,
+    ),
   }
 }
 

@@ -22,6 +22,10 @@ import './App.css'
 import { AuthorityRoadmap } from './components/AuthorityRoadmap'
 import { SprintPlan } from './components/SprintPlan'
 import { EvidenceManager } from './components/EvidenceManager'
+import {
+  OperatorWorkspace,
+  type DraftApplication,
+} from './components/OperatorWorkspace'
 import { EvidenceReport } from './components/EvidenceReport'
 import { ProgressJourneyReport } from './components/ProgressJourneyReport'
 import { ReportReadiness } from './components/ReportReadiness'
@@ -32,6 +36,7 @@ import {
   StrategicAssetsReport,
 } from './components/ReportStrategy'
 import {
+  createEvidenceItem,
   formatEvidenceReportText,
   getEvidenceForAction,
   getReportEvidence,
@@ -67,6 +72,13 @@ import { getReportReadiness } from './lib/reportReadiness'
 import { emptyScores, getRatingLabel, getTotalScore, normalizeScores, scoreLabels } from './lib/scoring'
 import { deleteSnapshot, isStorageQuotaError, loadSnapshots, saveSnapshot } from './lib/storage'
 import {
+  createEmptyBusinessIntake,
+  deleteIntakeDraft,
+  loadIntakeDrafts,
+  saveIntakeDraft,
+} from './lib/intakeStorage'
+import { normalizeWebsiteUrl } from './lib/intakeParser'
+import {
   createLead,
   deleteLead,
   emptyLeadInput,
@@ -83,7 +95,9 @@ import {
 import { buildBusinessHoroscope, generateOutputs } from './templates/snapshotTemplates'
 import type {
   BrandingFields,
+  BusinessIntakePayload,
   EvidenceItem,
+  EvidenceSentiment,
   Lead,
   LeadPriority,
   LeadStatus,
@@ -96,6 +110,7 @@ import type {
   SnapshotForm,
   SnapshotOutputs,
   Tone,
+  WebsiteExtractionObservation,
 } from './types'
 
 const emptyForm: SnapshotForm = {
@@ -254,6 +269,12 @@ function App() {
   const [leads, setLeads] = useState<Lead[]>(() => loadLeads())
   const [leadDraft, setLeadDraft] = useState<LeadInput>(emptyLeadInput)
   const [editingLeadId, setEditingLeadId] = useState<string | null>(null)
+  const [savedIntakes, setSavedIntakes] = useState<BusinessIntakePayload[]>(
+    () => loadIntakeDrafts(),
+  )
+  const [intake, setIntake] = useState<BusinessIntakePayload>(
+    () => createEmptyBusinessIntake(),
+  )
   const [importText, setImportText] = useState('')
   const [importPreview, setImportPreview] = useState<ParsedLead[]>([])
   const [statusFilter, setStatusFilter] = useState<LeadStatus | 'All'>('All')
@@ -264,6 +285,7 @@ function App() {
   const [loadedId, setLoadedId] = useState<string | null>(null)
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
   const [storageMessage, setStorageMessage] = useState('')
+  const [intakeStorageMessage, setIntakeStorageMessage] = useState('')
 
   const totalScore = useMemo(() => getTotalScore(scores), [scores])
   const rating = getRatingLabel(totalScore)
@@ -326,8 +348,22 @@ function App() {
       scores,
       actions: roadmap.priorityMatrix,
       evidenceItems: reportEvidence,
+      operatorStrengths: growthFoundation.operatorDraftAppliedAt
+        ? growthFoundation.strengths
+        : undefined,
+      operatorOpportunity: growthFoundation.operatorDraftAppliedAt
+        ? growthFoundation.visibilityLeaks[0]
+        : undefined,
     }),
-    [form, reportEvidence, roadmap.priorityMatrix, scores],
+    [
+      form,
+      growthFoundation.strengths,
+      growthFoundation.visibilityLeaks,
+      growthFoundation.operatorDraftAppliedAt,
+      reportEvidence,
+      roadmap.priorityMatrix,
+      scores,
+    ],
   )
   const progressJourney = useMemo(
     () => createProgressJourneyModel(growthFoundation),
@@ -455,6 +491,180 @@ function App() {
     setLeads(persistLeads(nextLeads))
   }
 
+  function updateIntakeDraft(nextIntake: BusinessIntakePayload) {
+    setIntake(nextIntake)
+    setIntakeStorageMessage('')
+  }
+
+  function handleSaveIntake() {
+    const associatedIntake: BusinessIntakePayload = {
+      ...intake,
+      linkedLeadId: intake.linkedLeadId || activeLeadId || undefined,
+      linkedSnapshotId: loadedId || intake.linkedSnapshotId,
+      updatedAt: new Date().toISOString(),
+    }
+
+    try {
+      const nextIntakes = saveIntakeDraft(associatedIntake)
+      const savedIntake = nextIntakes.find((saved) => saved.id === associatedIntake.id)
+        || associatedIntake
+      setSavedIntakes(nextIntakes)
+      setIntake(savedIntake)
+      setIntakeStorageMessage('Intake saved in this browser.')
+    } catch (error) {
+      setIntakeStorageMessage(
+        isStorageQuotaError(error)
+          ? 'Browser storage is full. Remove large evidence screenshots or an old intake, then try again.'
+          : 'Intake could not be saved. The current in-memory draft is still open.',
+      )
+    }
+  }
+
+  function handleResumeIntake(intakeId: string) {
+    const savedIntake = savedIntakes.find((saved) => saved.id === intakeId)
+    if (!savedIntake) return
+    const linkedSnapshot = savedIntake.linkedSnapshotId
+      ? savedSnapshots.find((snapshot) => snapshot.id === savedIntake.linkedSnapshotId)
+      : undefined
+    if (linkedSnapshot) {
+      handleLoadSnapshot(linkedSnapshot)
+      setIntakeStorageMessage('Saved intake and its associated snapshot resumed.')
+      return
+    }
+    setIntake(savedIntake)
+    if (savedIntake.linkedLeadId) setActiveLeadId(savedIntake.linkedLeadId)
+    setIntakeStorageMessage('Saved intake resumed.')
+  }
+
+  function handleClearIntake() {
+    try {
+      setSavedIntakes(deleteIntakeDraft(intake.id))
+    } catch {
+      setSavedIntakes((current) => current.filter((saved) => saved.id !== intake.id))
+    }
+    setIntake(createEmptyBusinessIntake())
+    setIntakeStorageMessage('Intake cleared. Existing snapshots and evidence were not changed.')
+  }
+
+  function handleUseLeadDetailsForIntake() {
+    if (!activeLead) return
+    const normalizedWebsite = normalizeWebsiteUrl(activeLead.websiteUrl)
+    setIntake((current) => ({
+      ...current,
+      linkedLeadId: activeLead.id,
+      updatedAt: new Date().toISOString(),
+      identity: {
+        ...current.identity,
+        businessName: activeLead.businessName,
+        websiteUrlRaw: activeLead.websiteUrl,
+        websiteUrlNormalized: normalizedWebsite.valid ? normalizedWebsite.normalized : '',
+        city: activeLead.city,
+        niche: activeLead.niche,
+        primaryService: activeLead.mainService,
+        phone: activeLead.phone,
+        email: activeLead.email,
+        contactFormUrl: activeLead.contactFormUrl,
+      },
+    }))
+    setIntakeStorageMessage('Selected lead details copied into the intake.')
+  }
+
+  function handleApplyDraft(application: DraftApplication) {
+    if (application.formPatch) {
+      setForm((current) => ({ ...current, ...application.formPatch }))
+    }
+    if (application.scorePatch) {
+      setScores((current) => normalizeScores({ ...current, ...application.scorePatch }))
+    }
+    if (application.reportOfferPatch) {
+      setReportOffer((current) => ({ ...current, ...application.reportOfferPatch }))
+    }
+    if (application.strengths || application.visibilityLeaks) {
+      setFoundationDraft((current) => ({
+        ...current,
+        strengths: application.strengths ?? current.strengths,
+        visibilityLeaks: application.visibilityLeaks ?? current.visibilityLeaks,
+        operatorDraftAppliedAt: new Date().toISOString(),
+      }))
+    }
+    if (application.outreachAngle && activeLeadId) {
+      updateLeadList(
+        leads.map((lead) => lead.id === activeLeadId
+          ? { ...lead, suggestedAngle: application.outreachAngle || lead.suggestedAngle }
+          : lead),
+      )
+    }
+    setStorageMessage('Approved intake draft values applied. Save the snapshot to keep them.')
+  }
+
+  function openEvidenceManager(evidenceId?: string) {
+    window.setTimeout(() => {
+      const item = evidenceId
+        ? document.getElementById('evidence-manager-item-' + evidenceId)
+        : null
+      const toggle = item?.querySelector<HTMLButtonElement>('.evidence-expand-button')
+      if (toggle?.getAttribute('aria-expanded') === 'false') toggle.click()
+      const target = item || document.getElementById('evidence-manager-title')
+      target?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 40)
+  }
+
+  function createObservationEvidence(
+    observation: WebsiteExtractionObservation,
+    sentiment: EvidenceSentiment,
+    caption?: string,
+  ) {
+    const base = createEvidenceItem()
+    const normalizedSourceUrl = normalizeWebsiteUrl(intake.identity.websiteUrlRaw)
+    const item: EvidenceItem = {
+      ...base,
+      evidenceType: 'Website',
+      sentiment,
+      title: observation.kind + ': ' + observation.text.slice(0, 72),
+      sourceUrl: normalizedSourceUrl.valid ? normalizedSourceUrl.normalized : '',
+      pageLabel: 'Operator-pasted page text',
+      observation: observation.text,
+      beforeCaption: caption,
+      intakeDraftId: intake.id,
+      intakeObservationId: observation.id,
+    }
+    setFoundationDraft({
+      ...growthFoundation,
+      evidenceItems: [...growthFoundation.evidenceItems, item],
+    })
+    return item.id
+  }
+
+  function createBlankIntakeEvidence() {
+    const normalizedSourceUrl = normalizeWebsiteUrl(intake.identity.websiteUrlRaw)
+    const item: EvidenceItem = {
+      ...createEvidenceItem(),
+      title: 'Intake screenshot',
+      sourceUrl: normalizedSourceUrl.valid ? normalizedSourceUrl.normalized : '',
+      pageLabel: 'Operator intake',
+      intakeDraftId: intake.id,
+    }
+    setFoundationDraft({
+      ...growthFoundation,
+      evidenceItems: [...growthFoundation.evidenceItems, item],
+    })
+    return item.id
+  }
+
+  function updateWorkspaceEvidenceSentiment(
+    evidenceId: string,
+    sentiment: EvidenceSentiment,
+  ) {
+    setFoundationDraft({
+      ...growthFoundation,
+      evidenceItems: growthFoundation.evidenceItems.map((item) =>
+        item.id === evidenceId
+          ? { ...item, sentiment, updatedAt: new Date().toISOString() }
+          : item,
+      ),
+    })
+  }
+
   async function copyText(label: string, text: string) {
     await navigator.clipboard.writeText(text)
     setCopiedKey(label)
@@ -513,6 +723,33 @@ function App() {
         ),
       )
     }
+
+    const hasIntakeContent = Boolean(
+      intake.identity.businessName.trim()
+      || intake.identity.websiteUrlRaw.trim()
+      || intake.website.pageText.trim()
+      || intake.draft,
+    )
+    if (hasIntakeContent) {
+      const linkedIntake: BusinessIntakePayload = {
+        ...intake,
+        linkedLeadId: intake.linkedLeadId || activeLeadId || undefined,
+        linkedSnapshotId: snapshot.id,
+        updatedAt: new Date().toISOString(),
+      }
+      try {
+        const nextIntakes = saveIntakeDraft(linkedIntake)
+        setSavedIntakes(nextIntakes)
+        setIntake(
+          nextIntakes.find((saved) => saved.id === linkedIntake.id) || linkedIntake,
+        )
+        setIntakeStorageMessage('Intake saved and linked to this snapshot.')
+      } catch {
+        setIntakeStorageMessage(
+          'Snapshot saved, but its intake association could not be stored.',
+        )
+      }
+    }
   }
 
   function handleLoadSnapshot(snapshot: SavedSnapshot) {
@@ -545,6 +782,17 @@ function App() {
     setScores(normalizeScores(snapshot.scores))
     setFoundationDraft(refreshGrowthFoundation(normalizeScores(snapshot.scores), snapshot))
     setLoadedId(snapshot.id)
+    const associatedIntake = savedIntakes.find(
+      (saved) => saved.linkedSnapshotId === snapshot.id,
+    )
+    if (associatedIntake) {
+      setIntake(associatedIntake)
+      if (associatedIntake.linkedLeadId) setActiveLeadId(associatedIntake.linkedLeadId)
+      setIntakeStorageMessage('Associated intake resumed with this snapshot.')
+    } else {
+      setIntake((current) => ({ ...current, appliedAt: undefined }))
+      setIntakeStorageMessage('No saved intake is associated with this snapshot.')
+    }
     setStorageMessage(
       'Loaded ' + snapshot.evidenceItems.length + ' evidence item'
         + (snapshot.evidenceItems.length === 1 ? '.' : 's.'),
@@ -565,6 +813,8 @@ function App() {
     setReportOffer(defaultReportOffer)
     setScores(emptyScores)
     setFoundationDraft(createGrowthFoundation(emptyScores))
+    setIntake(createEmptyBusinessIntake())
+    setIntakeStorageMessage('Started a new intake for the new snapshot.')
     setLoadedId(null)
     setStorageMessage('Started a new snapshot. Evidence from the previous snapshot was not reused.')
     setActiveLeadId(null)
@@ -634,7 +884,7 @@ function App() {
     }))
     setActiveLeadId(lead.id)
     window.setTimeout(() => {
-      document.querySelector('.workspace')?.scrollIntoView({ behavior: 'smooth' })
+      document.getElementById('operator-workspace')?.scrollIntoView({ behavior: 'smooth' })
     }, 0)
   }
 
@@ -951,6 +1201,29 @@ function App() {
           )}
         </section>
       </section>
+
+      <OperatorWorkspace
+        intake={intake}
+        savedIntakes={savedIntakes}
+        activeLead={activeLead}
+        currentForm={form}
+        currentScores={scores}
+        currentStrengths={growthFoundation.strengths}
+        currentVisibilityLeaks={growthFoundation.visibilityLeaks}
+        currentReportOffer={reportOffer}
+        evidenceItems={growthFoundation.evidenceItems}
+        storageMessage={intakeStorageMessage}
+        onChange={updateIntakeDraft}
+        onSave={handleSaveIntake}
+        onResume={handleResumeIntake}
+        onClear={handleClearIntake}
+        onUseLeadDetails={handleUseLeadDetailsForIntake}
+        onApply={handleApplyDraft}
+        onConvertObservation={createObservationEvidence}
+        onCreateBlankEvidence={createBlankIntakeEvidence}
+        onOpenEvidenceManager={openEvidenceManager}
+        onUpdateEvidenceSentiment={updateWorkspaceEvidenceSentiment}
+      />
 
       <section className="workspace screen-only">
         <div className="panel form-panel">

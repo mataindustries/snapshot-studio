@@ -128,6 +128,8 @@ export function normalizeEvidenceItem(value: unknown, index = 0): EvidenceItem |
     evidenceType: normalizeEvidenceType(value.evidenceType),
     sentiment: normalizeEvidenceSentiment(value.sentiment),
     sourceUrl,
+    intakeDraftId: optionalString(value.intakeDraftId),
+    intakeObservationId: optionalString(value.intakeObservationId),
     pageLabel: stringValue(value.pageLabel),
     observation,
     whyItMatters: stringValue(value.whyItMatters),

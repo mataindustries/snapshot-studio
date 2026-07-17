@@ -126,6 +126,8 @@ export type EvidenceItem = {
   linkedActionIds: string[]
   createdAt: string
   updatedAt: string
+  intakeDraftId?: string
+  intakeObservationId?: string
   // Retained for backwards compatibility with Prompt 1 snapshots.
   screenshotPlaceholder?: string
 }
@@ -146,6 +148,7 @@ export type SnapshotGrowthFoundation = {
   nextArchetype: GrowthStage | null
   strengths: string[]
   visibilityLeaks: string[]
+  operatorDraftAppliedAt?: string
   recommendedActions: RecommendedAction[]
   expectedOutcomes: string[]
   evidenceItems: EvidenceItem[]
@@ -222,4 +225,158 @@ export type Lead = {
   status: LeadStatus
   lastContactedAt: string
   linkedSnapshotId?: string
+}
+
+export type DraftConfidence = 'Low' | 'Medium' | 'High'
+
+export type WebsiteObservationKind =
+  | 'Heading'
+  | 'Call to action'
+  | 'Service phrase'
+  | 'Location phrase'
+  | 'Trust phrase'
+  | 'Question heading'
+  | 'Contact detail'
+
+export type WebsiteExtractionObservation = {
+  id: string
+  kind: WebsiteObservationKind
+  text: string
+  sourceField: 'pageText'
+  suggestedSentiment: EvidenceSentiment
+}
+
+export type WebsiteExtractionResult = {
+  disclosure: 'Draft extraction — review required.'
+  sourceLabel: 'Operator-pasted page text'
+  headings: string[]
+  callsToAction: string[]
+  servicePhrases: string[]
+  locationPhrases: string[]
+  trustPhrases: string[]
+  questionHeadings: string[]
+  contactDetails: string[]
+  observations: WebsiteExtractionObservation[]
+}
+
+export type BusinessIdentityIntake = {
+  businessName: string
+  websiteUrlRaw: string
+  websiteUrlNormalized: string
+  city: string
+  niche: string
+  primaryService: string
+  secondaryServices: string
+  phone: string
+  email: string
+  contactFormUrl: string
+  bookingUrl: string
+  businessAgeOrFoundingYear: string
+  ownerFamilyNote: string
+  serviceAreas: string
+  differentiators: string
+}
+
+export type WebsiteContentIntake = {
+  homepageTitle: string
+  metaDescription: string
+  heroHeadline: string
+  heroSupportCopy: string
+  primaryCta: string
+  homepageBodyText: string
+  servicesListed: string
+  trustReviewCopy: string
+  faqText: string
+  aboutTeamCopy: string
+  footerContactDetails: string
+  pageText: string
+}
+
+export type PublicProfileIntake = {
+  googleRating: string
+  reviewCount: string
+  latestReviewRecency: string
+  profileCompletenessNotes: string
+  categories: string
+  hours: string
+  photos: string
+  socialProfiles: string
+  credentials: string
+  awards: string
+  financing: string
+  guarantees: string
+  emergencyAvailability: string
+  accessibilityLanguageSupport: string
+}
+
+export type CompetitorIntake = {
+  name: string
+  url: string
+  notes: string
+}
+
+export type CompetitorContextIntake = {
+  competitors: [CompetitorIntake, CompetitorIntake]
+  comparisonNotes: string
+}
+
+export type DraftScoreSuggestion = {
+  minimum: number
+  maximum: number
+  explanation: string
+  basis: string[]
+  confidence: DraftConfidence
+}
+
+export type DraftHoroscopeCandidate = {
+  name: string
+  basis: string
+}
+
+export type DraftStrategicAsset = {
+  title: string
+  basis: string
+}
+
+export type DraftEvidenceCaption = {
+  observationId?: string
+  caption: string
+  basis: string
+}
+
+export type DraftAnalysisResult = {
+  engine: 'deterministic-v1'
+  generatedAt: string
+  inputSignature: string
+  disclosure: string
+  suggestedStrengthNotes: string[]
+  suggestedMissedOpportunity: string
+  scoreSuggestions: Record<ScoreKey, DraftScoreSuggestion>
+  suggestedBusinessHoroscopeCandidates: DraftHoroscopeCandidate[]
+  suggestedPrimaryOpportunity: string
+  suggestedRecommendationSubject: string
+  suggestedStrategicAssets: DraftStrategicAsset[]
+  suggestedEvidenceCaptions: DraftEvidenceCaption[]
+  suggestedOutreachAngle: string
+  confidence: DraftConfidence
+  warnings: string[]
+  missingInformation: string[]
+}
+
+export type BusinessIntakePayload = {
+  schemaVersion: 1
+  id: string
+  createdAt: string
+  updatedAt: string
+  currentStep: number
+  linkedLeadId?: string
+  linkedSnapshotId?: string
+  appliedAt?: string
+  identity: BusinessIdentityIntake
+  website: WebsiteContentIntake
+  publicProfile: PublicProfileIntake
+  competitorContext: CompetitorContextIntake
+  observationClassifications: Record<string, EvidenceSentiment>
+  observationEvidenceLinks: Record<string, string>
+  draft: DraftAnalysisResult | null
 }

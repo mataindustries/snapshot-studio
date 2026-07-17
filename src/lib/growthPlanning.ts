@@ -178,6 +178,9 @@ export function normalizeGrowthFoundation(
     nextArchetype,
     strengths: stringArray(value.strengths),
     visibilityLeaks: stringArray(value.visibilityLeaks),
+    operatorDraftAppliedAt: typeof value.operatorDraftAppliedAt === 'string'
+      ? value.operatorDraftAppliedAt
+      : undefined,
     recommendedActions: linkedItems.actions.map((action) => ({
       ...action,
       linkedEvidence: action.linkedEvidenceIds,
@@ -210,6 +213,7 @@ export function refreshGrowthFoundation(
     ...derived,
     strengths: existing.strengths,
     visibilityLeaks: existing.visibilityLeaks,
+    operatorDraftAppliedAt: existing.operatorDraftAppliedAt,
     recommendedActions: existing.recommendedActions,
     expectedOutcomes: existing.expectedOutcomes,
     evidenceItems: existing.evidenceItems,
