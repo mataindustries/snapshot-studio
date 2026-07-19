@@ -70,6 +70,7 @@ export function ActionControlCenter({
   return (
     <section
       className="action-control-center screen-only"
+      id="action-control-center"
       aria-labelledby="action-control-center-title"
     >
       <header className="action-control-header">

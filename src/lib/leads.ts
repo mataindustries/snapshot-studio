@@ -1,4 +1,10 @@
-import type { Lead, LeadPriority, LeadStatus } from '../types'
+import type {
+  Lead,
+  LeadActivityEntry,
+  LeadContactRoute,
+  LeadPriority,
+  LeadStatus,
+} from '../types'
 
 const leadStorageKey = 'snapshot-studio:leads'
 
@@ -39,6 +45,43 @@ export const emptyLeadInput: LeadInput = {
   suggestedAngle: '',
   status: 'Not reviewed',
   lastContactedAt: '',
+  nextFollowUpDate: '',
+  outreachActivity: [],
+}
+
+const contactRoutes: LeadContactRoute[] = ['Email', 'Contact Form', 'Text', 'Phone Notes']
+
+function normalizeLeadActivity(value: unknown): LeadActivityEntry[] {
+  if (!Array.isArray(value)) return []
+  return value.flatMap((entry) => {
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return []
+    const record = entry as Record<string, unknown>
+    const type = record.type === 'Outreach sent' || record.type === 'Follow-up scheduled'
+      ? record.type
+      : null
+    if (!type) return []
+    const route = contactRoutes.includes(record.contactRoute as LeadContactRoute)
+      ? record.contactRoute as LeadContactRoute
+      : undefined
+    const normalized: LeadActivityEntry = {
+      id: typeof record.id === 'string' ? record.id : crypto.randomUUID(),
+      type,
+      occurredAt: typeof record.occurredAt === 'string'
+        ? record.occurredAt
+        : new Date().toISOString(),
+      contactRoute: route,
+      followUpDate: typeof record.followUpDate === 'string' && record.followUpDate
+        ? record.followUpDate
+        : undefined,
+      includedSnapshot: typeof record.includedSnapshot === 'boolean'
+        ? record.includedSnapshot
+        : undefined,
+      includedProposal: typeof record.includedProposal === 'boolean'
+        ? record.includedProposal
+        : undefined,
+    }
+    return [normalized]
+  }).slice(-50)
 }
 
 function safelyParseLeads(value: string | null): Lead[] {
@@ -71,6 +114,11 @@ function normalizeStoredLead(value: Partial<Lead>): Lead {
     status: normalizeStatus(value.status),
     lastContactedAt: value.lastContactedAt || '',
     linkedSnapshotId: value.linkedSnapshotId,
+    lastContactRoute: contactRoutes.includes(value.lastContactRoute as LeadContactRoute)
+      ? value.lastContactRoute
+      : undefined,
+    nextFollowUpDate: value.nextFollowUpDate || '',
+    outreachActivity: normalizeLeadActivity(value.outreachActivity),
   }
 }
 
@@ -199,6 +247,9 @@ function mapHeader(header: string): keyof LeadInput | null {
     status: 'status',
     lastcontacted: 'lastContactedAt',
     lastcontactedat: 'lastContactedAt',
+    lastcontactroute: 'lastContactRoute',
+    nextfollowup: 'nextFollowUpDate',
+    nextfollowupdate: 'nextFollowUpDate',
   }
 
   return map[key] || null
@@ -225,6 +276,12 @@ export function parseLeadTable(text: string): ParsedLead[] {
           nextLead.priority = normalizePriority(cell)
         } else if (mappedKey === 'status') {
           nextLead.status = normalizeStatus(cell)
+        } else if (mappedKey === 'lastContactRoute') {
+          nextLead.lastContactRoute = contactRoutes.find(
+            (route) => route.toLowerCase() === cell.trim().toLowerCase(),
+          )
+        } else if (mappedKey === 'outreachActivity') {
+          return
         } else {
           nextLead[mappedKey] = cell
         }
@@ -261,6 +318,8 @@ export function leadsToCsv(leads: Lead[]) {
     'Suggested Angle',
     'Status',
     'Last Contacted At',
+    'Last Contact Route',
+    'Next Follow-Up Date',
     'Linked Snapshot ID',
     'Created At',
   ]
@@ -280,6 +339,8 @@ export function leadsToCsv(leads: Lead[]) {
     lead.suggestedAngle,
     lead.status,
     lead.lastContactedAt,
+    lead.lastContactRoute || '',
+    lead.nextFollowUpDate || '',
     lead.linkedSnapshotId || '',
     lead.createdAt,
   ])

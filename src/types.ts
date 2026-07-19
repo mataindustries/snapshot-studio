@@ -216,6 +216,18 @@ export type LeadStatus =
   | 'Paid'
   | 'Not interested'
 
+export type LeadContactRoute = 'Email' | 'Contact Form' | 'Text' | 'Phone Notes'
+
+export type LeadActivityEntry = {
+  id: string
+  type: 'Outreach sent' | 'Follow-up scheduled'
+  occurredAt: string
+  contactRoute?: LeadContactRoute
+  followUpDate?: string
+  includedSnapshot?: boolean
+  includedProposal?: boolean
+}
+
 export type Lead = {
   id: string
   createdAt: string
@@ -234,6 +246,9 @@ export type Lead = {
   status: LeadStatus
   lastContactedAt: string
   linkedSnapshotId?: string
+  lastContactRoute?: LeadContactRoute
+  nextFollowUpDate?: string
+  outreachActivity?: LeadActivityEntry[]
 }
 
 export type DraftConfidence = 'Low' | 'Medium' | 'High'

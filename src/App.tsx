@@ -25,9 +25,14 @@ import { AuthorityRoadmap } from './components/AuthorityRoadmap'
 import { SprintPlan } from './components/SprintPlan'
 import { EvidenceManager } from './components/EvidenceManager'
 import {
+  FastLane,
+  type FastLaneLaunchRequest,
+  type FastLaneMarkSentInput,
+} from './components/FastLane'
+import {
   OperatorWorkspace,
-  type DraftApplication,
 } from './components/OperatorWorkspace'
+import type { DraftApplication } from './lib/draftApplication'
 import { EvidenceReport } from './components/EvidenceReport'
 import { ProgressJourneyReport } from './components/ProgressJourneyReport'
 import { ReportReadiness } from './components/ReportReadiness'
@@ -36,6 +41,7 @@ import { PoweredByFooter } from './components/PoweredByFooter'
 import {
   ProposalWorkspace,
   type ProposalCreationRequest,
+  type ProposalFocusRequest,
 } from './components/ProposalWorkspace'
 import {
   BiggestOpportunityReport,
@@ -140,6 +146,7 @@ import type {
   Tone,
   WebsiteExtractionObservation,
 } from './types'
+import type { FastLaneSession, FastLaneSource } from './types/fastLane'
 
 const emptyForm: SnapshotForm = {
   businessName: '',
@@ -334,6 +341,8 @@ function App() {
   const [hasUnsavedProgress, setHasUnsavedProgress] = useState(false)
   const [intakeStorageMessage, setIntakeStorageMessage] = useState('')
   const [proposalCreationRequest, setProposalCreationRequest] = useState<ProposalCreationRequest>()
+  const [proposalFocusRequest, setProposalFocusRequest] = useState<ProposalFocusRequest>()
+  const [fastLaneLaunchRequest, setFastLaneLaunchRequest] = useState<FastLaneLaunchRequest>()
 
   const totalScore = useMemo(() => getTotalScore(scores), [scores])
   const rating = getRatingLabel(totalScore)
@@ -697,11 +706,11 @@ function App() {
     setIntakeStorageMessage('')
   }
 
-  function handleSaveIntake() {
+  function handleSaveIntake(intakeToSave: BusinessIntakePayload = intake) {
     const associatedIntake: BusinessIntakePayload = {
-      ...intake,
-      linkedLeadId: intake.linkedLeadId || activeLeadId || undefined,
-      linkedSnapshotId: loadedId || intake.linkedSnapshotId,
+      ...intakeToSave,
+      linkedLeadId: intakeToSave.linkedLeadId || activeLeadId || undefined,
+      linkedSnapshotId: loadedId || intakeToSave.linkedSnapshotId,
       updatedAt: new Date().toISOString(),
     }
 
@@ -1072,6 +1081,9 @@ function App() {
       status: lead.status,
       lastContactedAt: lead.lastContactedAt,
       linkedSnapshotId: lead.linkedSnapshotId,
+      lastContactRoute: lead.lastContactRoute,
+      nextFollowUpDate: lead.nextFollowUpDate,
+      outreachActivity: lead.outreachActivity,
     })
     setEditingLeadId(lead.id)
   }
@@ -1118,6 +1130,213 @@ function App() {
     )
   }
 
+  function leadIntake(leadId: string) {
+    return savedIntakes
+      .filter((saved) => saved.linkedLeadId === leadId)
+      .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))[0]
+  }
+
+  function formFromLeadAndIntake(
+    lead?: Lead,
+    sourceIntake?: BusinessIntakePayload,
+  ): SnapshotForm {
+    const identity = sourceIntake?.identity
+    return {
+      ...emptyForm,
+      businessName: identity?.businessName || lead?.businessName || '',
+      websiteUrl: identity?.websiteUrlNormalized || identity?.websiteUrlRaw || lead?.websiteUrl || '',
+      city: identity?.city || lead?.city || '',
+      niche: identity?.niche || lead?.niche || '',
+      mainService: identity?.primaryService || lead?.mainService || '',
+      notes: lead?.researchNotes || '',
+      weakness: lead?.suggestedAngle || '',
+    }
+  }
+
+  function intakeFromLead(lead?: Lead) {
+    const next = createEmptyBusinessIntake({ linkedLeadId: lead?.id })
+    if (!lead) return next
+    const normalizedWebsite = normalizeWebsiteUrl(lead.websiteUrl)
+    return {
+      ...next,
+      identity: {
+        ...next.identity,
+        businessName: lead.businessName,
+        websiteUrlRaw: lead.websiteUrl,
+        websiteUrlNormalized: normalizedWebsite.valid ? normalizedWebsite.normalized : '',
+        city: lead.city,
+        niche: lead.niche,
+        primaryService: lead.mainService,
+        phone: lead.phone,
+        email: lead.email,
+        contactFormUrl: lead.contactFormUrl,
+      },
+    }
+  }
+
+  function cloneFastLaneIntake(
+    sourceIntake: BusinessIntakePayload,
+    leadId?: string,
+  ): BusinessIntakePayload {
+    const now = new Date().toISOString()
+    return {
+      ...sourceIntake,
+      id: crypto.randomUUID(),
+      createdAt: now,
+      updatedAt: now,
+      linkedLeadId: leadId || sourceIntake.linkedLeadId,
+      linkedSnapshotId: undefined,
+      appliedAt: undefined,
+      observationClassifications: { ...sourceIntake.observationClassifications },
+      observationEvidenceLinks: {},
+      competitorContext: {
+        ...sourceIntake.competitorContext,
+        competitors: sourceIntake.competitorContext.competitors.map(
+          (competitor) => ({ ...competitor }),
+        ) as BusinessIntakePayload['competitorContext']['competitors'],
+      },
+    }
+  }
+
+  function handleFastLaneActivateSource(
+    source: FastLaneSource,
+    fresh: boolean,
+    session?: FastLaneSession,
+  ) {
+    const selectedLead = (session?.leadId
+      ? leads.find((lead) => lead.id === session.leadId)
+      : undefined)
+      || (source.type === 'lead' ? leads.find((lead) => lead.id === source.id) : undefined)
+    const selectedIntake = (session?.intakeId
+      ? savedIntakes.find((saved) => saved.id === session.intakeId)
+      : undefined)
+      || (source.type === 'intake'
+        ? savedIntakes.find((saved) => saved.id === source.id)
+        : selectedLead ? leadIntake(selectedLead.id) : undefined)
+    const selectedSnapshot = (session?.snapshotId
+      ? savedSnapshots.find((snapshot) => snapshot.id === session.snapshotId)
+      : undefined)
+      || (source.type === 'snapshot'
+        ? savedSnapshots.find((snapshot) => snapshot.id === source.id)
+        : savedSnapshots.find((snapshot) =>
+            snapshot.id === selectedLead?.linkedSnapshotId
+            || snapshot.id === selectedIntake?.linkedSnapshotId,
+          ))
+    const associatedLead = selectedLead
+      || leads.find((lead) => lead.id === selectedIntake?.linkedLeadId)
+      || leads.find((lead) => lead.linkedSnapshotId === selectedSnapshot?.id)
+
+    if (selectedSnapshot) {
+      handleLoadSnapshot(selectedSnapshot)
+      if (associatedLead) setActiveLeadId(associatedLead.id)
+      if (fresh && !session?.snapshotId) {
+        setLoadedId(null)
+        setIntake(selectedIntake
+          ? session?.intakeId
+            ? selectedIntake
+            : cloneFastLaneIntake(selectedIntake, associatedLead?.id)
+          : intakeFromLead(associatedLead))
+        setStorageMessage('New Fast Lane version opened in memory. Save Snapshot creates the new version.')
+      }
+      return
+    }
+
+    const nextIntake = fresh && selectedIntake && !session?.intakeId
+      ? cloneFastLaneIntake(selectedIntake, associatedLead?.id)
+      : selectedIntake || intakeFromLead(associatedLead)
+    setForm(formFromLeadAndIntake(associatedLead, nextIntake))
+    setBranding(defaultBranding)
+    setReportOffer(defaultReportOffer)
+    setScores(emptyScores)
+    setFoundationDraft(createGrowthFoundation(emptyScores))
+    setIntake(nextIntake)
+    setLoadedId(null)
+    setHasUnsavedProgress(false)
+    setActiveLeadId(associatedLead?.id || null)
+    setStorageMessage(
+      fresh
+        ? 'New Fast Lane version opened. Existing records remain unchanged.'
+        : associatedLead || selectedIntake
+          ? 'Fast Lane source loaded without creating a duplicate.'
+          : 'Blank Fast Lane workflow opened.',
+    )
+  }
+
+  function handleFastLaneSaveLead(
+    draft: FastLaneSession['leadDraft'],
+    leadId?: string,
+  ) {
+    const existing = leadId ? leads.find((lead) => lead.id === leadId) : undefined
+    const nextLead = createLead({
+      ...emptyLeadInput,
+      ...(existing || {}),
+      ...draft,
+      id: existing?.id,
+      createdAt: existing?.createdAt,
+    })
+    updateLeadList([nextLead, ...leads.filter((lead) => lead.id !== nextLead.id)])
+    setActiveLeadId(nextLead.id)
+    if (!loadedId) {
+      setForm((current) => ({
+        ...current,
+        businessName: nextLead.businessName,
+        websiteUrl: nextLead.websiteUrl,
+        city: nextLead.city,
+        niche: nextLead.niche,
+        mainService: nextLead.mainService,
+      }))
+    }
+    return nextLead
+  }
+
+  function handleFastLaneMarkSent(input: FastLaneMarkSentInput) {
+    const existing = input.leadId
+      ? leads.find((lead) => lead.id === input.leadId)
+      : undefined
+    const outreachEntry = {
+      id: crypto.randomUUID(),
+      type: 'Outreach sent' as const,
+      occurredAt: input.contactedAt,
+      contactRoute: input.route,
+      followUpDate: input.followUpDate,
+      includedSnapshot: true,
+      includedProposal: input.proposalIncluded,
+    }
+    const followUpEntry = input.followUpDate ? [{
+      id: crypto.randomUUID(),
+      type: 'Follow-up scheduled' as const,
+      occurredAt: input.contactedAt,
+      contactRoute: input.route,
+      followUpDate: input.followUpDate,
+      includedSnapshot: true,
+      includedProposal: input.proposalIncluded,
+    }] : []
+    const nextLead = createLead({
+      ...emptyLeadInput,
+      ...(existing || {}),
+      ...input.leadDraft,
+      id: existing?.id,
+      createdAt: existing?.createdAt,
+      status: 'Sent',
+      lastContactedAt: input.contactedAt,
+      lastContactRoute: input.route,
+      nextFollowUpDate: input.followUpDate || '',
+      linkedSnapshotId: input.snapshotId,
+      outreachActivity: [
+        ...(existing?.outreachActivity || []),
+        outreachEntry,
+        ...followUpEntry,
+      ].slice(-50),
+    })
+    updateLeadList([nextLead, ...leads.filter((lead) => lead.id !== nextLead.id)])
+    setActiveLeadId(nextLead.id)
+    return nextLead
+  }
+
+  function openProposalFromFastLane(proposalId: string, print = false) {
+    setProposalFocusRequest({ nonce: Date.now(), proposalId, print })
+  }
+
   function handleParseImport() {
     setImportPreview(parseLeadTable(importText))
   }
@@ -1156,7 +1375,39 @@ function App() {
         </div>
       </header>
 
-      <section className="lead-cockpit screen-only" aria-label="Lead queue">
+      <FastLane
+        leads={leads}
+        savedIntakes={savedIntakes}
+        savedSnapshots={proposalSnapshots}
+        intake={intake}
+        form={form}
+        scores={scores}
+        reportOffer={reportOffer}
+        actions={growthFoundation.recommendedActions}
+        evidenceItems={growthFoundation.evidenceItems}
+        strengths={growthFoundation.strengths}
+        visibilityLeaks={growthFoundation.visibilityLeaks}
+        outputs={outputs}
+        totalScore={totalScore}
+        horoscope={horoscope.archetype}
+        growthStage={growthFoundation.currentArchetype}
+        highestOpportunity={reportStory.featuredOpportunity.title}
+        reportReadiness={reportReadiness}
+        loadedSnapshotId={loadedId}
+        launchRequest={fastLaneLaunchRequest}
+        onActivateSource={handleFastLaneActivateSource}
+        onChangeIntake={updateIntakeDraft}
+        onSaveIntake={handleSaveIntake}
+        onApplyDraft={handleApplyDraft}
+        onSaveLead={handleFastLaneSaveLead}
+        onSaveSnapshot={handleSaveSnapshot}
+        onCreateEvidence={createBlankIntakeEvidence}
+        onOpenEvidence={openEvidenceManager}
+        onProposalSaved={openProposalFromFastLane}
+        onMarkOutreachSent={handleFastLaneMarkSent}
+      />
+
+      <section className="lead-cockpit screen-only" id="lead-queue" aria-label="Lead queue">
         <div className="lead-hero panel">
           <div>
             <p className="section-kicker">Outreach cockpit</p>
@@ -1387,6 +1638,13 @@ function App() {
                       <button
                         className="secondary-button"
                         type="button"
+                        onClick={() => setFastLaneLaunchRequest({ nonce: Date.now(), leadId: lead.id })}
+                      >
+                        Fast Lane
+                      </button>
+                      <button
+                        className="secondary-button"
+                        type="button"
                         onClick={() => handleMarkSent(lead.id)}
                       >
                         Mark sent today
@@ -1441,7 +1699,7 @@ function App() {
         onUpdateEvidenceSentiment={updateWorkspaceEvidenceSentiment}
       />
 
-      <section className="workspace screen-only">
+      <section className="workspace screen-only" id="audit-profile-workspace">
         <div className="panel form-panel">
           <div className="section-heading">
             <div>
@@ -1695,7 +1953,7 @@ function App() {
         onViewActionEvidence={viewActionEvidence}
       />
 
-      <section className="report-section" aria-label="Client-facing report preview">
+      <section className="report-section" id="client-report-preview" aria-label="Client-facing report preview">
         <div className="report-toolbar screen-only">
           <div>
             <p className="section-kicker">Client preview</p>
@@ -1905,6 +2163,7 @@ function App() {
       <ProposalWorkspace
         snapshots={proposalSnapshots}
         creationRequest={proposalCreationRequest}
+        focusRequest={proposalFocusRequest}
       />
     </main>
   )

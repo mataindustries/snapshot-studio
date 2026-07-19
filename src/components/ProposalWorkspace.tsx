@@ -27,6 +27,12 @@ export type ProposalCreationRequest = {
   lead?: Lead
 }
 
+export type ProposalFocusRequest = {
+  nonce: number
+  proposalId: string
+  print?: boolean
+}
+
 const pipelineStatuses: ProposalStatus[] = ['Draft', 'Ready', 'Sent', 'Accepted', 'Declined']
 const proposalTypes: ProposalType[] = [
   '48-Hour Visibility Sprint',
@@ -38,9 +44,10 @@ async function copyToClipboard(text: string) {
   await navigator.clipboard.writeText(text)
 }
 
-export function ProposalWorkspace({ snapshots, creationRequest }: {
+export function ProposalWorkspace({ snapshots, creationRequest, focusRequest }: {
   snapshots: SavedSnapshot[]
   creationRequest?: ProposalCreationRequest
+  focusRequest?: ProposalFocusRequest
 }) {
   const [proposals, setProposals] = useState<Proposal[]>(() => loadProposals())
   const [activeProposal, setActiveProposal] = useState<Proposal | null>(null)
@@ -53,6 +60,7 @@ export function ProposalWorkspace({ snapshots, creationRequest }: {
   const [emailBody, setEmailBody] = useState('')
   const [followUp, setFollowUp] = useState('')
   const handledCreationNonce = useRef<number | undefined>(undefined)
+  const handledFocusNonce = useRef<number | undefined>(undefined)
   const activeProposalRef = useRef<Proposal | null>(null)
   const snapshotRef = useRef<SavedSnapshot | undefined>(undefined)
 
@@ -97,6 +105,22 @@ export function ProposalWorkspace({ snapshots, creationRequest }: {
     }, 0)
     return () => window.clearTimeout(timer)
   }, [creationRequest, proposals])
+
+  useEffect(() => {
+    if (!focusRequest || handledFocusNonce.current === focusRequest.nonce) return
+    handledFocusNonce.current = focusRequest.nonce
+    const refreshed = loadProposals()
+    const proposal = refreshed.find((item) => item.id === focusRequest.proposalId)
+    if (!proposal) return
+    const timer = window.setTimeout(() => {
+      setProposals(refreshed)
+      setActiveProposal(proposal)
+      setMessage('Proposal opened from Fast Lane.')
+      document.getElementById('proposal-workspace')?.scrollIntoView({ behavior: 'smooth' })
+      if (focusRequest.print) window.setTimeout(printProposal, 120)
+    }, 0)
+    return () => window.clearTimeout(timer)
+  }, [focusRequest])
 
   const emailIdentity = activeProposal
     ? `${activeProposal.id}|${activeProposal.proposalType}|${activeProposal.clientBusinessName}|${snapshot?.id || 'missing'}`
@@ -269,4 +293,3 @@ export function ProposalWorkspace({ snapshots, creationRequest }: {
     </section>
   )
 }
-

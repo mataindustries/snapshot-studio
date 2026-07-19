@@ -27,6 +27,7 @@ import type {
   WebsiteContentIntake,
   WebsiteExtractionObservation,
 } from '../types'
+import type { DraftApplication } from '../lib/draftApplication'
 import {
   createDeterministicDraft,
   getSuggestionMidpoint,
@@ -36,15 +37,6 @@ import { getIntakeReadiness, intakeStepTitles } from '../lib/intakeReadiness'
 import { normalizeWebsiteUrl, parseWebsiteText } from '../lib/intakeParser'
 import { scoreLabels } from '../lib/scoring'
 import './OperatorWorkspace.css'
-
-export type DraftApplication = {
-  formPatch?: Partial<SnapshotForm>
-  scorePatch?: Partial<Scores>
-  strengths?: string[]
-  visibilityLeaks?: string[]
-  reportOfferPatch?: Partial<ReportOfferFields>
-  outreachAngle?: string
-}
 
 type OperatorWorkspaceProps = {
   intake: BusinessIntakePayload
