@@ -1,47 +1,28 @@
-import { ArrowDown, Compass, Flag, MoveUpRight } from 'lucide-react'
-import './ProgressJourneyReport.css'
+import { Compass, Flag, MoveUpRight } from 'lucide-react'
 import type { ProgressJourneyModel } from '../lib/progressJourney'
+import type { MomentumStageDiagnostic } from '../lib/visualDiagnostics'
+import { MomentumTimeline } from './MomentumTimeline'
+import './ProgressJourneyReport.css'
 
-export function ProgressJourneyReport({ model }: { model: ProgressJourneyModel }) {
-  const nextLabel = model.isMaintainingTopLevel
-    ? `${model.nextGrowthStage} · maintenance focus`
-    : model.nextGrowthStage
-
+export function ProgressJourneyReport({
+  model,
+  timeline,
+}: {
+  model: ProgressJourneyModel
+  timeline: MomentumStageDiagnostic[]
+}) {
   return (
     <section className="report-page progress-page report-action-group" aria-label="Progress and growth stage journey">
       <div className="report-page-heading progress-page-heading">
         <p className="section-kicker">A practical path forward</p>
         <h2>Your Growth Path</h2>
         <p>
-          The Snapshot turns the current position into a measured sequence: strengthen
-          the next level first, then build toward durable local authority.
+          The Snapshot separates today’s assessed position from projected planning states,
+          then reserves measurable progress for a verified follow-up Snapshot.
         </p>
       </div>
 
-      <section className="premium-journey-card" aria-label="Current to long-term growth stage path">
-        <JourneyStage
-          label="Current Growth Stage"
-          title={model.currentGrowthStage}
-          detail={`${model.currentScore}/100 current position`}
-          description={model.currentPositionMeaning}
-        />
-        <ArrowDown className="journey-arrow" size={22} aria-hidden="true" />
-        <JourneyStage
-          label="Next Growth Stage"
-          title={nextLabel}
-          detail={`${model.targetScoreLow}–${model.targetScoreHigh}/100 projected planning range`}
-          description={model.nextLevelMeaning}
-          highlighted
-        />
-        <ArrowDown className="journey-arrow" size={22} aria-hidden="true" />
-        <JourneyStage
-          label="Long-Term Growth Goal"
-          title={model.longTermGrowthGoal}
-          detail="Built through verified, sequenced improvements"
-          description={model.longTermGrowthGoalMeaning}
-          goal
-        />
-      </section>
+      <MomentumTimeline stages={timeline} />
 
       <section className="progress-summary" aria-labelledby="progress-summary-title">
         <div className="progress-section-heading">
@@ -77,33 +58,6 @@ export function ProgressJourneyReport({ model }: { model: ProgressJourneyModel }
         </p>
       </aside>
     </section>
-  )
-}
-
-function JourneyStage({
-  label,
-  title,
-  detail,
-  description,
-  highlighted = false,
-  goal = false,
-}: {
-  label: string
-  title: string
-  detail: string
-  description: string
-  highlighted?: boolean
-  goal?: boolean
-}) {
-  return (
-    <article
-      className={`journey-stage ${highlighted ? 'highlighted' : ''} ${goal ? 'goal' : ''}`}
-    >
-      <span>{label}</span>
-      <h3>{title}</h3>
-      <strong>{detail}</strong>
-      <p>{description}</p>
-    </article>
   )
 }
 

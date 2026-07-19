@@ -1,8 +1,26 @@
 import { ArrowUpRight, Gem, Lightbulb } from 'lucide-react'
 import type { ExecutiveSummary, FeaturedOpportunity, StrategicAsset } from '../lib/reportStory'
+import type {
+  EvidenceDiagnostic,
+  OpportunityMatrixDiagnostic,
+  ScoreDiagnostic,
+} from '../lib/visualDiagnostics'
+import {
+  EvidenceTrustIndicator,
+  ExecutiveScoreStrip,
+} from './ExecutiveScoreStrip'
+import { OpportunityMatrix } from './OpportunityMatrix'
 import './ReportStrategy.css'
 
-export function ExecutiveSummaryReport({ summary }: { summary: ExecutiveSummary }) {
+export function ExecutiveSummaryReport({
+  summary,
+  scores,
+  evidence,
+}: {
+  summary: ExecutiveSummary
+  scores: ScoreDiagnostic[]
+  evidence: EvidenceDiagnostic
+}) {
   const details = [
     ['Current Position', summary.currentPosition],
     ['Largest Opportunity', summary.largestOpportunity],
@@ -31,6 +49,9 @@ export function ExecutiveSummaryReport({ summary }: { summary: ExecutiveSummary 
           </div>
         ))}
       </dl>
+
+      <ExecutiveScoreStrip scores={scores} />
+      <EvidenceTrustIndicator diagnostic={evidence} />
     </section>
   )
 }
@@ -81,8 +102,10 @@ export function StrategicAssetsReport({ assets }: { assets: StrategicAsset[] }) 
 
 export function BiggestOpportunityReport({
   opportunity,
+  matrix,
 }: {
   opportunity: FeaturedOpportunity
+  matrix: OpportunityMatrixDiagnostic
 }) {
   return (
     <section
@@ -131,6 +154,8 @@ export function BiggestOpportunityReport({
           </p>
         )}
       </article>
+
+      <OpportunityMatrix matrix={matrix} />
     </section>
   )
 }

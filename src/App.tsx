@@ -79,6 +79,14 @@ import {
   formatOfferAndCtaText,
 } from './lib/reportOffer'
 import { getReportReadiness } from './lib/reportReadiness'
+import {
+  createVisualDiagnostics,
+  formatEvidenceDiagnosticText,
+  formatMomentumTimelineText,
+  formatOpportunityMatrixText,
+  formatScoreDiagnosticsText,
+  type VisualDiagnostics,
+} from './lib/visualDiagnostics'
 import { emptyScores, getRatingLabel, getTotalScore, normalizeScores, scoreLabels } from './lib/scoring'
 import { deleteSnapshot, isStorageQuotaError, loadSnapshots, saveSnapshot } from './lib/storage'
 import {
@@ -187,6 +195,7 @@ function buildReportText({
   scores,
   reportStory,
   executiveSummary,
+  visualDiagnostics,
   progressJourney,
   roadmap,
   evidenceText,
@@ -201,6 +210,7 @@ function buildReportText({
   scores: Scores
   reportStory: ReportStory
   executiveSummary: ExecutiveSummary
+  visualDiagnostics: VisualDiagnostics
   progressJourney: ProgressJourneyModel
   roadmap: ConsultingRoadmap
   evidenceText: string
@@ -232,9 +242,17 @@ ${categoryScores}
 
 ${formatExecutiveSummaryText(executiveSummary)}
 
+${formatScoreDiagnosticsText(visualDiagnostics.scores)}
+
+${formatEvidenceDiagnosticText(visualDiagnostics.evidence)}
+
 ${formatStrategicAssetsText(reportStory.strategicAssets)}
 
 ${formatFeaturedOpportunityText(reportStory.featuredOpportunity)}
+
+${formatOpportunityMatrixText(visualDiagnostics.opportunityMatrix)}
+
+${formatMomentumTimelineText(visualDiagnostics.momentumTimeline)}
 
 ${formatProgressJourneyText(progressJourney)}
 
@@ -393,6 +411,22 @@ function App() {
     }),
     [form, progressJourney, reportStory.featuredOpportunity, roadmap],
   )
+  const visualDiagnostics = useMemo(
+    () => createVisualDiagnostics({
+      scores,
+      actions: growthFoundation.recommendedActions,
+      evidenceItems: growthFoundation.evidenceItems,
+      progress: progressJourney,
+      roadmap,
+    }),
+    [
+      growthFoundation.evidenceItems,
+      growthFoundation.recommendedActions,
+      progressJourney,
+      roadmap,
+      scores,
+    ],
+  )
   const evidenceText = useMemo(
     () => formatEvidenceReportText(reportEvidence, growthFoundation.recommendedActions),
     [growthFoundation.recommendedActions, reportEvidence],
@@ -409,6 +443,7 @@ function App() {
       scores,
       reportStory,
       executiveSummary,
+      visualDiagnostics,
       progressJourney,
       roadmap,
       evidenceText,
@@ -427,6 +462,7 @@ function App() {
       reportRating,
       scores,
       totalScore,
+      visualDiagnostics,
     ],
   )
   const activeLead = useMemo(
@@ -1607,15 +1643,23 @@ function App() {
             </div>
           </section>
 
-          <ExecutiveSummaryReport summary={executiveSummary} />
+          <ExecutiveSummaryReport
+            summary={executiveSummary}
+            scores={visualDiagnostics.scores}
+            evidence={visualDiagnostics.evidence}
+          />
           <StrategicAssetsReport assets={reportStory.strategicAssets} />
           <BiggestOpportunityReport
             opportunity={reportStory.featuredOpportunity}
+            matrix={visualDiagnostics.opportunityMatrix}
           />
 
-          <ProgressJourneyReport model={progressJourney} />
-          <SprintPlan sprint={roadmap.sprint} />
-          <AuthorityRoadmap roadmap={roadmap} />
+          <ProgressJourneyReport
+            model={progressJourney}
+            timeline={visualDiagnostics.momentumTimeline}
+          />
+          <SprintPlan phases={visualDiagnostics.sprintPhases} />
+          <AuthorityRoadmap weeks={visualDiagnostics.monthWeeks} />
           {reportEvidence.length > 0 && (
             <EvidenceReport
               evidenceItems={reportEvidence}
