@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import {
   Briefcase,
   CalendarDays,
@@ -21,6 +21,9 @@ import {
 } from 'lucide-react'
 import './App.css'
 import { ActionControlCenter } from './components/ActionControlCenter'
+import { DemoTour } from './components/DemoTour'
+import { OperatorHeader } from './components/OperatorHeader'
+import './components/ContestPreparation.css'
 import { AuthorityRoadmap } from './components/AuthorityRoadmap'
 import { SprintPlan } from './components/SprintPlan'
 import { EvidenceManager } from './components/EvidenceManager'
@@ -111,8 +114,19 @@ import {
 } from './lib/intakeStorage'
 import { normalizeWebsiteUrl } from './lib/intakeParser'
 import {
+  contestDemoIds,
+  getContestDemoData,
+  installContestDemo,
+  isContestDemoInstalled,
+  resetContestDemo,
+} from './lib/contestDemo'
+import {
+  clearDemoTourDismissal,
+  isDemoTourDismissed,
+  type DemoTourStep,
+} from './lib/demoTour'
+import {
   createLead,
-  deleteLead,
   emptyLeadInput,
   leadPriorities,
   leadStatuses,
@@ -343,6 +357,13 @@ function App() {
   const [proposalCreationRequest, setProposalCreationRequest] = useState<ProposalCreationRequest>()
   const [proposalFocusRequest, setProposalFocusRequest] = useState<ProposalFocusRequest>()
   const [fastLaneLaunchRequest, setFastLaneLaunchRequest] = useState<FastLaneLaunchRequest>()
+  const [contestDemoInstalled, setContestDemoInstalled] = useState(
+    () => isContestDemoInstalled(),
+  )
+  const [contestDemoMessage, setContestDemoMessage] = useState('')
+  const [contestDataRevision, setContestDataRevision] = useState(0)
+  const [demoTourRestartNonce, setDemoTourRestartNonce] = useState(0)
+  const [interactionMessage, setInteractionMessage] = useState('')
 
   const totalScore = useMemo(() => getTotalScore(scores), [scores])
   const rating = getRatingLabel(totalScore)
@@ -698,7 +719,17 @@ function App() {
   }
 
   function updateLeadList(nextLeads: Lead[]) {
-    setLeads(persistLeads(nextLeads))
+    try {
+      setLeads(persistLeads(nextLeads))
+      setInteractionMessage('')
+    } catch (error) {
+      setLeads(nextLeads)
+      setInteractionMessage(
+        isStorageQuotaError(error)
+          ? 'Browser storage is full. Lead changes remain open for this session but will not survive a refresh until space is cleared.'
+          : 'Lead changes remain open in this tab, but browser storage is unavailable. Keep the tab open and try saving again before refreshing.',
+      )
+    }
   }
 
   function updateIntakeDraft(nextIntake: BusinessIntakePayload) {
@@ -876,9 +907,27 @@ function App() {
   }
 
   async function copyText(label: string, text: string) {
-    await navigator.clipboard.writeText(text)
-    setCopiedKey(label)
-    window.setTimeout(() => setCopiedKey(null), 1600)
+    if (!navigator.clipboard?.writeText) {
+      setInteractionMessage('Clipboard access is unavailable in this browser. Select the text and copy it manually.')
+      return
+    }
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopiedKey(label)
+      setInteractionMessage('')
+      window.setTimeout(() => setCopiedKey(null), 1600)
+    } catch {
+      setInteractionMessage('Clipboard permission was denied. Select the text and copy it manually.')
+    }
+  }
+
+  function printReport() {
+    if (typeof window.print !== 'function') {
+      setInteractionMessage('Print / Save PDF is unavailable in this browser. Open the app in a desktop browser with printing enabled.')
+      return
+    }
+    setInteractionMessage('')
+    window.print()
   }
 
   function copyAllOutputs() {
@@ -1089,7 +1138,7 @@ function App() {
   }
 
   function handleDeleteLead(leadId: string) {
-    setLeads(deleteLead(leadId))
+    updateLeadList(leads.filter((lead) => lead.id !== leadId))
     if (editingLeadId === leadId) {
       setEditingLeadId(null)
       setLeadDraft(emptyLeadInput)
@@ -1358,24 +1407,128 @@ function App() {
     setImportText('')
   }
 
+  function loadContestDemo(startTour: 'if-new' | 'always' = 'if-new') {
+    try {
+      const existingDemo = getContestDemoData()
+      const data = existingDemo || installContestDemo()
+      const nextLeads = loadLeads()
+      const nextIntakes = loadIntakeDrafts()
+      const nextSnapshots = loadSnapshots()
+      setLeads(nextLeads)
+      setSavedIntakes(nextIntakes)
+      setSavedSnapshots(nextSnapshots)
+      handleLoadSnapshot(
+        nextSnapshots.find((snapshot) => snapshot.id === data.snapshot.id) || data.snapshot,
+      )
+      setIntake(nextIntakes.find((saved) => saved.id === data.intake.id) || data.intake)
+      setActiveLeadId(data.lead.id)
+      setStatusFilter('All')
+      setPriorityFilter('All')
+      setNicheFilter('All')
+      setLeadSearch('')
+      setIntakeStorageMessage('Contest Demo intake loaded with reviewed deterministic draft inputs.')
+      setContestDemoInstalled(true)
+      setContestDataRevision((current) => current + 1)
+      setFastLaneLaunchRequest({ nonce: Date.now(), leadId: data.lead.id })
+      setContestDemoMessage(
+        existingDemo
+          ? 'Contest Demo resumed from its existing browser-local progress. Use Reset Contest Demo to restore the original reviewed state.'
+          : 'Contest Demo loaded: reviewed Snapshot, live roadmap, ready proposal, and Send Kit are linked under stable fictional records.',
+      )
+      if (startTour === 'always' || !isDemoTourDismissed()) {
+        setDemoTourRestartNonce((current) => current + 1)
+      }
+    } catch (error) {
+      setContestDemoMessage(
+        isStorageQuotaError(error)
+          ? 'Contest Demo could not be loaded because browser storage is full. Remove a large screenshot or old local record, then try again.'
+          : 'Contest Demo could not be loaded. Existing operator data was left in place; refresh and try again.',
+      )
+    }
+  }
+
+  function handleResetContestDemo() {
+    if (!window.confirm('Restore the fictional Contest Demo to its original state? Changes to demo records will be replaced; every non-demo lead, Snapshot, evidence item, proposal, and session will remain.')) return
+    try {
+      const data = resetContestDemo()
+      const nextLeads = loadLeads()
+      const nextIntakes = loadIntakeDrafts()
+      const nextSnapshots = loadSnapshots()
+      setLeads(nextLeads)
+      setSavedIntakes(nextIntakes)
+      setSavedSnapshots(nextSnapshots)
+      handleLoadSnapshot(
+        nextSnapshots.find((snapshot) => snapshot.id === data.snapshot.id) || data.snapshot,
+      )
+      setIntake(nextIntakes.find((saved) => saved.id === data.intake.id) || data.intake)
+      setActiveLeadId(data.lead.id)
+      setStatusFilter('All')
+      setPriorityFilter('All')
+      setNicheFilter('All')
+      setLeadSearch('')
+      setIntakeStorageMessage('Contest Demo intake restored with its reviewed deterministic draft.')
+      setProposalCreationRequest(undefined)
+      setProposalFocusRequest(undefined)
+      setFastLaneLaunchRequest({ nonce: Date.now(), leadId: data.lead.id })
+      setContestDemoInstalled(true)
+      if (isDemoTourDismissed()) {
+        setDemoTourRestartNonce(0)
+      } else {
+        setDemoTourRestartNonce((current) => current + 1)
+      }
+      setContestDataRevision((current) => current + 1)
+      setContestDemoMessage('Contest Demo restored to its original reviewed state. Non-demo browser records were left unchanged.')
+    } catch {
+      setContestDemoMessage('Contest Demo reset could not finish. Non-demo browser records were left unchanged; refresh and try again.')
+    }
+  }
+
+  function handleRestartDemoTour() {
+    clearDemoTourDismissal()
+    if (!contestDemoInstalled) {
+      loadContestDemo('always')
+      return
+    }
+    setDemoTourRestartNonce((current) => current + 1)
+  }
+
+  const handleDemoTourNavigate = useCallback((step: DemoTourStep) => {
+    if (step.title === 'Proposal') {
+      setProposalFocusRequest({
+        nonce: Date.now(),
+        proposalId: contestDemoIds.proposal,
+      })
+    }
+    if (step.title === 'Send Kit') {
+      const leadId = leads.find((lead) => lead.id === contestDemoIds.lead)?.id
+        || activeLeadId
+        || leads[0]?.id
+      if (leadId) {
+        setFastLaneLaunchRequest({ nonce: Date.now(), leadId, step: 6 })
+      }
+    }
+  }, [activeLeadId, leads])
+
   return (
     <main className="app-shell">
-      <header className="topbar screen-only">
-        <div>
-          <p className="eyebrow">Internal consulting workspace</p>
-          <h1>Snapshot Studio</h1>
-          <p className="topbar-copy">
-            Create a premium, playful business website audit with practical fixes, outreach copy, and a shareable result from one lightweight workflow.
-          </p>
-        </div>
-        <div className="score-pill" aria-label={`Score ${totalScore} out of 100, ${rating}`}>
-          <span>Business Horoscope score</span>
-          <strong>{totalScore}/100</strong>
-          <small>{rating}</small>
-        </div>
-      </header>
+      <OperatorHeader
+        totalScore={totalScore}
+        rating={rating}
+        demoInstalled={contestDemoInstalled}
+        demoMessage={contestDemoMessage}
+        onLoadDemo={() => loadContestDemo('if-new')}
+        onResetDemo={handleResetContestDemo}
+        onRestartTour={handleRestartDemoTour}
+      />
+
+      <DemoTour
+        key={`contest-tour-${contestDataRevision}-${demoTourRestartNonce}`}
+        openInitially={demoTourRestartNonce > 0}
+        onNavigate={handleDemoTourNavigate}
+      />
 
       <FastLane
+        key={`fast-lane-${contestDataRevision}`}
         leads={leads}
         savedIntakes={savedIntakes}
         savedSnapshots={proposalSnapshots}
@@ -1405,6 +1558,7 @@ function App() {
         onOpenEvidence={openEvidenceManager}
         onProposalSaved={openProposalFromFastLane}
         onMarkOutreachSent={handleFastLaneMarkSent}
+        onPrintReport={printReport}
       />
 
       <section className="lead-cockpit screen-only" id="lead-queue" aria-label="Lead queue">
@@ -1578,7 +1732,11 @@ function App() {
           )}
 
           {filteredLeads.length === 0 ? (
-            <p className="empty-state">No leads match the current filters.</p>
+            <p className="empty-state">
+              {leads.length === 0
+                ? 'No leads yet. Add one manually, import a list, or load the fictional Contest Demo to see the complete workflow.'
+                : 'No leads match these filters. Clear the search or broaden a filter to return to the queue.'}
+            </p>
           ) : (
             <div className="lead-list">
               {filteredLeads.map((lead) => (
@@ -1973,11 +2131,12 @@ function App() {
               <FilePlus2 size={18} aria-hidden="true" />
               Create proposal
             </button>
-            <button className="primary-button" type="button" onClick={() => window.print()}>
+            <button className="primary-button" type="button" onClick={printReport}>
               <Printer size={18} aria-hidden="true" />
               Print / Save PDF
             </button>
           </div>
+          {interactionMessage && <p className="interaction-message" role="status">{interactionMessage}</p>}
         </div>
 
         <article className="report-shell">
@@ -2118,7 +2277,9 @@ function App() {
         </div>
 
         {savedSnapshots.length === 0 ? (
-          <p className="empty-state">Saved snapshots will appear here.</p>
+          <p className="empty-state">
+            No saved Snapshots yet. Review a lead, confirm the assessment, and choose Save Snapshot; records stay in this browser.
+          </p>
         ) : (
           <div className="saved-list">
             {savedSnapshots.map((snapshot) => (
@@ -2161,6 +2322,7 @@ function App() {
       </section>
 
       <ProposalWorkspace
+        key={`proposal-workspace-${contestDataRevision}`}
         snapshots={proposalSnapshots}
         creationRequest={proposalCreationRequest}
         focusRequest={proposalFocusRequest}

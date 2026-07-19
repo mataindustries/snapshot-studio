@@ -41,7 +41,13 @@ const proposalTypes: ProposalType[] = [
 ]
 
 async function copyToClipboard(text: string) {
-  await navigator.clipboard.writeText(text)
+  if (!navigator.clipboard?.writeText) return false
+  try {
+    await navigator.clipboard.writeText(text)
+    return true
+  } catch {
+    return false
+  }
 }
 
 export function ProposalWorkspace({ snapshots, creationRequest, focusRequest }: {
@@ -178,6 +184,10 @@ export function ProposalWorkspace({ snapshots, creationRequest, focusRequest }: 
   }
 
   function printProposal() {
+    if (typeof window.print !== 'function') {
+      setMessage('Print / Save PDF is unavailable in this browser. Open the app in a desktop browser with printing enabled.')
+      return
+    }
     document.body.classList.add('printing-proposal')
     const cleanUp = () => document.body.classList.remove('printing-proposal')
     window.addEventListener('afterprint', cleanUp, { once: true })
@@ -219,7 +229,7 @@ export function ProposalWorkspace({ snapshots, creationRequest, focusRequest }: 
             <select aria-label="Filter proposals by status" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as ProposalStatus | 'All')}><option>All</option>{pipelineStatuses.map((status) => <option key={status}>{status}</option>)}<option>Viewed</option><option>Expired</option></select>
             <select aria-label="Filter proposals by type" value={typeFilter} onChange={(event) => setTypeFilter(event.target.value as ProposalType | 'All')}><option>All</option>{proposalTypes.map((type) => <option key={type}>{type}</option>)}</select>
           </div>
-          {filtered.length === 0 ? <p className="empty-state">No proposals match this view.</p> : (
+          {filtered.length === 0 ? <p className="empty-state">{proposals.length === 0 ? 'No proposals yet. Save or open a Snapshot, then create a proposal from its approved action plan.' : 'No proposals match this view. Clear the search or filters to return to the pipeline.'}</p> : (
             <div className="proposal-list">
               {filtered.map((proposal) => {
                 const linked = snapshots.some((item) => item.id === proposal.snapshotId)
@@ -247,8 +257,8 @@ export function ProposalWorkspace({ snapshots, creationRequest, focusRequest }: 
           {!activeProposal ? (
             <div className="panel proposal-empty-editor">
               <FilePlus2 size={28} />
-              <h3>Create a proposal from the current Snapshot</h3>
-              <p>Use the “Create proposal” action in the Snapshot preview. Existing proposals remain available in the list.</p>
+              <h3>{proposals.length > 0 ? 'Select a proposal to continue' : 'Create a proposal from a reviewed Snapshot'}</h3>
+              <p>{proposals.length > 0 ? 'Choose a proposal from the list to edit, preview, print, or update its status.' : 'Use Create proposal in the Snapshot preview. Scope and client context will come from the existing approved plan.'}</p>
             </div>
           ) : (
             <>
@@ -276,9 +286,9 @@ export function ProposalWorkspace({ snapshots, creationRequest, focusRequest }: 
                 <div className="proposal-editor-heading"><div><span>Delivery copy</span><h3>Proposal email</h3></div><Mail size={18} /></div>
                 <label className="field"><span>Subject</span><input value={emailSubject} onChange={(event) => setEmailSubject(event.target.value)} /></label>
                 <label className="field"><span>Email body</span><textarea value={emailBody} onChange={(event) => setEmailBody(event.target.value)} /></label>
-                <button className="secondary-button" type="button" onClick={() => void copyToClipboard(`Subject: ${emailSubject}\n\n${emailBody}`).then(() => setMessage('Proposal email copied.'))}><Copy size={16} /> Copy proposal email</button>
+                <button className="secondary-button" type="button" onClick={() => void copyToClipboard(`Subject: ${emailSubject}\n\n${emailBody}`).then((copied) => setMessage(copied ? 'Proposal email copied.' : 'Clipboard access is unavailable. Select the proposal email and copy it manually.'))}><Copy size={16} /> Copy proposal email</button>
                 <label className="field"><span>Follow-up for Sent proposals</span><textarea value={followUp} onChange={(event) => setFollowUp(event.target.value)} /></label>
-                <button className="ghost-button" type="button" onClick={() => void copyToClipboard(followUp).then(() => setMessage('Follow-up message copied.'))}>Copy follow-up</button>
+                <button className="ghost-button" type="button" onClick={() => void copyToClipboard(followUp).then((copied) => setMessage(copied ? 'Follow-up message copied.' : 'Clipboard access is unavailable. Select the follow-up and copy it manually.'))}>Copy follow-up</button>
               </section>
 
               <div className="proposal-preview-toolbar panel" id="proposal-preview">

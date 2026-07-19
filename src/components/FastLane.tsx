@@ -74,7 +74,11 @@ import {
 } from './FastLaneSteps'
 import './FastLane.css'
 
-export type FastLaneLaunchRequest = { nonce: number; leadId: string }
+export type FastLaneLaunchRequest = {
+  nonce: number
+  leadId: string
+  step?: FastLaneStep
+}
 
 export type FastLaneMarkSentInput = {
   leadId?: string
@@ -117,6 +121,7 @@ type FastLaneProps = {
   onOpenEvidence: (evidenceId?: string) => void
   onProposalSaved: (proposalId: string, print?: boolean) => void
   onMarkOutreachSent: (input: FastLaneMarkSentInput) => Lead
+  onPrintReport: () => void
 }
 
 function scrollToId(id: string) {
@@ -159,6 +164,7 @@ export function FastLane(props: FastLaneProps) {
   const [snapshotDirty, setSnapshotDirty] = useState(false)
   const [message, setMessage] = useState('')
   const handledLaunchNonce = useRef<number | undefined>(undefined)
+  const launchRequestHandler = useRef<(request: FastLaneLaunchRequest) => void>(() => undefined)
 
   const storedProposals = loadProposals()
   const source = useMemo<FastLaneSource>(() => ({
@@ -261,10 +267,7 @@ export function FastLane(props: FastLaneProps) {
     if (!props.launchRequest || props.launchRequest.nonce === handledLaunchNonce.current) return
     handledLaunchNonce.current = props.launchRequest.nonce
     const timer = window.setTimeout(() => {
-      setSourceType('lead')
-      setSourceId(props.launchRequest!.leadId)
-      setExpanded(false)
-      scrollToId('fast-lane')
+      launchRequestHandler.current(props.launchRequest!)
     }, 0)
     return () => window.clearTimeout(timer)
   }, [props.launchRequest])
@@ -305,7 +308,17 @@ export function FastLane(props: FastLaneProps) {
     setProposalDirty(false)
     setSnapshotDirty(false)
     setExpanded(true)
-    setMessage(saved.status === 'completed' ? 'Completed Fast Lane session resumed.' : 'Fast Lane session resumed.')
+    const missingLinks = [
+      saved.leadId && !props.leads.some((item) => item.id === saved.leadId) ? 'lead' : '',
+      saved.intakeId && !props.savedIntakes.some((item) => item.id === saved.intakeId) ? 'intake' : '',
+      saved.snapshotId && !props.savedSnapshots.some((item) => item.id === saved.snapshotId) ? 'Snapshot' : '',
+      saved.proposalId && !loadProposals().some((item) => item.id === saved.proposalId) ? 'proposal' : '',
+    ].filter(Boolean)
+    setMessage(missingLinks.length > 0
+      ? `Interrupted Fast Lane recovered. The saved ${missingLinks.join(', ')} link${missingLinks.length === 1 ? ' is' : 's are'} unavailable; your lead draft and copy edits remain. Review each step before saving.`
+      : saved.status === 'completed'
+        ? 'Completed Fast Lane session resumed.'
+        : 'Fast Lane session resumed.')
   }
 
   function startSource(fresh: boolean) {
@@ -422,7 +435,7 @@ export function FastLane(props: FastLaneProps) {
     window.setTimeout(() => startLeadDirect(lead), 0)
   }
 
-  function startLeadDirect(lead: Lead) {
+  function startLeadDirect(lead: Lead, requestedStep: FastLaneStep = 1) {
     const leadIntake = props.savedIntakes
       .filter((item) => item.linkedLeadId === lead.id)
       .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))[0]
@@ -436,6 +449,11 @@ export function FastLane(props: FastLaneProps) {
     )
     const next: FastLaneSession = {
       ...base,
+      currentStep: requestedStep,
+      completedSteps: Array.from(
+        { length: requestedStep - 1 },
+        (_, index) => (index + 1) as FastLaneStep,
+      ),
       evidenceIds: leadSnapshot?.evidenceItems.map((item) => item.id) || [],
       preliminarySnapshot: Boolean(
         leadSnapshot && !leadSnapshot.evidenceItems.some(isEvidenceReportReady),
@@ -630,6 +648,10 @@ export function FastLane(props: FastLaneProps) {
   }
 
   function openProposal(print = false) {
+    if (print && typeof window.print !== 'function') {
+      setMessage('Print / Save PDF is unavailable in this browser. Open the app in a desktop browser with printing enabled.')
+      return
+    }
     const proposal = proposalDirty ? persistProposal(false) : currentProposal
     if (!proposal) {
       setMessage('Create and save a proposal before opening its preview.')
@@ -749,6 +771,35 @@ export function FastLane(props: FastLaneProps) {
     setMessage('Fast Lane session discarded. Source records were not changed.')
   }
 
+  launchRequestHandler.current = (request) => {
+    setSourceType('lead')
+    setSourceId(request.leadId)
+    const lead = props.leads.find((item) => item.id === request.leadId)
+    if (lead && request.step) {
+      const saved = loadFastLaneSessions()
+        .filter((item) => item.leadId === lead.id)
+        .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))[0]
+      if (saved) {
+        resumeSession({
+          ...saved,
+          currentStep: request.step,
+          completedSteps: Array.from(new Set([
+            ...saved.completedSteps,
+            ...Array.from(
+              { length: request.step - 1 },
+              (_, index) => (index + 1) as FastLaneStep,
+            ),
+          ])),
+        })
+      } else {
+        startLeadDirect(lead, request.step)
+      }
+    } else {
+      setExpanded(false)
+    }
+    scrollToId('fast-lane')
+  }
+
   const activeStep = session?.currentStep || 1
   const currentReadiness = readiness[activeStep - 1]
   const saveLabel = hasMeaningfulUnsavedWork ? 'Unsaved app changes' : 'Session saved locally'
@@ -826,9 +877,9 @@ export function FastLane(props: FastLaneProps) {
             {activeStep === 1 && <FastLaneLeadStep session={session} leads={props.leads} readiness={currentReadiness} onLeadChange={changeLead} onChooseLead={chooseLead} onSaveLead={saveLeadFromSession} onOpenWorkspace={() => scrollToId('lead-queue')} />}
             {activeStep === 2 && <FastLaneResearchStep intake={props.intake} readiness={currentReadiness} evidenceCount={props.evidenceItems.length} onChange={updateResearch} onAttachScreenshot={attachScreenshot} onOpenWorkspace={() => scrollToId('operator-workspace')} />}
             {activeStep === 3 && <FastLaneDraftStep intake={props.intake} scores={props.scores} readiness={currentReadiness} changes={draftApplication.changes} includeScores={includeScores} onIncludeScoresChange={setIncludeScores} onGenerate={generateDraft} onApply={applyDraft} onReviewScores={() => scrollToId('audit-profile-workspace')} onEditDraft={() => completeStepAndMove(2)} onOpenWorkspace={() => scrollToId('operator-workspace')} />}
-            {activeStep === 4 && <FastLaneSnapshotStep snapshot={currentSnapshot} form={props.form} totalScore={props.totalScore} horoscope={props.horoscope} growthStage={props.growthStage} highestOpportunity={props.highestOpportunity} reportReadiness={props.reportReadiness} evidenceItems={props.evidenceItems} actions={props.actions} readiness={currentReadiness} onSave={() => void saveSnapshot(false)} onUsePreliminary={() => void saveSnapshot(true)} onPreview={() => scrollToId('client-report-preview')} onPrint={() => window.print()} onOpenAudit={() => scrollToId('audit-profile-workspace')} onOpenActions={() => scrollToId('action-control-center')} onReturnDraft={() => completeStepAndMove(3)} />}
+            {activeStep === 4 && <FastLaneSnapshotStep snapshot={currentSnapshot} form={props.form} totalScore={props.totalScore} horoscope={props.horoscope} growthStage={props.growthStage} highestOpportunity={props.highestOpportunity} reportReadiness={props.reportReadiness} evidenceItems={props.evidenceItems} actions={props.actions} readiness={currentReadiness} onSave={() => void saveSnapshot(false)} onUsePreliminary={() => void saveSnapshot(true)} onPreview={() => scrollToId('client-report-preview')} onPrint={props.onPrintReport} onOpenAudit={() => scrollToId('audit-profile-workspace')} onOpenActions={() => scrollToId('action-control-center')} onReturnDraft={() => completeStepAndMove(3)} />}
             {activeStep === 5 && <FastLaneProposalStep snapshot={currentSnapshot} proposal={currentProposal} proposalReadiness={proposalReadiness} readiness={currentReadiness} onCreate={createProposal} onChange={(proposal) => { setProposalDraft(proposal); setProposalDirty(true) }} onUseRecommended={useRecommendedScope} onSave={() => void persistProposal(false)} onPreview={() => openProposal(false)} onPrint={() => openProposal(true)} onOpenWorkspace={() => currentProposal ? openProposal(false) : scrollToId('proposal-workspace')} onSkip={skipProposal} />}
-            {activeStep === 6 && <FastLaneSendKitStep session={session} blocks={sendKit} readiness={currentReadiness} snapshot={currentSnapshot} proposal={currentProposal} onRouteChange={(selectedContactRoute) => updateSession({ selectedContactRoute })} onEditBlock={(id, value) => updateSession({ sendKitEdits: { ...session.sendKitEdits, [id]: value } })} onResetBlock={resetBlock} onCopyBlock={(block) => void copyBlock(block)} onPrintReport={() => window.print()} onPrintProposal={() => openProposal(true)} onMarkSent={markSent} onFollowUpChange={(followUpDate) => updateSession({ followUpDate, noFollowUp: false })} onNoFollowUpChange={(noFollowUp) => updateSession({ noFollowUp })} onProposalIncludedChange={(proposalIncluded) => updateSession({ proposalIncluded })} />}
+            {activeStep === 6 && <FastLaneSendKitStep session={session} blocks={sendKit} readiness={currentReadiness} snapshot={currentSnapshot} proposal={currentProposal} onRouteChange={(selectedContactRoute) => updateSession({ selectedContactRoute })} onEditBlock={(id, value) => updateSession({ sendKitEdits: { ...session.sendKitEdits, [id]: value } })} onResetBlock={resetBlock} onCopyBlock={(block) => void copyBlock(block)} onPrintReport={props.onPrintReport} onPrintProposal={() => openProposal(true)} onMarkSent={markSent} onFollowUpChange={(followUpDate) => updateSession({ followUpDate, noFollowUp: false })} onNoFollowUpChange={(noFollowUp) => updateSession({ noFollowUp })} onProposalIncludedChange={(proposalIncluded) => updateSession({ proposalIncluded })} />}
           </div>
 
           <nav className="fast-lane-mobile-nav" aria-label="Fast Lane step navigation">

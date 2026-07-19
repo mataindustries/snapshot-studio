@@ -408,6 +408,12 @@
 }
 
 @media (max-width: 480px) {
+  .action-control-center {
+    gap: 13px;
+    margin: 16px 0;
+    padding: 14px;
+  }
+
   .quick-status-actions {
     grid-template-columns: minmax(0, 1fr);
   }

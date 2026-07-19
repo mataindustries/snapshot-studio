@@ -686,7 +686,12 @@ button {
 
 .empty-state {
   margin: 0;
+  padding: 14px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  background: var(--field);
   color: var(--muted);
+  line-height: 1.45;
 }
 
 .saved-list {
@@ -696,9 +701,28 @@ button {
 
 .saved-item {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   gap: 8px;
   align-items: stretch;
+}
+
+.interaction-message {
+  position: fixed;
+  z-index: 900;
+  right: max(14px, env(safe-area-inset-right));
+  bottom: max(14px, env(safe-area-inset-bottom));
+  width: min(420px, calc(100vw - 28px));
+  box-sizing: border-box;
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid #c69747;
+  border-radius: 9px;
+  background: #fff8e9;
+  box-shadow: 0 14px 38px rgba(48, 38, 20, 0.18);
+  color: #704b10;
+  font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1.4;
 }
 
 .saved-item > button:first-child {
@@ -2581,5 +2605,38 @@ button:disabled {
 
   .client-evidence-list {
     display: block;
+  }
+}
+
+@media screen and (max-width: 420px) {
+  .app-shell {
+    padding: 10px;
+  }
+
+  .report-toolbar {
+    display: grid;
+  }
+
+  .report-actions,
+  .report-actions button {
+    width: 100%;
+  }
+
+  .report-shell {
+    padding: 7px;
+  }
+
+  .report-page {
+    gap: 14px;
+    padding: 14px;
+  }
+
+  .sticky-actions {
+    bottom: env(safe-area-inset-bottom);
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+
+  .saved-item > button:first-child {
+    grid-column: 1 / -1;
   }
 }

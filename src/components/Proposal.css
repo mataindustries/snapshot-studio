@@ -225,6 +225,43 @@
   .proposal-evidence-card { grid-template-columns: 1fr; }
 }
 
+@media (max-width: 420px) {
+  .proposal-workspace-hero,
+  .proposal-conflict,
+  .proposal-editor-toolbar,
+  .proposal-preview-toolbar,
+  .proposal-editor-section,
+  .proposal-email-editor {
+    padding: 14px;
+  }
+
+  .proposal-pipeline {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .proposal-pipeline div {
+    min-width: 0;
+  }
+
+  .proposal-button-row button {
+    flex: 1 1 140px;
+  }
+
+  .proposal-page {
+    padding: 20px 14px;
+  }
+
+  .proposal-cover h1 {
+    font-size: 2.15rem;
+  }
+
+  .proposal-footer {
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 14px;
+  }
+}
+
 @media print {
   body.printing-proposal { background: #fff !important; }
   body.printing-proposal .app-shell > * { display: none !important; }

@@ -184,8 +184,8 @@ export function EvidenceManager({
         <div className="evidence-empty-state">
           <FileCheck2 size={30} aria-hidden="true" />
           <p>
-            No evidence has been added yet. Add a screenshot-backed observation to make this
-            report more concrete.
+            No evidence yet. Start with one public-facing observation and connect it to the
+            action it supports; add a screenshot when one is available.
           </p>
           <button className="primary-button" type="button" onClick={addEvidence}>
             <Plus size={18} aria-hidden="true" />

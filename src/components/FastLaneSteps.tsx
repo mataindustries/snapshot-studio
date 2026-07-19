@@ -649,7 +649,7 @@ export function FastLaneSendKitStep({
     : blocks
 
   return (
-    <section className="fast-lane-step" aria-labelledby="fast-lane-send-title">
+    <section className="fast-lane-step" id="fast-lane-send-kit" aria-labelledby="fast-lane-send-title">
       <StepHeading id="fast-lane-send-title" number={6} title="Send Kit" copy="Copy, personalize, and confirm delivery. Nothing is sent automatically." readiness={readiness} />
       {session.preliminarySnapshot && <p className="fast-lane-preliminary-label"><AlertTriangle size={16} /> Preliminary outreach — evidence can be added during implementation planning.</p>}
       <nav className="fast-lane-route-tabs" aria-label="Contact route">

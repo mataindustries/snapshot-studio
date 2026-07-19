@@ -1154,6 +1154,31 @@
   }
 }
 
+@media (max-width: 420px) {
+  .fast-lane-progress-meta {
+    display: grid;
+  }
+
+  .fast-lane-progress-meta > div:last-child {
+    justify-items: start;
+  }
+
+  .fast-lane-route-tabs button,
+  .fast-lane-step-actions > button,
+  .fast-lane-session-actions > button {
+    flex: 1 1 100%;
+  }
+
+  .fast-lane-mobile-nav {
+    padding-bottom: calc(11px + env(safe-area-inset-bottom));
+  }
+
+  .fast-lane-mobile-nav button {
+    min-width: 0;
+    padding-inline: 8px;
+  }
+}
+
 @media print {
   .fast-lane {
     display: none !important;

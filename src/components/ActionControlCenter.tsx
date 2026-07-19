@@ -145,7 +145,8 @@ export function ActionControlCenter({
 
       {orderedActions.length === 0 ? (
         <p className="action-control-empty">
-          Generate recommendations to begin tracking implementation progress.
+          No canonical actions yet. Complete the business details and scores to generate the
+          implementation plan, then return here to track progress.
         </p>
       ) : (
         <div className="action-control-list">
