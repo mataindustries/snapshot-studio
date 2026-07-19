@@ -11,6 +11,7 @@ import {
   synchronizeEvidenceLinks,
 } from './evidence'
 import { normalizeRecommendedAction } from './actionPlanner'
+import { normalizeActionStatusHistory } from './actionProgress'
 import { getTotalScore } from './scoring'
 
 type GrowthStageBand = {
@@ -120,6 +121,7 @@ export function createGrowthFoundation(scores: Scores): SnapshotGrowthFoundation
     strengths: [],
     visibilityLeaks: [],
     recommendedActions: [],
+    actionStatusHistory: [],
     expectedOutcomes: [],
     evidenceItems: [],
     includeIncompleteEvidence: false,
@@ -185,6 +187,7 @@ export function normalizeGrowthFoundation(
       ...action,
       linkedEvidence: action.linkedEvidenceIds,
     })),
+    actionStatusHistory: normalizeActionStatusHistory(value.actionStatusHistory),
     expectedOutcomes: stringArray(value.expectedOutcomes),
     evidenceItems: linkedItems.evidenceItems,
     includeIncompleteEvidence: typeof value.includeIncompleteEvidence === 'boolean'
@@ -215,6 +218,7 @@ export function refreshGrowthFoundation(
     visibilityLeaks: existing.visibilityLeaks,
     operatorDraftAppliedAt: existing.operatorDraftAppliedAt,
     recommendedActions: existing.recommendedActions,
+    actionStatusHistory: existing.actionStatusHistory,
     expectedOutcomes: existing.expectedOutcomes,
     evidenceItems: existing.evidenceItems,
     includeIncompleteEvidence: existing.includeIncompleteEvidence,

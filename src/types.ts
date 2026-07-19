@@ -63,10 +63,18 @@ export type RecommendedActionImpact = 'Low' | 'Medium' | 'High'
 
 export type RecommendedActionStatus =
   | 'Not Started'
+  | 'Scheduled'
   | 'In Progress'
   | 'Completed'
-  | 'Skipped'
   | 'Needs Review'
+  | 'Deferred'
+
+export type ActionStatusChange = {
+  actionId: string
+  previousStatus: RecommendedActionStatus
+  newStatus: RecommendedActionStatus
+  changedAt: string
+}
 
 export type RecommendedAction = {
   id: string
@@ -150,6 +158,7 @@ export type SnapshotGrowthFoundation = {
   visibilityLeaks: string[]
   operatorDraftAppliedAt?: string
   recommendedActions: RecommendedAction[]
+  actionStatusHistory: ActionStatusChange[]
   expectedOutcomes: string[]
   evidenceItems: EvidenceItem[]
   progressStatus: ProgressStatus

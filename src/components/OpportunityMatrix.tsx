@@ -17,7 +17,9 @@ export function OpportunityMatrix({
           {matrix.actionCount} recommended action{matrix.actionCount === 1 ? '' : 's'} shown.
           {' '}{matrix.nextActionTitle
             ? 'The next action is outlined and labeled.'
-            : 'All displayed actions are resolved.'}
+            : matrix.isImplementationComplete
+              ? 'Implementation is complete.'
+              : 'No unblocked action is currently available.'}
         </p>
       </header>
 

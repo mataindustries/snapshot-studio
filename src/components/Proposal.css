@@ -98,6 +98,7 @@
 .proposal-readiness-panel small { color: var(--muted); }
 .proposal-warning,
 .proposal-dependency { color: #8a5a08 !important; }
+.proposal-scope-note { margin: -4px 0 12px; color: var(--muted); font-size: 0.8rem; }
 
 .proposal-editor { display: grid; gap: 16px; }
 .proposal-editor-section,
@@ -119,6 +120,14 @@
 .proposal-action-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 850; }
 .proposal-action-toggle input { width: 18px; min-height: 18px; accent-color: var(--accent); }
 .proposal-card-topline { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; color: var(--muted); font-size: 0.7rem; font-weight: 800; }
+.proposal-action-facts { display: block; margin-top: 4px; color: var(--muted); font-size: 0.7rem; font-weight: 800; }
+.proposal-action-status { display: inline-flex; flex-shrink: 0; align-items: center; gap: 5px; color: #35434a; font-size: 0.65rem; font-weight: 900; text-transform: uppercase; }
+.proposal-action-status::before { display: inline-grid; width: 13px; height: 13px; border: 2px solid currentColor; border-radius: 3px; content: ''; place-items: center; }
+.proposal-action-status.scheduled::before { border-radius: 999px; content: '·'; }
+.proposal-action-status.in-progress::before { background: linear-gradient(90deg, currentColor 50%, transparent 50%); }
+.proposal-action-status.completed::before { content: '✓'; font-size: 0.6rem; }
+.proposal-action-status.needs-review::before { content: '!'; font-size: 0.6rem; }
+.proposal-action-status.deferred::before { content: '—'; font-size: 0.6rem; }
 .proposal-custom-editor { position: relative; margin-top: 10px; padding: 14px; border: 1px solid var(--line); border-radius: 8px; }
 .proposal-custom-editor > .icon-button { position: absolute; top: 8px; right: 8px; }
 .proposal-milestone-editors { display: grid; gap: 8px; margin-bottom: 12px; }
@@ -155,6 +164,8 @@
 .proposal-scope-list { display: grid; gap: 8px; margin: 0; padding-left: 22px; }
 .proposal-scope-list li { padding-left: 5px; }
 .proposal-scope-list li span { display: block; color: #68747a; }
+.proposal-scope-heading { display: flex; align-items: start; justify-content: space-between; gap: 10px; }
+.proposal-scope-heading .proposal-action-status { display: inline-flex; }
 .proposal-deliverable-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .proposal-deliverable-card { break-inside: avoid; padding: 14px; border: 1px solid #d9e0e2; border-radius: 8px; }
 .proposal-deliverable-card h3 { margin: 7px 0; font-size: 1rem; }

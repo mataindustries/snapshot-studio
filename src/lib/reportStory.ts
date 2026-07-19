@@ -276,7 +276,7 @@ function buildFeaturedOpportunity(
   operatorOpportunity = '',
 ): FeaturedOpportunity {
   const action = actions.find(
-    (candidate) => candidate.status !== 'Completed' && candidate.status !== 'Skipped',
+    (candidate) => candidate.status !== 'Completed' && candidate.status !== 'Deferred',
   ) ?? actions[0]
 
   if (!action) {

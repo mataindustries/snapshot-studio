@@ -635,12 +635,17 @@
   background: linear-gradient(90deg, #10233c 50%, transparent 50%);
 }
 
+.action-status-indicator.scheduled::before {
+  border-radius: 999px;
+  content: '·';
+}
+
 .action-status-indicator.needs-review::before {
   content: '!';
   font-size: 0.68rem;
 }
 
-.action-status-indicator.skipped::before {
+.action-status-indicator.deferred::before {
   content: '—';
   font-size: 0.68rem;
 }

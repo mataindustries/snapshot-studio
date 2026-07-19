@@ -20,6 +20,7 @@ import {
   Upload,
 } from 'lucide-react'
 import './App.css'
+import { ActionControlCenter } from './components/ActionControlCenter'
 import { AuthorityRoadmap } from './components/AuthorityRoadmap'
 import { SprintPlan } from './components/SprintPlan'
 import { EvidenceManager } from './components/EvidenceManager'
@@ -42,6 +43,13 @@ import {
   StrategicAssetsReport,
 } from './components/ReportStrategy'
 import './components/PremiumReportDesign.css'
+import {
+  appendActionStatusHistory,
+  formatActionStatusText,
+  getBlockingActions,
+  getNextMilestone,
+  requiresDependencyOverride,
+} from './lib/actionProgress'
 import {
   createEvidenceItem,
   formatEvidenceReportText,
@@ -112,6 +120,7 @@ import {
 } from './lib/leads'
 import { buildBusinessHoroscope, generateOutputs } from './templates/snapshotTemplates'
 import type {
+  ActionStatusChange,
   BrandingFields,
   BusinessIntakePayload,
   EvidenceItem,
@@ -122,6 +131,7 @@ import type {
   OfferMode,
   ReportOfferFields,
   RecommendedAction,
+  RecommendedActionStatus,
   SavedSnapshot,
   ScoreKey,
   Scores,
@@ -196,6 +206,7 @@ function buildReportText({
   reportStory,
   executiveSummary,
   visualDiagnostics,
+  actions,
   progressJourney,
   roadmap,
   evidenceText,
@@ -211,6 +222,7 @@ function buildReportText({
   reportStory: ReportStory
   executiveSummary: ExecutiveSummary
   visualDiagnostics: VisualDiagnostics
+  actions: RecommendedAction[]
   progressJourney: ProgressJourneyModel
   roadmap: ConsultingRoadmap
   evidenceText: string
@@ -251,6 +263,8 @@ ${formatStrategicAssetsText(reportStory.strategicAssets)}
 ${formatFeaturedOpportunityText(reportStory.featuredOpportunity)}
 
 ${formatOpportunityMatrixText(visualDiagnostics.opportunityMatrix)}
+
+${formatActionStatusText(actions)}
 
 ${formatMomentumTimelineText(visualDiagnostics.momentumTimeline)}
 
@@ -317,6 +331,7 @@ function App() {
   const [loadedId, setLoadedId] = useState<string | null>(null)
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
   const [storageMessage, setStorageMessage] = useState('')
+  const [hasUnsavedProgress, setHasUnsavedProgress] = useState(false)
   const [intakeStorageMessage, setIntakeStorageMessage] = useState('')
   const [proposalCreationRequest, setProposalCreationRequest] = useState<ProposalCreationRequest>()
 
@@ -444,6 +459,7 @@ function App() {
       reportStory,
       executiveSummary,
       visualDiagnostics,
+      actions: growthFoundation.recommendedActions,
       progressJourney,
       roadmap,
       evidenceText,
@@ -454,6 +470,7 @@ function App() {
       evidenceText,
       executiveSummary,
       form,
+      growthFoundation.recommendedActions,
       horoscope,
       progressJourney,
       reportStory,
@@ -469,6 +486,24 @@ function App() {
     () => leads.find((lead) => lead.id === activeLeadId) ?? null,
     [activeLeadId, leads],
   )
+  const proposalSnapshots = useMemo(() => {
+    if (!loadedId) return savedSnapshots
+    const loadedSnapshot = savedSnapshots.find((snapshot) => snapshot.id === loadedId)
+    if (!loadedSnapshot) return savedSnapshots
+    const openSnapshot: SavedSnapshot = {
+      ...loadedSnapshot,
+      recommendedActions: growthFoundation.recommendedActions,
+      actionStatusHistory: growthFoundation.actionStatusHistory,
+    }
+    return savedSnapshots.map((snapshot) =>
+      snapshot.id === loadedId ? openSnapshot : snapshot,
+    )
+  }, [
+    growthFoundation.actionStatusHistory,
+    growthFoundation.recommendedActions,
+    loadedId,
+    savedSnapshots,
+  ])
   const nicheOptions = useMemo(
     () => Array.from(new Set(leads.map((lead) => lead.niche).filter(Boolean))).sort(),
     [leads],
@@ -526,6 +561,110 @@ function App() {
       })),
     })
     setStorageMessage('Evidence draft updated. Save the snapshot to keep it after refresh.')
+  }
+
+  function applyActionStatuses(
+    actionIds: string[],
+    newStatus: RecommendedActionStatus,
+  ) {
+    const targetIds = new Set(actionIds)
+    const targetActions = growthFoundation.recommendedActions.filter(
+      (action) => targetIds.has(action.id) && action.status !== newStatus,
+    )
+    if (targetActions.length === 0) {
+      setStorageMessage('No action status changes were needed.')
+      return false
+    }
+
+    const blockers = Array.from(new Map(
+      targetActions.flatMap((action) =>
+        getBlockingActions(action, growthFoundation.recommendedActions)
+          .filter((blocker) => !(newStatus === 'Completed' && targetIds.has(blocker.id))),
+      ).map((blocker) => [blocker.id, blocker]),
+    ).values())
+    if (
+      blockers.length > 0
+      && requiresDependencyOverride(newStatus)
+      && !window.confirm(
+        'This action is blocked by unfinished work: '
+          + blockers.map((blocker) => blocker.title).join('; ')
+          + '. Update the selected status anyway? Dependencies will remain unchanged.',
+      )
+    ) {
+      return false
+    }
+
+    const changedAt = new Date().toISOString()
+    const changes: ActionStatusChange[] = targetActions.map((action) => ({
+      actionId: action.id,
+      previousStatus: action.status,
+      newStatus,
+      changedAt,
+    }))
+    setFoundationDraft({
+      ...growthFoundation,
+      recommendedActions: growthFoundation.recommendedActions.map((action) =>
+        targetIds.has(action.id) ? { ...action, status: newStatus } : action,
+      ),
+      actionStatusHistory: appendActionStatusHistory(
+        growthFoundation.actionStatusHistory,
+        changes,
+      ),
+    })
+    setHasUnsavedProgress(true)
+    setStorageMessage('Unsaved progress changes')
+    return true
+  }
+
+  function updateActionStatus(
+    actionId: string,
+    status: RecommendedActionStatus,
+  ) {
+    applyActionStatuses([actionId], status)
+  }
+
+  function startNextAction() {
+    const nextAction = getNextMilestone(growthFoundation.recommendedActions)
+    if (!nextAction) {
+      setStorageMessage('No unblocked action is available to start.')
+      return
+    }
+    applyActionStatuses([nextAction.id], 'In Progress')
+  }
+
+  function completeNextAction() {
+    const nextAction = getNextMilestone(growthFoundation.recommendedActions)
+    if (!nextAction) {
+      setStorageMessage('No unblocked action is available to complete.')
+      return
+    }
+    applyActionStatuses([nextAction.id], 'Completed')
+  }
+
+  function resetActionStatuses() {
+    const changedActions = growthFoundation.recommendedActions.filter(
+      (action) => action.status !== 'Not Started',
+    )
+    if (changedActions.length === 0) {
+      setStorageMessage('All action statuses are already reset.')
+      return
+    }
+    if (!window.confirm(
+      'Reset every action to Not Started? Evidence links and recommendations will remain unchanged.',
+    )) return
+    applyActionStatuses(
+      changedActions.map((action) => action.id),
+      'Not Started',
+    )
+  }
+
+  function completeSprintPhase(phaseNumber: 1 | 2) {
+    const phase = roadmap.sprint.find((item) => item.day === phaseNumber)
+    if (!phase || phase.actionIds.length === 0) {
+      setStorageMessage(`Sprint step ${phaseNumber} has no assigned action.`)
+      return
+    }
+    applyActionStatuses(phase.actionIds, 'Completed')
   }
 
   function updateIncludeIncompleteEvidence(includeIncompleteEvidence: boolean) {
@@ -762,6 +901,7 @@ function App() {
       setSavedSnapshots(saveSnapshot(snapshot))
       setLoadedId(snapshot.id)
       setFoundationDraft(growthFoundation)
+      setHasUnsavedProgress(false)
       setStorageMessage('Snapshot saved in this browser.')
     } catch (error) {
       setStorageMessage(
@@ -855,6 +995,7 @@ function App() {
     })
     setScores(normalizeScores(snapshot.scores))
     setFoundationDraft(refreshGrowthFoundation(normalizeScores(snapshot.scores), snapshot))
+    setHasUnsavedProgress(false)
     setLoadedId(snapshot.id)
     const associatedIntake = savedIntakes.find(
       (saved) => saved.linkedSnapshotId === snapshot.id,
@@ -890,6 +1031,7 @@ function App() {
     setIntake(createEmptyBusinessIntake())
     setIntakeStorageMessage('Started a new intake for the new snapshot.')
     setLoadedId(null)
+    setHasUnsavedProgress(false)
     setStorageMessage('Started a new snapshot. Evidence from the previous snapshot was not reused.')
     setActiveLeadId(null)
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -1531,6 +1673,19 @@ function App() {
         </aside>
       </section>
 
+      <ActionControlCenter
+        actions={growthFoundation.recommendedActions}
+        evidenceItems={growthFoundation.evidenceItems}
+        history={growthFoundation.actionStatusHistory}
+        sprint={roadmap.sprint}
+        hasUnsavedProgress={hasUnsavedProgress}
+        onStatusChange={updateActionStatus}
+        onStartNext={startNextAction}
+        onCompleteNext={completeNextAction}
+        onResetAll={resetActionStatuses}
+        onCompleteSprintPhase={completeSprintPhase}
+      />
+
       <EvidenceManager
         evidenceItems={growthFoundation.evidenceItems}
         actions={growthFoundation.recommendedActions}
@@ -1748,7 +1903,7 @@ function App() {
       </section>
 
       <ProposalWorkspace
-        snapshots={savedSnapshots}
+        snapshots={proposalSnapshots}
         creationRequest={proposalCreationRequest}
       />
     </main>

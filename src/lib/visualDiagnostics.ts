@@ -10,6 +10,7 @@ import type {
 import { isEvidenceReportReady } from './evidence'
 import type { ProgressJourneyModel } from './progressJourney'
 import type { ConsultingRoadmap } from './roadmap'
+import { getNextMilestone } from './actionProgress'
 
 export type ScoreDiagnosticStatus = 'Foundation' | 'Developing' | 'Strong' | 'Leading'
 
@@ -47,6 +48,7 @@ export type OpportunityZone = {
 export type OpportunityMatrixDiagnostic = {
   actionCount: number
   nextActionTitle: string
+  isImplementationComplete: boolean
   zones: OpportunityZone[]
 }
 
@@ -211,18 +213,12 @@ function orderedActions(actions: RecommendedAction[]) {
   )
 }
 
-function nextRecommendedAction(actions: RecommendedAction[]) {
-  return orderedActions(actions).find(
-    (action) => action.status !== 'Completed' && action.status !== 'Skipped',
-  )
-}
-
 export function createOpportunityMatrix(
   actions: RecommendedAction[],
 ): OpportunityMatrixDiagnostic {
   const ordered = orderedActions(actions)
-  const nextAction = nextRecommendedAction(ordered)
-  const candidates = ordered.filter((action) => action.status !== 'Skipped')
+  const nextAction = getNextMilestone(actions)
+  const candidates = ordered
   const selected = candidates.slice(0, 6)
 
   if (nextAction && !selected.some((action) => action.id === nextAction.id)) {
@@ -243,6 +239,8 @@ export function createOpportunityMatrix(
   return {
     actionCount: diagnostics.length,
     nextActionTitle: nextAction?.title ?? '',
+    isImplementationComplete: actions.length > 0
+      && actions.every((action) => action.status === 'Completed'),
     zones: zoneDefinitions.map((zone) => ({
       ...zone,
       actions: diagnostics.filter((action) => {
@@ -260,14 +258,14 @@ function aggregateStatus(
   const statuses = actionIds
     .map((id) => actionById.get(id)?.status)
     .filter((status): status is RecommendedActionStatus => Boolean(status))
-  const actionable = statuses.filter((status) => status !== 'Skipped')
-
-  if (actionable.length === 0) return statuses.length > 0 ? 'Skipped' : 'Not Started'
-  if (actionable.every((status) => status === 'Completed')) return 'Completed'
-  if (actionable.some((status) => status === 'Needs Review')) return 'Needs Review'
-  if (actionable.some((status) => status === 'In Progress' || status === 'Completed')) {
+  if (statuses.length === 0) return 'Not Started'
+  if (statuses.every((status) => status === 'Completed')) return 'Completed'
+  if (statuses.some((status) => status === 'Needs Review')) return 'Needs Review'
+  if (statuses.some((status) => status === 'In Progress' || status === 'Completed')) {
     return 'In Progress'
   }
+  if (statuses.some((status) => status === 'Scheduled')) return 'Scheduled'
+  if (statuses.every((status) => status === 'Deferred')) return 'Deferred'
   return 'Not Started'
 }
 
@@ -390,7 +388,7 @@ export function createEvidenceDiagnostic(
     }
   }
 
-  const eligibleActions = actions.filter((action) => action.status !== 'Skipped')
+  const eligibleActions = actions.filter((action) => action.status !== 'Deferred')
   const evidenceByAction = new Map(
     eligibleActions.map((action) => [
       action.id,
@@ -451,7 +449,7 @@ export function formatOpportunityMatrixText(matrix: OpportunityMatrixDiagnostic)
   const zones = matrix.zones.map((zone) => {
     const actions = zone.actions.length > 0
       ? zone.actions.map((action) =>
-          `- ${action.isNext ? 'Next action: ' : ''}${action.title} — ${action.impact} impact / ${action.effort} effort`,
+          `- ${action.isNext ? 'Next action: ' : ''}${action.title} — ${action.impact} impact / ${action.effort} effort — ${action.status}`,
         ).join('\n')
       : '- No action in the current six-action view.'
     return `${zone.label} (${zone.description})\n${actions}`

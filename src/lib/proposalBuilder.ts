@@ -42,10 +42,9 @@ function orderedActions(snapshot: SavedSnapshot) {
 }
 
 function defaultSprintActionIds(actions: RecommendedAction[]) {
-  const usable = actions.filter(
-    (action) => action.status !== 'Completed' && action.status !== 'Skipped',
+  const source = actions.filter(
+    (action) => action.status !== 'Completed' && action.status !== 'Deferred',
   )
-  const source = usable.length > 0 ? usable : actions
   const picked: RecommendedAction[] = []
   const add = (categories: RecommendedAction['category'][]) => {
     const match = source.find(
@@ -64,10 +63,17 @@ function defaultActionIds(snapshot: SavedSnapshot, proposalType: ProposalType) {
   const actions = orderedActions(snapshot)
   if (proposalType === '48-Hour Visibility Sprint') return defaultSprintActionIds(actions)
   if (proposalType === '30-Day Local Authority Buildout') {
+    const usableIds = new Set(actions
+      .filter((action) => action.status !== 'Completed' && action.status !== 'Deferred')
+      .map((action) => action.id))
     const roadmap = createConsultingRoadmap(actions)
     return Array.from(new Set(roadmap.weeks.flatMap((week) => week.actionIds)))
+      .filter((id) => usableIds.has(id))
   }
-  return actions.slice(0, 4).map((action) => action.id)
+  return actions
+    .filter((action) => action.status !== 'Completed' && action.status !== 'Deferred')
+    .slice(0, 4)
+    .map((action) => action.id)
 }
 
 function defaultCustomDeliverables(
@@ -268,4 +274,3 @@ export function rebuildProposalType(
       : 'Milestone timing will be confirmed after scope, access, and approvals are in place.',
   }
 }
-

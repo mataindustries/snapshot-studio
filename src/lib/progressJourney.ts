@@ -2,6 +2,10 @@ import type {
   GrowthStage,
   SnapshotGrowthFoundation,
 } from '../types'
+import {
+  getNextMilestoneLabel,
+  orderActionsByPriority,
+} from './actionProgress'
 import { growthStageBands } from './growthPlanning'
 
 export type ProgressJourneyModel = {
@@ -43,14 +47,7 @@ const nextLevelMeanings: Record<GrowthStage, string> = {
 export function createProgressJourneyModel(
   foundation: SnapshotGrowthFoundation,
 ): ProgressJourneyModel {
-  const actions = [...foundation.recommendedActions].sort(
-    (left, right) =>
-      left.recommendedOrder - right.recommendedOrder
-      || right.priorityScore - left.priorityScore,
-  )
-  const remainingActions = actions.filter(
-    (action) => action.status !== 'Completed' && action.status !== 'Skipped',
-  )
+  const actions = orderActionsByPriority(foundation.recommendedActions)
   const currentIndex = growthStageBands.findIndex(
     (band) => band.name === foundation.currentArchetype,
   )
@@ -79,9 +76,8 @@ export function createProgressJourneyModel(
         ? 'Extend local authority into a complete, well-supported category-leading presence.'
         : 'Maintain clarity, current proof, useful information, and regular review as the market evolves.',
     completeCount: actions.filter((action) => action.status === 'Completed').length,
-    remainingCount: remainingActions.length,
-    nextRecommendedAction: remainingActions[0]?.title
-      ?? 'Run an updated Snapshot to verify progress and identify the next refinement.',
+    remainingCount: actions.filter((action) => action.status !== 'Completed').length,
+    nextRecommendedAction: getNextMilestoneLabel(actions),
     planningEstimateDisclaimer: foundation.planningEstimateDisclaimer,
     verificationNote: 'Verified progress requires another Snapshot after implementation.',
   }

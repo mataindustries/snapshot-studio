@@ -69,10 +69,7 @@ export function createConsultingRoadmap(
       left.recommendedOrder - right.recommendedOrder
       || right.priorityScore - left.priorityScore,
   )
-  const remaining = ordered.filter(
-    (action) => action.status !== 'Completed' && action.status !== 'Skipped',
-  )
-  const sprintActions = remaining.length > 0 ? remaining : ordered
+  const sprintActions = ordered
   const usedIds = new Set<string>()
   const clarity = findAction(
     sprintActions,

@@ -8,6 +8,7 @@ import type {
 } from '../types/proposal'
 import { getEvidenceForAction, isEvidenceReportReady } from '../lib/evidence'
 import { rebuildProposalType } from '../lib/proposalBuilder'
+import { actionStatusClass } from '../lib/actionProgress'
 import './Proposal.css'
 
 function LinesField({ label, value, onChange }: {
@@ -36,6 +37,7 @@ export function ProposalEditor({ proposal, snapshot, onChange }: {
   }
   const selected = new Set(proposal.selectedActionIds)
   const actions = snapshot?.recommendedActions ?? []
+  const actionById = new Map(actions.map((action) => [action.id, action]))
 
   function toggleAction(actionId: string) {
     const next = new Set(proposal.selectedActionIds)
@@ -92,18 +94,39 @@ export function ProposalEditor({ proposal, snapshot, onChange }: {
       <section className="proposal-editor-section">
         <div className="proposal-editor-heading"><div><span>Step 2</span><h3>Select scope</h3></div><small>{selected.size} included</small></div>
         {!snapshot && <p className="proposal-warning">The linked Snapshot is unavailable. Existing action references are preserved, but scope details cannot be edited.</p>}
+        {snapshot && (
+          <p className="proposal-scope-note">
+            Completed and Deferred actions are excluded from new proposal defaults.
+            Every action remains available for an intentional override.
+          </p>
+        )}
         <div className="proposal-action-list">
           {actions.map((action) => {
             const evidenceCount = getEvidenceForAction(action.id, snapshot?.evidenceItems ?? [])
               .filter(isEvidenceReportReady).length
-            const missingDependencies = action.blockedBy.filter((id) => !selected.has(id))
+            const missingDependencies = action.blockedBy.filter((id) => {
+              const dependency = actionById.get(id)
+              return Boolean(
+                dependency
+                && dependency.status !== 'Completed'
+                && !selected.has(id),
+              )
+            })
             return (
               <article className={`proposal-action-card ${selected.has(action.id) ? 'is-selected' : ''}`} key={action.id}>
                 <label className="proposal-action-toggle">
                   <input type="checkbox" checked={selected.has(action.id)} onChange={() => toggleAction(action.id)} />
                   <span>{selected.has(action.id) ? 'Included' : 'Excluded'}</span>
                 </label>
-                <div className="proposal-card-topline"><span>{action.category}</span><small>{action.estimatedEffort} effort · {evidenceCount} evidence</small></div>
+                <div className="proposal-card-topline">
+                  <span>{action.category}</span>
+                  <span className={`proposal-action-status ${actionStatusClass(action.status)}`}>
+                    {action.status}
+                  </span>
+                </div>
+                <small className="proposal-action-facts">
+                  {action.estimatedEffort} effort · {evidenceCount} evidence
+                </small>
                 <h4>{action.title}</h4>
                 <p>{action.reason}</p>
                 <dl>
@@ -186,4 +209,3 @@ export function ProposalEditor({ proposal, snapshot, onChange }: {
     </div>
   )
 }
-

@@ -3,10 +3,10 @@ import type {
   RecommendedAction,
   RecommendedActionEffort,
   RecommendedActionImpact,
-  RecommendedActionStatus,
   Scores,
   SnapshotForm,
 } from '../types'
+import { normalizeActionStatus } from './actionProgress'
 import { createStableId } from './evidence'
 import {
   capitalizeFirst,
@@ -193,21 +193,6 @@ function inferCategory(value: Record<string, unknown>): ActionCategory {
   return 'Authority'
 }
 
-function normalizeStatus(value: unknown): RecommendedActionStatus {
-  const statusMap: Record<string, RecommendedActionStatus> = {
-    'Not Started': 'Not Started',
-    'Not started': 'Not Started',
-    Planned: 'Not Started',
-    'In Progress': 'In Progress',
-    'In progress': 'In Progress',
-    Completed: 'Completed',
-    Complete: 'Completed',
-    Skipped: 'Skipped',
-    'Needs Review': 'Needs Review',
-  }
-  return typeof value === 'string' ? statusMap[value] ?? 'Not Started' : 'Not Started'
-}
-
 function normalizeEffort(value: unknown): RecommendedActionEffort {
   if (value === 'Small' || value === 'Medium' || value === 'Large') return value
   if (value === 'Low') return 'Small'
@@ -263,7 +248,7 @@ export function normalizeRecommendedAction(
     expectedOutcome: stringValue(value.expectedOutcome, profile.expectedOutcome),
     objective: profile.objective,
     businessValue: profile.businessValue,
-    status: normalizeStatus(value.status),
+    status: normalizeActionStatus(value.status),
     blockedBy: stringArray(value.blockedBy),
     unlocks: stringArray(value.unlocks),
     recommendedOrder: Math.max(

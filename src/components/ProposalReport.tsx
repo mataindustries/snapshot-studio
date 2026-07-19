@@ -2,6 +2,7 @@ import type { EvidenceItem, RecommendedAction, SavedSnapshot } from '../types'
 import type { Proposal, ProposalDeliverable } from '../types/proposal'
 import { isEvidenceReportReady } from '../lib/evidence'
 import { actionToDeliverable } from '../lib/proposalBuilder'
+import { actionStatusClass } from '../lib/actionProgress'
 import './Proposal.css'
 
 function formatDate(value: string) {
@@ -60,8 +61,13 @@ function DeliverableCard({ item, action }: {
     <article className="proposal-deliverable-card">
       <div className="proposal-card-topline">
         <span>{action?.category || 'Custom deliverable'}</span>
-        {action && <small>{action.estimatedEffort} effort</small>}
+        {action && (
+          <span className={`proposal-action-status ${actionStatusClass(action.status)}`}>
+            {action.status}
+          </span>
+        )}
       </div>
+      {action && <small className="proposal-action-facts">{action.estimatedEffort} effort</small>}
       <h3>{item.title}</h3>
       <p>{item.description}</p>
       <dl>
@@ -175,7 +181,12 @@ export function ProposalReport({ proposal, snapshot }: {
           <ol className="proposal-scope-list">
             {actions.map((action) => (
               <li key={action.id}>
-                <strong>{action.title}</strong>
+                <div className="proposal-scope-heading">
+                  <strong>{action.title}</strong>
+                  <span className={`proposal-action-status ${actionStatusClass(action.status)}`}>
+                    {action.status}
+                  </span>
+                </div>
                 <span>{action.reason}</span>
               </li>
             ))}
@@ -272,4 +283,3 @@ export function ProposalReport({ proposal, snapshot }: {
     </article>
   )
 }
-
