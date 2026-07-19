@@ -984,7 +984,7 @@ function CompetitorStep({
         onChange={onUpdateComparison}
       />
       <p className="operator-inline-note">
-        These notes are operator-provided context. The draft engine does not fetch or compare
+        These notes are context entered by the operator. The draft engine does not fetch or compare
         competitor websites.
       </p>
     </div>
@@ -1333,7 +1333,7 @@ function DraftAnalysisStep({
           </section>
 
           <section className="draft-section">
-            <h5>Three Strategic Assets</h5>
+            <h5>Three Current Strengths</h5>
             <div className="draft-list-editor">
               {draft.suggestedStrategicAssets.map((asset, index) => (
                 <div className="draft-pair-editor" key={index}>
@@ -1613,7 +1613,7 @@ function ReviewAndApplyStep({
     },
     {
       key: 'strategicAssets',
-      label: 'Strategic Assets',
+      label: "What You're Already Winning",
       current: displayValue(currentStrengths.join('\n')),
       draft: displayValue(draft.suggestedStrategicAssets.map((asset) => asset.title).join('\n')),
       canApply: true,

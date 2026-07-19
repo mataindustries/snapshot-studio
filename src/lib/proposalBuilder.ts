@@ -212,9 +212,9 @@ export function createProposalFromSnapshot(
     assumptions: [...assumptions],
     exclusions: [...exclusions],
     clientResponsibilities: [...responsibilities],
-    nextStepHeadline: 'Ready to begin the sprint?',
-    nextStepBody: 'Confirm the scope, preferred start window, and website access so implementation can begin.',
-    ctaLabel: 'Approve the scope',
+    nextStepHeadline: 'Ready to turn this plan into visible progress?',
+    nextStepBody: 'Confirm the scope, preferred start window, and website access. After implementation, a new Snapshot will verify progress and identify the next milestone.',
+    ctaLabel: 'Start the highest-impact work',
     bookingUrl: snapshot.bookingUrl || undefined,
     snapshotContext: {
       primaryService: snapshot.mainService,

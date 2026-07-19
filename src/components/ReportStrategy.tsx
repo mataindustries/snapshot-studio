@@ -1,6 +1,39 @@
 import { ArrowUpRight, Gem, Lightbulb } from 'lucide-react'
-import type { FeaturedOpportunity, StrategicAsset } from '../lib/reportStory'
+import type { ExecutiveSummary, FeaturedOpportunity, StrategicAsset } from '../lib/reportStory'
 import './ReportStrategy.css'
+
+export function ExecutiveSummaryReport({ summary }: { summary: ExecutiveSummary }) {
+  const details = [
+    ['Current Position', summary.currentPosition],
+    ['Largest Opportunity', summary.largestOpportunity],
+    ['Fastest Win', summary.fastestWin],
+    ['Long-term Goal', summary.longTermGoal],
+    ['Estimated Effort', summary.estimatedEffort],
+    ['Expected Outcome', summary.expectedOutcome],
+  ]
+
+  return (
+    <section
+      className="report-page executive-summary-page report-overview-group"
+      aria-labelledby="executive-summary-title"
+    >
+      <div className="report-page-heading">
+        <p className="section-kicker">Executive summary</p>
+        <h2 id="executive-summary-title">Business Snapshot</h2>
+        <p>{summary.businessSnapshot}</p>
+      </div>
+
+      <dl className="executive-summary-grid">
+        {details.map(([label, value]) => (
+          <div key={label}>
+            <dt>{label}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  )
+}
 
 export function StrategicAssetsReport({ assets }: { assets: StrategicAsset[] }) {
   return (
@@ -10,10 +43,10 @@ export function StrategicAssetsReport({ assets }: { assets: StrategicAsset[] }) 
     >
       <div className="report-page-heading">
         <p className="section-kicker">What is already working</p>
-        <h2 id="strategic-assets-title">Strategic Assets</h2>
+        <h2 id="strategic-assets-title">What You're Already Winning</h2>
         <p>
-          These are the strongest foundations in the current Snapshot. Each can be used
-          to make the next round of improvements more credible and more effective.
+          These strengths give the plan a head start. The next move is to put each one
+          where it can shape a customer decision.
         </p>
       </div>
 
@@ -30,11 +63,11 @@ export function StrategicAssetsReport({ assets }: { assets: StrategicAsset[] }) 
               <p>{asset.explanation}</p>
               <dl>
                 <div>
-                  <dt>Why this matters</dt>
+                  <dt>Customer impact</dt>
                   <dd>{asset.whyItMatters}</dd>
                 </div>
                 <div>
-                  <dt>How to leverage it</dt>
+                  <dt>Best next use</dt>
                   <dd>{asset.leverage}</dd>
                 </div>
               </dl>
@@ -58,17 +91,17 @@ export function BiggestOpportunityReport({
     >
       <div className="report-page-heading">
         <p className="section-kicker">The move to lead with</p>
-        <h2 id="biggest-opportunity-title">Biggest Opportunity</h2>
+        <h2 id="biggest-opportunity-title">The Highest-Leverage Improvement</h2>
         <p>
-          One focused improvement is more useful than a long list of disconnected ideas.
-          This is the recommended place to begin.
+          This is the improvement most likely to create momentum now and make later
+          work more valuable.
         </p>
       </div>
 
       <article className="opportunity-spotlight">
         <header className="opportunity-heading">
           <div>
-            <span>Featured opportunity</span>
+            <span>Priority move</span>
             <h3>{opportunity.title}</h3>
           </div>
           <Lightbulb size={27} aria-hidden="true" />
@@ -76,17 +109,17 @@ export function BiggestOpportunityReport({
 
         <div className="opportunity-detail-grid">
           <OpportunityDetail
-            label="Current situation"
+            label="What customers experience"
             text={opportunity.currentSituation}
           />
-          <OpportunityDetail label="Why it matters" text={opportunity.whyItMatters} />
+          <OpportunityDetail label="Business consequence" text={opportunity.whyItMatters} />
           <OpportunityDetail
-            label="Recommended first move"
+            label="First move"
             text={opportunity.recommendedFirstMove}
             featured
           />
           <OpportunityDetail
-            label="Potential business benefit"
+            label="Likely upside"
             text={opportunity.potentialBusinessBenefit}
           />
         </div>
@@ -94,7 +127,7 @@ export function BiggestOpportunityReport({
         {opportunity.evidenceTitle && (
           <p className="opportunity-evidence-line">
             <ArrowUpRight size={16} aria-hidden="true" />
-            Supported by: {opportunity.evidenceTitle}
+            Evidence used: {opportunity.evidenceTitle}
           </p>
         )}
       </article>

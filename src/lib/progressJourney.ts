@@ -92,11 +92,11 @@ export function formatProgressJourneyText(model: ProgressJourneyModel) {
     ? `${model.nextGrowthStage} (maintenance focus)`
     : model.nextGrowthStage
 
-  return `Growth Stage Journey
+  return `Your Growth Path
 
 Growth Stage
 - Growth Stage: ${model.currentGrowthStage}
-- Current score: ${model.currentScore}/100
+- Current Position: ${model.currentScore}/100
 - ${model.currentPositionMeaning}
 
 Next Growth Stage
@@ -109,9 +109,9 @@ Long-Term Growth Goal
 - ${model.longTermGrowthGoalMeaning}
 
 Progress Summary
-- Completed: ${model.completeCount}
-- Remaining: ${model.remainingCount}
-- Next recommended action: ${model.nextRecommendedAction}
+- Progress So Far: ${model.completeCount}
+- Next Milestones: ${model.remainingCount}
+- Next milestone: ${model.nextRecommendedAction}
 
 ${model.planningEstimateDisclaimer}
 ${model.verificationNote}`

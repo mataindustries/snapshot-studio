@@ -107,7 +107,7 @@ export function createConsultingRoadmap(
       actionIds: proof ? [proof.id] : [],
       headline: 'Implement the highest-priority trust improvement',
       description: proof?.description
-        ?? 'Place the strongest relevant proof beside the primary contact decision.',
+        ?? 'Place the strongest decision-making proof beside the primary contact decision.',
       deliverable: 'One implemented trust or contact-path improvement, checked on desktop and mobile.',
       whyItMatters: proof?.reason
         ?? 'Specific proof and a clear next step reduce hesitation before first contact.',
@@ -145,13 +145,13 @@ export function createConsultingRoadmap(
     {
       week: 2,
       theme: 'Trust',
-      goal: 'Move the strongest supportable proof into the customer decision path.',
+      goal: 'Move the strongest credible proof into the customer decision path.',
       recommendedWork: workTitles(
         trustActions,
         'Assemble a proof section from reviews, credentials, process, and customer outcomes.',
       ),
       estimatedEffort: totalHours(trustActions),
-      milestone: 'Every primary contact point has relevant proof close by.',
+      milestone: 'Every primary contact point has credible proof close by.',
       successSignal: 'Proof is specific, current, attributable, and visible before the contact step.',
       actionIds: trustActions.map((action) => action.id),
     },
@@ -205,12 +205,12 @@ export function formatRoadmapText(roadmap: ConsultingRoadmap) {
   const sprint = roadmap.sprint.map((phase) => `${phase.window}: ${phase.headline}
 - Description: ${phase.description}
 - Deliverable: ${phase.deliverable}
-- Why it matters: ${phase.whyItMatters}
+- Decision impact: ${phase.whyItMatters}
 - Estimated effort: ${phase.estimatedEffort}
-- Potential business effect: ${phase.expectedBusinessEffect}`).join('\n\n')
+- Expected gain: ${phase.expectedBusinessEffect}`).join('\n\n')
   const weeks = roadmap.weeks.map((week) => `Week ${week.week} — ${week.theme}
 - Goal: ${week.goal}
-- Recommended work: ${week.recommendedWork.join('; ')}
+- Priority work: ${week.recommendedWork.join('; ')}
 - Estimated effort: ${week.estimatedEffort}
 - Milestone: ${week.milestone}
 - Success signal: ${week.successSignal}`).join('\n\n')
@@ -219,7 +219,7 @@ export function formatRoadmapText(roadmap: ConsultingRoadmap) {
 
 ${sprint}
 
-30-Day Local Authority Blueprint
+Your First Month of Momentum
 
 ${weeks}`
 }

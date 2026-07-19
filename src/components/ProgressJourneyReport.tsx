@@ -11,7 +11,7 @@ export function ProgressJourneyReport({ model }: { model: ProgressJourneyModel }
     <section className="report-page progress-page report-action-group" aria-label="Progress and growth stage journey">
       <div className="report-page-heading progress-page-heading">
         <p className="section-kicker">A practical path forward</p>
-        <h2>Current → Next Level</h2>
+        <h2>Your Growth Path</h2>
         <p>
           The Snapshot turns the current position into a measured sequence: strengthen
           the next level first, then build toward durable local authority.
@@ -22,7 +22,7 @@ export function ProgressJourneyReport({ model }: { model: ProgressJourneyModel }
         <JourneyStage
           label="Current Growth Stage"
           title={model.currentGrowthStage}
-          detail={`${model.currentScore}/100 current score`}
+          detail={`${model.currentScore}/100 current position`}
           description={model.currentPositionMeaning}
         />
         <ArrowDown className="journey-arrow" size={22} aria-hidden="true" />
@@ -47,23 +47,23 @@ export function ProgressJourneyReport({ model }: { model: ProgressJourneyModel }
         <div className="progress-section-heading">
           <div>
             <p className="progress-label">Progress summary</p>
-            <h3 id="progress-summary-title">Measured actions, clear next step</h3>
+            <h3 id="progress-summary-title">Momentum you can measure</h3>
           </div>
           <Flag size={20} aria-hidden="true" />
         </div>
         <div className="progress-stat-grid">
-          <ProgressStat label="Current score" value={`${model.currentScore}/100`} />
+          <ProgressStat label="Current Position" value={`${model.currentScore}/100`} />
           <ProgressStat
             label="Projected planning range"
             value={`${model.targetScoreLow}–${model.targetScoreHigh}/100`}
           />
-          <ProgressStat label="Completed actions" value={model.completeCount.toString()} />
-          <ProgressStat label="Remaining actions" value={model.remainingCount.toString()} />
+          <ProgressStat label="Progress So Far" value={model.completeCount.toString()} />
+          <ProgressStat label="Next Milestones" value={model.remainingCount.toString()} />
         </div>
         <div className="next-action-callout">
           <MoveUpRight size={18} aria-hidden="true" />
           <span>
-            <small>Next recommended action</small>
+            <small>Next milestone</small>
             <strong>{model.nextRecommendedAction}</strong>
           </span>
         </div>

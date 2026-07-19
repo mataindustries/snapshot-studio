@@ -27,10 +27,10 @@ export function EvidenceReport({
     >
       <div className="report-page-heading evidence-report-heading">
         <p className="section-kicker">Documented rationale</p>
-        <h2 id="evidence-report-title">Evidence Behind Every Recommendation</h2>
+        <h2 id="evidence-report-title">The Proof Behind the Plan</h2>
         <p>
-          Each documented observation connects the current public-facing experience to
-          a practical recommendation. This is a focused review, not an exhaustive technical audit.
+          Each observation explains the customer friction behind a recommendation. This is
+          a focused public-facing review, not an exhaustive technical audit.
         </p>
       </div>
 
@@ -112,10 +112,10 @@ function ClientEvidenceCard({
 
       <div className="client-evidence-findings">
         <EvidenceFinding label="What we observed" text={item.observation} />
-        <EvidenceFinding label="Why it matters" text={item.whyItMatters} />
+        <EvidenceFinding label="Customer impact" text={item.whyItMatters} />
         <EvidenceFinding label="Recommended move" text={item.recommendedChange} accent />
         {item.expectedOutcome && (
-          <EvidenceFinding label="Potential business effect" text={item.expectedOutcome} />
+          <EvidenceFinding label="Expected gain" text={item.expectedOutcome} />
         )}
       </div>
 

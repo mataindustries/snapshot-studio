@@ -206,16 +206,16 @@ function buildArchetypeSummary(form: SnapshotForm, archetype: Archetype, scores:
 
   const profiles: Record<Archetype, string> = {
     'The Hidden Gem': `${businessName} already shows signs of a business people could trust, but that value is not yet prominent enough for first-time visitors. The priority is to bring the strongest proof and ${city} relevance closer to the first interaction.`,
-    'The Local Legend': `${businessName} has a strong public-facing foundation. The next move is focused refinement: clearer proof, a more explicit contact path, and a supportable reason to choose ${service}.`,
+    'The Local Legend': `${businessName} has a strong public-facing foundation. The next move is focused refinement: clearer proof, a more explicit contact path, and a credible reason to choose ${service}.`,
     'The Sleeping Giant': `${businessName} has useful business substance, but the handoff from visitor to inquiry creates conversion friction. Clearer next-step language, process detail, and mobile flow can improve decision confidence.`,
     'The Invisible Expert': `${businessName} has expertise that is not yet visible enough to ${getAudiencePhrase(form)}. Clearer service pages, local context, and direct answers can turn that knowledge into stronger local authority.`,
-    'The Trust Magnet': `${businessName} has credibility to work with. The practical opportunity is to place relevant proof closer to forms, phone numbers, process cues, and the first step.`,
+    'The Trust Magnet': `${businessName} has credibility to work with. The practical opportunity is to place customer proof closer to forms, phone numbers, process cues, and the first step.`,
     'The Wandering Generalist': `${businessName} presents several broad signals without one clear focus. Making the primary audience, service, and local promise explicit will make the offer easier to evaluate.`,
     'The AI Blind Spot': `${businessName} may be understandable to someone who already knows the company, but AI systems need more explicit facts. Plain-language service, location, FAQ, and proof sections will reduce ambiguity.`,
     'The Competitor Snack': `${businessName} faces conversion friction in a side-by-side comparison. Nearby alternatives may feel easier to choose when their proof, offer, process, or local fit is more explicit.`,
   }
 
-  return `${profiles[archetype]} Current assessment: ${totalScore}/100, with the primary improvement pressure in ${scoreNames[getLowestScore(scores)]}.`
+  return `${profiles[archetype]} Current position: ${totalScore}/100, with the primary improvement pressure in ${scoreNames[getLowestScore(scores)]}.`
 }
 
 function scoreRead(score: number) {
@@ -358,7 +358,7 @@ export function buildBusinessHoroscope(
     competitorSummary,
     missedOpportunity,
     fixPlan: buildFixPlan(form),
-    outreachSummary: `${businessName} scored ${totalScore}/100 and came through as ${archetype}. The practical opportunity is to help ${getAudiencePhrase(form)} understand the offer faster, evaluate relevant proof, compare with confidence, and complete the next step on a phone.`,
+    outreachSummary: `${businessName} scored ${totalScore}/100 and came through as ${archetype}. The practical opportunity is to help ${getAudiencePhrase(form)} understand the offer faster, use customer proof, compare with confidence, and complete the next step on a phone.`,
     cta: 'A useful next conversation would confirm the first implementation move, the evidence behind it, and who will own the work.',
     premiumUpsell: 'Optional implementation path: a screenshot-backed 48-Hour Visibility Sprint focused on the highest-priority improvements. Scope and investment can be tailored before the report is shared.',
   }
@@ -384,7 +384,16 @@ ${report.archetype}
 Image: ${report.archetypeImagePath}
 ${report.archetypeSummary}
 
-2. Overall score
+Business Snapshot
+Business: ${businessName} serves ${getAudiencePhrase(form)} looking for ${getRecommendationSubject(form)} in ${city}.
+Current Position: ${totalScore}/100 — ${report.archetype}.
+Largest Opportunity: ${report.missedOpportunity}
+Fastest Win: ${report.fixPlan[0]}
+Long-term Goal: Become easier to discover, trust, and choose across the local market.
+Estimated Effort: Two focused work windows across 48 hours to establish momentum.
+Expected Outcome: Customers understand the offer, proof, and next step before comparing another option.
+
+2. Current Position
 ${totalScore}/100
 
 3. Category scores
@@ -393,7 +402,7 @@ ${categoryScores}
 Score explanations
 ${formatList(report.scoreExplanations)}
 
-4. Strategic assets
+4. What You're Already Winning
 ${formatList(report.strengths)}
 
 5. Priority observations
@@ -402,7 +411,7 @@ ${formatList(report.weaknesses)}
 6. Competitor comparison summary
 ${report.competitorSummary}
 
-7. Biggest opportunity
+7. The Highest-Leverage Improvement
 ${report.missedOpportunity}
 
 8. 48-Hour Visibility Sprint

@@ -8,7 +8,13 @@ import type {
   SnapshotForm,
 } from '../types'
 import { createStableId } from './evidence'
-import { getDisplayCity, getRecommendationSubject } from './reportDisplay'
+import {
+  capitalizeFirst,
+  getCustomerAudience,
+  getDisplayBusinessName,
+  getDisplayCity,
+  getRecommendationSubject,
+} from './reportDisplay'
 import { scoreAction } from './prioritization'
 import { emptyScores } from './scoring'
 
@@ -271,16 +277,45 @@ export function normalizeRecommendedAction(
   }
 }
 
+function firstScreenRecommendation(form: SnapshotForm) {
+  const audience = capitalizeFirst(getCustomerAudience(form))
+  const businessName = getDisplayBusinessName(form)
+  const service = getRecommendationSubject(form)
+  const city = getDisplayCity(form)
+  const signal = (form.niche + ' ' + form.mainService).toLocaleLowerCase()
+
+  if (/plumb/.test(signal)) {
+    return audience + ' should immediately understand that ' + businessName + ' specializes in ' + service + ' throughout ' + city + ' before they begin comparing local options.'
+  }
+  if (/dental|dentist|orthodont|periodont|endodont/.test(signal)) {
+    return 'Patients should know within seconds whether ' + businessName + ' is the right practice for ' + service + ' in ' + city + ' before they look for another provider.'
+  }
+  if (/hvac|heating|air condition/.test(signal)) {
+    return 'Homeowners should instantly recognize that ' + businessName + ' handles ' + service + ' in ' + city + ' when speed and local availability shape the decision.'
+  }
+  if (/attorney|lawyer|legal|law firm/.test(signal)) {
+    return 'Potential clients should immediately understand which ' + service + ' problems ' + businessName + ' solves and whether the firm serves ' + city + '.'
+  }
+
+  return audience + ' should understand within seconds that ' + businessName + ' provides ' + service + ' in ' + city + ', before they compare another local option.'
+}
+
 function buildCandidates(form: SnapshotForm): ActionCandidate[] {
   const service = getRecommendationSubject(form)
   const city = getDisplayCity(form)
+  const businessName = getDisplayBusinessName(form)
+  const audience = getCustomerAudience(form)
+  const audienceLead = capitalizeFirst(audience)
 
   return [
     {
       ...profileByCategory.Homepage,
       category: 'Homepage',
-      title: `Clarify the homepage around ${service}`,
-      description: `Rewrite the first screen to name ${service}, ${city}, one supportable proof point, and a clear next step.`,
+      title: 'Make ' + service + ' unmistakable on the first screen',
+      description: firstScreenRecommendation(form) + ' Lead with that message, then add one credible proof point and a clear next step.',
+      reason: 'The first screen must establish local fit before ' + audience + ' invest time comparing proof or pricing.',
+      businessValue: audienceLead + ' can recognize the right local option without hunting for basic details.',
+      expectedOutcome: 'The homepage communicates ' + service + ', ' + city + ', and the next step at a glance.',
       estimatedEffort: 'Small',
       estimatedImpact: 'High',
       estimatedHours: 2,
@@ -288,8 +323,11 @@ function buildCandidates(form: SnapshotForm): ActionCandidate[] {
     {
       ...profileByCategory.Trust,
       category: 'Trust',
-      title: 'Build a proof section beside the primary CTA',
-      description: 'Combine the strongest relevant reviews, credentials, guarantees, process proof, or before-and-after examples in one scannable section.',
+      title: 'Put decision-making proof beside the primary action',
+      description: 'Bring together the reviews, credentials, guarantees, process details, or results that best reassure ' + audience + ' considering ' + service + '.',
+      reason: audienceLead + ' need confidence at the moment they decide whether contacting ' + businessName + ' feels worthwhile.',
+      businessValue: 'Stronger proof near the contact step can prevent qualified interest from turning into another comparison search.',
+      expectedOutcome: 'The strongest credibility cues appear before the call, form, or booking decision.',
       estimatedEffort: 'Small',
       estimatedImpact: 'High',
       estimatedHours: 3,
@@ -297,8 +335,11 @@ function buildCandidates(form: SnapshotForm): ActionCandidate[] {
     {
       ...profileByCategory['Service Pages'],
       category: 'Service Pages',
-      title: `Create a decision-ready ${service} page`,
-      description: `Explain who the service is for, the process, service-area fit, proof, common concerns, and the next step for ${city}.`,
+      title: 'Build a complete decision page for ' + service,
+      description: 'Give ' + audience + ' in ' + city + ' one place to understand fit, process, proof, common concerns, and the next step for ' + service + '.',
+      reason: 'A focused page lets ' + audience + ' resolve their main questions without piecing the offer together across the site.',
+      businessValue: service + ' becomes easier to evaluate and easier to choose in the ' + city + ' market.',
+      expectedOutcome: 'The priority service has a complete page that supports a confident inquiry.',
       estimatedEffort: 'Large',
       estimatedImpact: 'High',
       estimatedHours: 10,
@@ -306,8 +347,11 @@ function buildCandidates(form: SnapshotForm): ActionCandidate[] {
     {
       ...profileByCategory.FAQ,
       category: 'FAQ',
-      title: 'Publish answers to five pre-contact questions',
-      description: 'Use short, direct answers covering fit, process, timing, preparation, and what happens after an inquiry.',
+      title: 'Answer the five questions that delay first contact',
+      description: 'Publish concise answers about fit, process, timing, preparation, and what happens after a ' + service + ' inquiry.',
+      reason: 'Direct answers keep ' + audience + ' from leaving the site to resolve basic concerns elsewhere.',
+      businessValue: businessName + ' can earn confidence before a conversation begins.',
+      expectedOutcome: 'Common pre-contact questions have clear answers that people and AI systems can interpret.',
       estimatedEffort: 'Medium',
       estimatedImpact: 'Medium',
       estimatedHours: 5,
@@ -315,8 +359,11 @@ function buildCandidates(form: SnapshotForm): ActionCandidate[] {
     {
       ...profileByCategory['Google Business Profile'],
       category: 'Google Business Profile',
-      title: 'Bring the Google Business Profile up to date',
-      description: `Confirm the primary category, ${service} details, service area, description, photos, and review response cadence.`,
+      title: 'Make the local profile match the strongest ' + service + ' story',
+      description: 'Confirm the primary category, ' + service + ' details, ' + city + ' service area, description, photos, and review response cadence.',
+      reason: audienceLead + ' may judge local fit from the profile before they ever reach the website.',
+      businessValue: 'Searchers see a complete, consistent reason to consider ' + businessName + ' from the first local result.',
+      expectedOutcome: 'The local profile accurately reflects the service, market, and strongest credibility cues.',
       estimatedEffort: 'Medium',
       estimatedImpact: 'Medium',
       estimatedHours: 4,
@@ -324,8 +371,11 @@ function buildCandidates(form: SnapshotForm): ActionCandidate[] {
     {
       ...profileByCategory['Calls To Action'],
       category: 'Calls To Action',
-      title: 'Define one clear contact promise',
-      description: 'Standardize button language and add a short explanation of the response, timing, and first conversation.',
+      title: 'Turn the contact button into a clear promise',
+      description: 'Use one action phrase across the site and explain the response time, first conversation, and next step for a ' + service + ' inquiry.',
+      reason: 'A specific promise makes first contact feel more predictable and less risky for ' + audience + '.',
+      businessValue: 'Qualified visitors know what they are agreeing to and are less likely to stall at the final step.',
+      expectedOutcome: 'Every primary action sets the same clear expectation for what happens next.',
       estimatedEffort: 'Small',
       estimatedImpact: 'Medium',
       estimatedHours: 2,

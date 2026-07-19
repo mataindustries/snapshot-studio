@@ -14,8 +14,8 @@ export function SprintPlan({
         <p className="section-kicker">Focused implementation</p>
         <h2>48-Hour Visibility Sprint</h2>
         <p>
-          Two focused work windows: clarify the customer decision path, then implement
-          the highest-priority trust improvement and check the experience on mobile.
+          Two focused work windows turn the clearest customer friction into visible progress,
+          then confirm the improved path works on desktop and mobile.
         </p>
       </div>
 
@@ -34,7 +34,7 @@ export function SprintPlan({
                 <dd>{phase.deliverable}</dd>
               </div>
               <div>
-                <dt>Why it matters</dt>
+                <dt>Decision impact</dt>
                 <dd>{phase.whyItMatters}</dd>
               </div>
               <div>
@@ -42,7 +42,7 @@ export function SprintPlan({
                 <dd>{phase.estimatedEffort}</dd>
               </div>
               <div>
-                <dt>Potential business effect</dt>
+                <dt>Expected gain</dt>
                 <dd>{phase.expectedBusinessEffect}</dd>
               </div>
             </dl>

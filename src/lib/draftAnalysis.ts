@@ -386,7 +386,7 @@ function createScoreSuggestions(
           present: hasValue(identity.differentiators),
           weight: 4,
           supplied: 'business differentiators',
-          missing: 'supportable business differentiators',
+          missing: 'credible business differentiators',
         },
         {
           present: hasValue(website.heroHeadline),
@@ -428,7 +428,7 @@ function recommendationFor(key: ScoreKey, intake: BusinessIntakePayload) {
       primary: 'Publish short, direct answers that name ' + service + ', ' + city + ', service areas, proof, and common pre-contact questions.',
     },
     competitorPosition: {
-      missed: 'The intake does not yet establish a supportable reason to choose this business over the competitors entered for comparison.',
+      missed: 'The intake does not yet establish a credible reason to choose this business over the competitors entered for comparison.',
       primary: 'Turn the strongest differentiator into a specific headline, supporting proof point, and comparison-ready service promise.',
     },
   }
@@ -460,7 +460,7 @@ function buildStrengthNotes(
     || hasValue(profile.awards)
     || hasValue(profile.guarantees)
   ) {
-    notes.push('The public-profile intake records credentials, awards, or guarantees that may provide supportable proof after operator review.')
+    notes.push('The public-profile intake records credentials, awards, or guarantees that may provide credible proof after operator review.')
   }
   if (
     hasValue(intake.website.primaryCta)
@@ -520,7 +520,7 @@ function buildStrategicAssets(
   }
   if (hasValue(identity.differentiators)) {
     add(
-      'Supportable point of difference',
+      'Credible point of difference',
       'The intake records this differentiator: ' + identity.differentiators.trim(),
     )
   }

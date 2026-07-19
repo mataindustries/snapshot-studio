@@ -78,6 +78,31 @@ export function getMarketLabel(form: Pick<SnapshotForm, 'city' | 'mainService' |
   return getDisplayCity(form) + ' | ' + getClientFacingCategoryLabel(form)
 }
 
+export function getCustomerAudience(
+  form: Pick<SnapshotForm, 'mainService' | 'niche'>,
+) {
+  const signal = `${form.niche} ${form.mainService}`.toLocaleLowerCase()
+
+  if (/dental|dentist|orthodont|periodont|endodont|implant|veneers|teeth/.test(signal)) {
+    return 'patients'
+  }
+  if (/attorney|lawyer|legal|law firm/.test(signal)) return 'potential clients'
+  if (/plumb|hvac|heating|air condition|electric|roof|remodel|landscap|pest/.test(signal)) {
+    return 'homeowners'
+  }
+  if (/medical|clinic|therapy|therapist|chiropract|optometr|health/.test(signal)) {
+    return 'patients'
+  }
+  if (/restaurant|cafe|bakery|catering/.test(signal)) return 'local diners'
+  if (/real estate|realtor|mortgage/.test(signal)) return 'local buyers and sellers'
+
+  return 'prospective customers'
+}
+
+export function capitalizeFirst(value: string) {
+  return value ? value.charAt(0).toLocaleUpperCase() + value.slice(1) : value
+}
+
 export function isLikelyValidWebsiteUrl(value: string) {
   const trimmed = value.trim()
   if (!trimmed) return true

@@ -38,6 +38,7 @@ import {
 } from './components/ProposalWorkspace'
 import {
   BiggestOpportunityReport,
+  ExecutiveSummaryReport,
   StrategicAssetsReport,
 } from './components/ReportStrategy'
 import './components/PremiumReportDesign.css'
@@ -56,12 +57,15 @@ import {
 } from './lib/progressJourney'
 import { createConsultingRoadmap, formatRoadmapText, type ConsultingRoadmap } from './lib/roadmap'
 import {
+  createExecutiveSummary,
   createReportStory,
+  formatExecutiveSummaryText,
   formatFeaturedOpportunityText,
   formatImplementationPathsText,
   formatStrategicAssetsText,
   preliminaryEvidenceNote,
   upgradeOsSupportingText,
+  type ExecutiveSummary,
   type ReportStory,
 } from './lib/reportStory'
 import {
@@ -182,6 +186,7 @@ function buildReportText({
   horoscope,
   scores,
   reportStory,
+  executiveSummary,
   progressJourney,
   roadmap,
   evidenceText,
@@ -195,6 +200,7 @@ function buildReportText({
   horoscope: ReturnType<typeof buildBusinessHoroscope>
   scores: Scores
   reportStory: ReportStory
+  executiveSummary: ExecutiveSummary
   progressJourney: ProgressJourneyModel
   roadmap: ConsultingRoadmap
   evidenceText: string
@@ -223,6 +229,8 @@ Score: ${totalScore}/100 - ${reportRating}
 
 Category scores
 ${categoryScores}
+
+${formatExecutiveSummaryText(executiveSummary)}
 
 ${formatStrategicAssetsText(reportStory.strategicAssets)}
 
@@ -376,6 +384,15 @@ function App() {
     () => createProgressJourneyModel(growthFoundation),
     [growthFoundation],
   )
+  const executiveSummary = useMemo(
+    () => createExecutiveSummary({
+      form,
+      opportunity: reportStory.featuredOpportunity,
+      progress: progressJourney,
+      roadmap,
+    }),
+    [form, progressJourney, reportStory.featuredOpportunity, roadmap],
+  )
   const evidenceText = useMemo(
     () => formatEvidenceReportText(reportEvidence, growthFoundation.recommendedActions),
     [growthFoundation.recommendedActions, reportEvidence],
@@ -391,6 +408,7 @@ function App() {
       horoscope,
       scores,
       reportStory,
+      executiveSummary,
       progressJourney,
       roadmap,
       evidenceText,
@@ -399,6 +417,7 @@ function App() {
       branding,
       reportOffer,
       evidenceText,
+      executiveSummary,
       form,
       horoscope,
       progressJourney,
@@ -1588,6 +1607,7 @@ function App() {
             </div>
           </section>
 
+          <ExecutiveSummaryReport summary={executiveSummary} />
           <StrategicAssetsReport assets={reportStory.strategicAssets} />
           <BiggestOpportunityReport
             opportunity={reportStory.featuredOpportunity}

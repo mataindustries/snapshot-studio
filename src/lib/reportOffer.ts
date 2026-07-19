@@ -6,11 +6,34 @@ export const defaultReportOffer: ReportOfferFields = {
   fixedPrice: '',
   currency: 'USD',
   customInvestmentText: '',
-  ctaHeadline: 'Ready to take the first step?',
-  ctaBody: 'Reply to review the highest-priority improvement and confirm the 48-Hour Visibility Sprint scope.',
-  ctaLabel: 'Review the sprint',
+  ctaHeadline: 'Turn the clearest opportunities into momentum.',
+  ctaBody: 'The fastest improvements rarely require rebuilding an entire website. They come from removing friction at the moments where customers decide whether to trust you. The 48-Hour Visibility Sprint focuses on those highest-impact changes first. After implementation, generate another Snapshot to verify measurable progress.',
+  ctaLabel: 'Plan the 48-hour sprint',
   ctaContactLine: '',
   bookingUrl: '',
+}
+
+const legacyCtaHeadline = 'Ready to take the first step?'
+const legacyCtaBody = [
+  'Reply to',
+  'review the highest-priority improvement',
+  'and confirm the 48-Hour Visibility Sprint scope.',
+].join(' ')
+const legacyCtaLabel = 'Review the sprint'
+
+export function getReportCtaHeadline(value: string) {
+  const headline = value.trim()
+  return !headline || headline === legacyCtaHeadline ? defaultReportOffer.ctaHeadline : headline
+}
+
+export function getReportCtaBody(value: string) {
+  const body = value.trim()
+  return !body || body === legacyCtaBody ? defaultReportOffer.ctaBody : body
+}
+
+export function getReportCtaLabel(value: string) {
+  const label = value.trim()
+  return !label || label === legacyCtaLabel ? defaultReportOffer.ctaLabel : label
 }
 
 const offerModes: readonly OfferMode[] = [
@@ -48,7 +71,7 @@ export function formatFixedPrice(value: string, currency: string) {
 
 export function getInvestmentLine(offer: ReportOfferFields) {
   if (offer.offerMode === 'Hide Pricing') return ''
-  if (offer.offerMode === 'Conversation') return 'Reply to review the implementation scope.'
+  if (offer.offerMode === 'Conversation') return 'Implementation planning available after scope review.'
   if (offer.offerMode === 'Fixed Price') {
     const price = formatFixedPrice(offer.fixedPrice, offer.currency)
     return price ? 'Investment: ' + price : ''
@@ -71,9 +94,9 @@ export function formatOfferAndCtaText(offer: ReportOfferFields) {
   const lines = [
     'Next Step',
     '',
-    offer.ctaHeadline.trim() || defaultReportOffer.ctaHeadline,
-    offer.ctaBody.trim() || defaultReportOffer.ctaBody,
-    'Action: ' + (offer.ctaLabel.trim() || defaultReportOffer.ctaLabel),
+    getReportCtaHeadline(offer.ctaHeadline),
+    getReportCtaBody(offer.ctaBody),
+    'Action: ' + getReportCtaLabel(offer.ctaLabel),
   ]
   if (contact) lines.push('Contact: ' + contact)
   if (bookingUrl) lines.push('Booking: ' + bookingUrl)

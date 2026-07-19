@@ -66,7 +66,7 @@ function DeliverableCard({ item, action }: {
       <p>{item.description}</p>
       <dl>
         <div>
-          <dt>Why it matters</dt>
+          <dt>Business case</dt>
           <dd>{item.whyItMatters}</dd>
         </div>
         <div>
@@ -112,6 +112,15 @@ export function ProposalReport({ proposal, snapshot }: {
   const evidence = evidenceForScope(proposal, snapshot)
   const actionById = new Map(actions.map((action) => [action.id, action]))
   const investment = formatInvestment(proposal)
+  const nextStepHeadline = proposal.nextStepHeadline === 'Ready to begin the sprint?'
+    ? 'Ready to turn this plan into visible progress?'
+    : proposal.nextStepHeadline
+  const nextStepBody = proposal.nextStepBody === 'Confirm the scope, preferred start window, and website access so implementation can begin.'
+    ? 'Confirm the scope, preferred start window, and website access. After implementation, a new Snapshot will verify progress and identify the next milestone.'
+    : proposal.nextStepBody
+  const ctaLabel = proposal.ctaLabel === 'Approve the scope'
+    ? 'Start the highest-impact work'
+    : proposal.ctaLabel
   const showInvestment = proposal.investmentMode === 'Fixed Price'
     ? Boolean(investment)
     : proposal.investmentMode === 'Custom Estimate'
@@ -148,16 +157,16 @@ export function ProposalReport({ proposal, snapshot }: {
 
       <section className="proposal-page proposal-body-page">
         <section className="proposal-section proposal-opportunity">
-          <p className="proposal-kicker">Understanding the opportunity</p>
+          <p className="proposal-kicker">The highest-leverage opportunity</p>
           <h2>{proposal.snapshotContext.biggestOpportunityTitle || 'A focused implementation opportunity'}</h2>
           <div className="proposal-context-grid">
             <div><span>Business Horoscope</span><strong>{proposal.snapshotContext.horoscopeName}</strong></div>
             <div><span>Growth Stage</span><strong>{proposal.snapshotContext.growthStage}</strong></div>
-            <div><span>Current score</span><strong>{proposal.snapshotContext.currentScore}/100</strong></div>
+            <div><span>Current Position</span><strong>{proposal.snapshotContext.currentScore}/100</strong></div>
             <div><span>Planning range</span><strong>{proposal.snapshotContext.targetScoreLow}–{proposal.snapshotContext.targetScoreHigh}</strong></div>
           </div>
           <p>{proposal.snapshotContext.biggestOpportunitySummary || proposal.proposalSummary}</p>
-          <p className="proposal-callout">This proposal addresses the highest-priority implementation opportunities identified in the Snapshot.</p>
+          <p className="proposal-callout">This scope starts with the changes most likely to reduce customer hesitation and create visible momentum.</p>
         </section>
 
         <section className="proposal-section">
@@ -208,7 +217,7 @@ export function ProposalReport({ proposal, snapshot }: {
 
         <section className="proposal-section">
           <p className="proposal-kicker">Evidence and rationale</p>
-          <h2>Why this scope comes first</h2>
+          <h2>The business case for this scope</h2>
           {evidence.length > 0 ? (
             <div className="proposal-evidence-list">
               {evidence.map((item) => <EvidenceCard key={item.id} item={item} />)}
@@ -247,9 +256,9 @@ export function ProposalReport({ proposal, snapshot }: {
 
         <section className="proposal-section proposal-next-step">
           <p className="proposal-kicker">Next step</p>
-          <h2>{proposal.nextStepHeadline}</h2>
-          <p>{proposal.nextStepBody}</p>
-          <strong className="proposal-cta">{proposal.ctaLabel}</strong>
+          <h2>{nextStepHeadline}</h2>
+          <p>{nextStepBody}</p>
+          <strong className="proposal-cta">{ctaLabel}</strong>
           {proposal.contactLine.trim() && <p>{proposal.contactLine}</p>}
           {proposal.bookingUrl?.trim() && <p className="proposal-print-url">{proposal.bookingUrl}</p>}
           {proposal.expirationDate && <small>Proposal valid through {formatDate(proposal.expirationDate)}.</small>}

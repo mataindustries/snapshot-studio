@@ -1,3 +1,38 @@
+.executive-summary-page {
+  gap: 22px;
+}
+
+.executive-summary-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  margin: 0;
+}
+
+.executive-summary-grid > div {
+  display: grid;
+  gap: 6px;
+  padding: 16px;
+  border: 1px solid rgba(188, 143, 68, 0.26);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.executive-summary-grid dt {
+  color: #8b6425;
+  font-size: 0.67rem;
+  font-weight: 900;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.executive-summary-grid dd {
+  margin: 0;
+  color: #26384d;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
 .strategic-assets-page,
 .opportunity-page {
   gap: 22px;
@@ -169,6 +204,7 @@
 }
 
 @media (min-width: 760px) {
+  .executive-summary-grid,
   .strategic-asset-grid,
   .opportunity-detail-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -176,6 +212,7 @@
 }
 
 @media print {
+  .executive-summary-page,
   .strategic-assets-page,
   .opportunity-page {
     gap: 0.14in !important;
@@ -184,17 +221,33 @@
   }
 
   .strategic-asset-grid,
+  .executive-summary-grid,
   .opportunity-detail-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.08in;
   }
 
+  .executive-summary-grid > div,
   .strategic-asset-card,
   .opportunity-spotlight,
   .opportunity-detail {
     break-inside: avoid;
     page-break-inside: avoid;
     box-shadow: none !important;
+  }
+
+  .executive-summary-grid > div {
+    gap: 0.04in;
+    padding: 0.11in;
+  }
+
+  .executive-summary-grid dt {
+    font-size: 6.5pt;
+  }
+
+  .executive-summary-grid dd {
+    font-size: 7.6pt;
+    line-height: 1.3;
   }
 
   .strategic-asset-card {

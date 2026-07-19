@@ -1,7 +1,9 @@
 import { Check, MoveUpRight, Wrench } from 'lucide-react'
 import { implementationPaths } from '../lib/reportStory'
 import {
-  defaultReportOffer,
+  getReportCtaBody,
+  getReportCtaHeadline,
+  getReportCtaLabel,
   getInvestmentLine,
   getSafeBookingUrl,
 } from '../lib/reportOffer'
@@ -11,9 +13,9 @@ import './ImplementationPathsReport.css'
 export function ImplementationPathsReport({ offer }: { offer: ReportOfferFields }) {
   const investmentLine = getInvestmentLine(offer)
   const bookingUrl = getSafeBookingUrl(offer.bookingUrl)
-  const headline = offer.ctaHeadline.trim() || defaultReportOffer.ctaHeadline
-  const body = offer.ctaBody.trim() || defaultReportOffer.ctaBody
-  const ctaLabel = offer.ctaLabel.trim() || defaultReportOffer.ctaLabel
+  const headline = getReportCtaHeadline(offer.ctaHeadline)
+  const body = getReportCtaBody(offer.ctaBody)
+  const ctaLabel = getReportCtaLabel(offer.ctaLabel)
   const contactLine = offer.ctaContactLine.trim()
 
   return (
@@ -23,10 +25,10 @@ export function ImplementationPathsReport({ offer }: { offer: ReportOfferFields 
     >
       <div className="report-page-heading">
         <p className="section-kicker">Two practical ways forward</p>
-        <h2 id="implementation-paths-title">DIY vs Done-For-You</h2>
+        <h2 id="implementation-paths-title">Two Ways Forward</h2>
         <p>
-          The strategy stays the same. Choose the implementation path that best fits
-          your time, team, and preferred level of support.
+          The priorities stay the same. Choose the path that fits your available time,
+          internal capacity, and preferred pace.
         </p>
       </div>
 
@@ -60,8 +62,8 @@ export function ImplementationPathsReport({ offer }: { offer: ReportOfferFields 
       </div>
 
       <p className="implementation-choice-note">
-        Either path should end with a new Snapshot. That follow-up provides the verified
-        before-and-after view; projected scores are not guarantees.
+        Whichever path you choose, finish with a new Snapshot. It will show what improved,
+        what still needs attention, and where the next round can create the most value.
       </p>
 
       <section className="final-report-cta" aria-labelledby="final-cta-title">

@@ -9,13 +9,13 @@ export function AuthorityRoadmap({
   roadmap: ConsultingRoadmap
 }) {
   return (
-    <section className="report-page roadmap-page authority-roadmap-page report-roadmap-group" aria-label="30-Day Local Authority Blueprint">
+    <section className="report-page roadmap-page authority-roadmap-page report-roadmap-group" aria-label="Your First Month of Momentum">
       <div className="report-page-heading">
         <p className="section-kicker">A sequenced month of progress</p>
-        <h2>30-Day Local Authority Blueprint</h2>
+        <h2>Your First Month of Momentum</h2>
         <p>
-          Four practical weeks, each with a defined goal, completion milestone, and
-          observable success signal.
+          Each week builds on the last: first make the offer clear, then strengthen trust,
+          demonstrate expertise, and make those facts easier to understand.
         </p>
       </div>
 
@@ -29,7 +29,7 @@ export function AuthorityRoadmap({
             <p className="week-goal">{week.goal}</p>
             <dl className="roadmap-detail-list compact">
               <div>
-                <dt>Recommended work</dt>
+                <dt>Priority work</dt>
                 <dd>
                   <ul>
                     {week.recommendedWork.map((work) => <li key={work}>{work}</li>)}
@@ -56,10 +56,10 @@ export function AuthorityRoadmap({
       <aside className="blueprint-sequence-note">
         <Target size={20} aria-hidden="true" />
         <span>
-          <strong>Why this sequence works</strong>
+          <strong>How momentum compounds</strong>
           <small>
-            Clarity makes proof easier to evaluate. Proof supports authority. Authority
-            gives people and AI systems better information to understand and share.
+            Clear positioning makes proof easier to trust. Strong proof gives your expertise
+            weight. Together, they create a business story customers and AI systems can understand.
           </small>
         </span>
         <ArrowRight size={19} aria-hidden="true" />
