@@ -40,6 +40,7 @@ import {
   BiggestOpportunityReport,
   StrategicAssetsReport,
 } from './components/ReportStrategy'
+import './components/PremiumReportDesign.css'
 import {
   createEvidenceItem,
   formatEvidenceReportText,

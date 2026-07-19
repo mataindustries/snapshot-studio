@@ -1,0 +1,1069 @@
+/* Phase 6A: report-scoped editorial and print design system. */
+.report-shell {
+  --report-ink: #10233c;
+  --report-copy: #40362d;
+  --report-muted: #706252;
+  --report-gold: #b9822e;
+  --report-gold-soft: #d9bd88;
+  --report-line: rgba(174, 126, 51, 0.28);
+  --report-paper: #fffaf0;
+  width: min(100%, 1060px);
+  margin-inline: auto;
+  padding: clamp(10px, 1.6vw, 18px);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(185, 130, 46, 0.14), transparent 28%),
+    linear-gradient(180deg, #f9f1e4, #f3e7d3);
+}
+
+.report-shell .report-page {
+  isolation: isolate;
+  overflow: hidden;
+  gap: clamp(20px, 2.8vw, 30px);
+  padding: clamp(26px, 4.5vw, 48px);
+  border-color: var(--report-line);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.42), transparent 38%),
+    var(--report-paper);
+  box-shadow: 0 18px 44px rgba(67, 46, 20, 0.09);
+}
+
+.report-shell .report-page:not(.report-cover-group)::before {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 5px;
+  background: linear-gradient(
+    90deg,
+    var(--report-ink) 0 18%,
+    var(--report-gold) 18% 31%,
+    #ead9b8 31% 100%
+  );
+  content: '';
+}
+
+.report-shell .report-page + .report-page {
+  margin-top: clamp(12px, 1.8vw, 20px);
+}
+
+.report-shell .report-page-heading {
+  gap: 8px;
+  max-width: none;
+  padding: 3px 0 18px;
+  border-bottom: 1px solid var(--report-line);
+}
+
+.report-shell .report-page-heading .section-kicker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: #8b6425;
+  font-size: 0.69rem;
+  letter-spacing: 0.11em;
+}
+
+.report-shell .report-page-heading .section-kicker::after {
+  width: 54px;
+  height: 1px;
+  background: var(--report-gold-soft);
+  content: '';
+}
+
+.report-shell .report-page-heading h2 {
+  max-width: 18ch;
+  color: var(--report-ink);
+  font-size: clamp(2.1rem, 4.2vw, 3.15rem);
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
+.report-shell .report-page-heading p:not(.section-kicker) {
+  max-width: 68ch;
+  color: var(--report-muted);
+  font-size: 0.98rem;
+  line-height: 1.58;
+}
+
+.report-shell :is(
+  .strategic-asset-card,
+  .premium-journey-card,
+  .progress-summary,
+  .sprint-day-card,
+  .authority-week-card,
+  .client-evidence-card,
+  .implementation-path-card
+) {
+  border-color: var(--report-line);
+  border-radius: 10px;
+  box-shadow: 0 14px 32px rgba(65, 43, 18, 0.07);
+}
+
+.report-shell :is(.strategic-asset-card, .sprint-day-card, .authority-week-card) {
+  border-top: 3px solid var(--report-gold-soft);
+}
+
+.report-shell :is(
+  .strategic-asset-card h3,
+  .opportunity-heading h3,
+  .journey-stage h3,
+  .sprint-day-card h3,
+  .implementation-path-card h3,
+  .client-evidence-header h3
+) {
+  text-wrap: balance;
+}
+
+/* Cover */
+.report-shell .report-share-hero {
+  gap: 18px;
+  background:
+    radial-gradient(circle at 88% 8%, rgba(185, 130, 46, 0.16), transparent 28%),
+    linear-gradient(180deg, #fffdf7, #f7eddd);
+}
+
+.report-shell .report-share-hero .share-card {
+  width: min(100%, 720px);
+  border-color: rgba(155, 107, 35, 0.42);
+  border-radius: 12px;
+  box-shadow: 0 28px 72px rgba(48, 33, 15, 0.2);
+}
+
+.report-shell .report-share-hero .share-card-media {
+  padding: clamp(16px, 3.4vw, 30px);
+  background:
+    radial-gradient(circle at 50% 42%, rgba(221, 191, 137, 0.3), transparent 62%),
+    #f2e5cf;
+}
+
+.report-shell .report-share-hero .share-card-copy {
+  gap: clamp(12px, 2vw, 18px);
+  padding: clamp(24px, 4.5vw, 42px);
+}
+
+.report-shell .share-card-business strong {
+  color: var(--report-ink);
+  line-height: 0.96;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.report-shell .report-share-hero .share-card h3 {
+  color: var(--report-ink);
+  text-wrap: balance;
+}
+
+.report-shell .report-share-hero .share-card-score {
+  border-radius: 10px;
+}
+
+.report-shell .share-card-actions {
+  margin-top: 0;
+  padding: 14px;
+  border-top: 3px solid var(--report-gold-soft);
+}
+
+/* Strategic overview */
+.report-shell :is(
+  .strategic-assets-page,
+  .opportunity-page,
+  .progress-page,
+  .roadmap-page,
+  .implementation-paths-page
+) {
+  gap: clamp(20px, 2.8vw, 30px);
+}
+
+.report-shell .strategic-asset-grid {
+  gap: 16px;
+}
+
+.report-shell .strategic-asset-grid > li {
+  min-width: 0;
+}
+
+.report-shell .strategic-asset-card {
+  gap: 12px;
+  padding: clamp(18px, 2.5vw, 24px);
+}
+
+.report-shell .strategic-asset-card header {
+  padding-bottom: 9px;
+  border-bottom: 1px solid #e7dcc9;
+}
+
+.report-shell .strategic-asset-card h3 {
+  color: var(--report-ink);
+  font-size: 1.35rem;
+}
+
+.report-shell .strategic-asset-card > p {
+  color: var(--report-copy);
+  font-size: 0.88rem;
+}
+
+.report-shell .strategic-asset-card dl {
+  gap: 11px;
+}
+
+.report-shell .strategic-asset-card dl > div {
+  padding-top: 11px;
+}
+
+.report-shell .opportunity-spotlight {
+  gap: 22px;
+  padding: clamp(22px, 3.5vw, 34px);
+  border-radius: 12px;
+  box-shadow: 0 24px 52px rgba(16, 35, 60, 0.2);
+}
+
+.report-shell .opportunity-heading {
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.report-shell .opportunity-heading h3 {
+  max-width: 22ch;
+  font-size: clamp(1.8rem, 3.4vw, 2.5rem);
+}
+
+.report-shell .opportunity-detail-grid {
+  gap: 12px;
+}
+
+.report-shell .opportunity-detail {
+  align-content: start;
+  min-height: 118px;
+  padding: 16px;
+}
+
+/* Progress and roadmap */
+.report-shell .premium-journey-card {
+  gap: 10px;
+  padding: clamp(18px, 3vw, 28px);
+}
+
+.report-shell .journey-stage {
+  padding: clamp(16px, 2.4vw, 22px);
+  border-radius: 9px;
+}
+
+.report-shell .journey-stage.highlighted {
+  box-shadow: inset 0 0 0 1px rgba(185, 130, 46, 0.16);
+}
+
+.report-shell .progress-summary {
+  gap: 16px;
+  padding: clamp(18px, 2.8vw, 25px);
+}
+
+.report-shell .progress-stat {
+  min-height: 78px;
+  align-content: center;
+  padding: 13px;
+}
+
+.report-shell .next-action-callout {
+  padding: 15px 16px;
+}
+
+.report-shell .planning-estimate-note {
+  padding: 14px 16px;
+  border-left-width: 4px;
+}
+
+.report-shell :is(.sprint-day-grid, .authority-week-grid) {
+  gap: 16px;
+}
+
+.report-shell :is(.sprint-day-card, .authority-week-card) {
+  height: 100%;
+  gap: 12px;
+  padding: clamp(18px, 2.5vw, 24px);
+}
+
+.report-shell :is(.sprint-day-heading, .authority-week-heading) {
+  min-height: 30px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e6d9c5;
+}
+
+.report-shell .sprint-day-card h3 {
+  font-size: 1.3rem;
+}
+
+.report-shell .roadmap-detail-list {
+  gap: 10px;
+}
+
+.report-shell .roadmap-detail-list > div {
+  padding-top: 10px;
+}
+
+.report-shell .blueprint-sequence-note {
+  padding: 17px 18px;
+  border-top: 3px solid var(--report-gold-soft);
+  border-radius: 10px;
+}
+
+/* Evidence */
+.report-shell .evidence-summary-strip {
+  gap: 10px;
+}
+
+.report-shell .evidence-stat {
+  min-height: 76px;
+  align-content: center;
+  padding: 14px;
+  border-radius: 9px;
+}
+
+.report-shell .evidence-sample-line {
+  padding: 12px 15px;
+  border-left-width: 4px;
+}
+
+.report-shell .client-evidence-list {
+  gap: 20px;
+}
+
+.report-shell .client-evidence-card {
+  gap: 17px;
+  padding: clamp(18px, 3vw, 28px);
+}
+
+.report-shell .client-evidence-header {
+  padding-bottom: 13px;
+  border-bottom: 1px solid #e4d8c5;
+}
+
+.report-shell .client-evidence-header h3 {
+  color: var(--report-ink);
+  font-size: 1.55rem;
+}
+
+.report-shell .client-evidence-image {
+  border-radius: 9px;
+}
+
+.report-shell .client-evidence-findings {
+  gap: 10px;
+}
+
+.report-shell .evidence-finding {
+  min-height: 108px;
+  align-content: start;
+  padding: 13px;
+}
+
+/* Closing page */
+.report-shell .implementation-path-grid {
+  gap: 16px;
+  align-items: stretch;
+}
+
+.report-shell .implementation-path-card {
+  height: 100%;
+  gap: 14px;
+  padding: clamp(20px, 3vw, 28px);
+}
+
+.report-shell .implementation-path-card:not(.featured) {
+  border-top: 3px solid var(--report-gold-soft);
+}
+
+.report-shell .implementation-path-card h3 {
+  font-size: clamp(1.6rem, 3vw, 2rem);
+}
+
+.report-shell .implementation-choice-note {
+  padding: 13px 16px;
+  border-left-width: 4px;
+}
+
+.report-shell .final-report-cta {
+  gap: 16px;
+  padding: clamp(20px, 3vw, 28px);
+  border-top: 3px solid var(--report-gold-soft);
+  border-radius: 10px;
+}
+
+.report-shell .final-report-cta h2 {
+  color: var(--report-ink);
+  font-size: clamp(1.55rem, 3vw, 2.05rem);
+  line-height: 1.08;
+  text-wrap: balance;
+}
+
+.report-shell .report-footer.upgradeos-footer {
+  gap: 14px;
+  margin-top: 18px;
+  padding: 18px 20px;
+  border: 1px solid var(--report-line);
+  border-top: 3px solid var(--report-gold);
+  border-radius: 9px;
+  background: rgba(255, 250, 240, 0.92);
+}
+
+@media (min-width: 760px) {
+  .report-shell .strategic-asset-grid > li:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  .report-shell .strategic-asset-grid > li:last-child:nth-child(odd) .strategic-asset-card dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .report-shell .evidence-summary-strip {
+    grid-template-columns: repeat(3, minmax(0, 0.8fr)) minmax(0, 1.6fr);
+  }
+
+  .report-shell .evidence-stat.wide {
+    grid-column: auto;
+  }
+
+  .report-shell .final-report-cta {
+    grid-template-columns: 48px minmax(0, 1fr);
+  }
+
+  .report-shell .final-cta-icon {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+@media (min-width: 900px) {
+  .report-shell .report-share-hero .share-card {
+    grid-template-columns: minmax(0, 1.06fr) minmax(340px, 0.94fr);
+    width: 100%;
+    min-height: 590px;
+  }
+
+  .report-shell .report-share-hero .share-card-media {
+    border-right: 1px solid rgba(184, 139, 64, 0.24);
+    border-bottom: 0;
+  }
+
+  .report-shell .report-share-hero .share-card-media img {
+    height: 100%;
+    min-height: 520px;
+  }
+
+  .report-shell .report-share-hero .share-card-copy {
+    align-content: center;
+    padding: 46px;
+  }
+
+  .report-shell .premium-journey-card {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .report-shell .journey-stage {
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+  }
+
+  .report-shell .journey-stage > :is(span, h3, strong, p) {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .report-shell .journey-arrow {
+    align-self: center;
+    transform: rotate(-90deg);
+  }
+
+  .report-shell .progress-summary {
+    grid-template-columns: minmax(210px, 0.7fr) minmax(0, 1.3fr);
+    align-items: center;
+  }
+
+  .report-shell .progress-section-heading {
+    grid-column: 1;
+  }
+
+  .report-shell .progress-stat-grid {
+    grid-column: 2;
+  }
+
+  .report-shell .next-action-callout {
+    grid-column: 1 / -1;
+  }
+
+  .report-shell .client-evidence-card:has(.client-evidence-figure) {
+    grid-template-columns: minmax(280px, 0.92fr) minmax(0, 1.08fr);
+    align-items: start;
+  }
+
+  .report-shell .client-evidence-card:has(.client-evidence-figure) .client-evidence-header,
+  .report-shell .client-evidence-card:has(.client-evidence-figure) .evidence-direction-comparison,
+  .report-shell .client-evidence-card:has(.client-evidence-figure) .client-evidence-links {
+    grid-column: 1 / -1;
+  }
+
+  .report-shell .client-evidence-card:has(.client-evidence-figure) .client-evidence-figure {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .report-shell .client-evidence-card:has(.client-evidence-figure) .client-evidence-source {
+    grid-column: 1;
+  }
+
+  .report-shell .client-evidence-card:has(.client-evidence-figure) .client-evidence-findings {
+    grid-column: 2;
+    grid-row: 2 / span 2;
+  }
+
+  .report-shell .client-evidence-card:has(.client-evidence-figure) .client-evidence-image img {
+    max-height: 480px;
+  }
+}
+
+@media print {
+  @page {
+    size: letter;
+    margin: 0.3in;
+  }
+
+  :root,
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  .report-shell {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: var(--report-paper) !important;
+    box-shadow: none !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .report-shell .report-page {
+    overflow: visible;
+    gap: 0.14in !important;
+    margin: 0 !important;
+    padding: 0.2in 0.22in !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: var(--report-paper) !important;
+    box-shadow: none !important;
+  }
+
+  .report-shell .report-page:not(.report-cover-group)::before {
+    height: 0.035in;
+  }
+
+  .report-shell .report-page + .report-page {
+    margin-top: 0.12in !important;
+  }
+
+  .report-shell .report-page.progress-page,
+  .report-shell .report-page.authority-roadmap-page,
+  .report-shell .report-page.evidence-report-page,
+  .report-shell .report-page.implementation-paths-page {
+    margin-top: 0 !important;
+  }
+
+  .report-shell .report-page-heading {
+    gap: 0.035in !important;
+    padding: 0.01in 0 0.12in;
+    border-bottom: 1px solid #d9c6a4 !important;
+  }
+
+  .report-shell .report-page-heading .section-kicker {
+    gap: 0.08in;
+    font-size: 6.8pt;
+    letter-spacing: 0.1em;
+  }
+
+  .report-shell .report-page-heading .section-kicker::after {
+    width: 0.48in;
+    background: #c9a96d !important;
+  }
+
+  .report-shell .report-page-heading h2 {
+    max-width: none;
+    color: var(--report-ink) !important;
+    font-size: 21pt !important;
+    line-height: 0.98 !important;
+  }
+
+  .report-shell .report-page-heading p:not(.section-kicker) {
+    max-width: 6.4in;
+    color: #5d4e40 !important;
+    font-size: 8.3pt !important;
+    line-height: 1.34 !important;
+  }
+
+  .report-shell :is(
+    .strategic-asset-card,
+    .premium-journey-card,
+    .progress-summary,
+    .sprint-day-card,
+    .authority-week-card,
+    .client-evidence-card,
+    .implementation-path-card,
+    .opportunity-spotlight
+  ) {
+    border-radius: 5px !important;
+    box-shadow: none !important;
+  }
+
+  /* Cover occupies the complete printable sheet without cropping the archetype. */
+  .report-shell .report-cover-group {
+    grid-template-rows: minmax(0, 1fr);
+    min-height: 10.4in !important;
+    padding: 0 !important;
+    break-after: page !important;
+    page-break-after: always !important;
+  }
+
+  .report-shell .report-share-hero .share-card {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: minmax(0, 6.25in) minmax(0, 1fr);
+    width: 100%;
+    min-height: 10.4in;
+    border: 1px solid #cfb477 !important;
+    border-radius: 6px !important;
+    background: var(--report-paper) !important;
+  }
+
+  .report-shell .report-share-hero .share-card-media {
+    padding: 0.1in 0.16in;
+    border-right: 0;
+    border-bottom: 1px solid #dbc69f !important;
+    background: #f2e5cf !important;
+  }
+
+  .report-shell .report-share-hero .share-card-media img {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    object-fit: contain !important;
+  }
+
+  .report-shell .report-share-hero .share-card-copy {
+    align-content: center;
+    gap: 0.1in;
+    padding: 0.22in 0.34in 0.26in !important;
+    background: var(--report-paper) !important;
+  }
+
+  .report-shell .share-card-business strong {
+    font-size: 27pt;
+    line-height: 0.94;
+  }
+
+  .report-shell .report-share-hero .share-card h3 {
+    font-size: 33pt;
+    line-height: 0.94;
+  }
+
+  .report-shell .report-share-hero .share-card-score {
+    min-width: 0.72in;
+    padding: 0.08in 0.1in;
+  }
+
+  .report-shell .report-share-hero .share-card-score strong {
+    font-size: 27pt;
+  }
+
+  .report-shell .report-share-hero .share-card-diagnosis,
+  .report-shell .report-share-hero .share-card p:not(.share-card-kicker) {
+    font-size: 10.5pt !important;
+    line-height: 1.34 !important;
+  }
+
+  .report-shell .report-share-hero .share-card em {
+    padding: 0.07in 0.11in !important;
+    font-size: 9pt !important;
+  }
+
+  /* Full-width asset rows remove dangling cells and balance the overview sheet. */
+  .report-shell .strategic-asset-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.075in;
+  }
+
+  .report-shell .strategic-asset-grid > li:last-child:nth-child(odd) {
+    grid-column: auto;
+  }
+
+  .report-shell .strategic-asset-card {
+    grid-template-columns: 0.42in minmax(1.65in, 0.78fr) minmax(0, 1.22fr);
+    grid-template-rows: auto auto 1fr;
+    gap: 0.025in 0.11in;
+    padding: 0.1in !important;
+  }
+
+  .report-shell .strategic-asset-card header {
+    grid-column: 1;
+    grid-row: 1 / 4;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 0.08in;
+    padding: 0 0.07in 0 0;
+    border-right: 1px solid #e3d6c1;
+    border-bottom: 0;
+  }
+
+  .report-shell .strategic-asset-card h3,
+  .report-shell .strategic-asset-card > p,
+  .report-shell .strategic-asset-source {
+    grid-column: 2;
+  }
+
+  .report-shell .strategic-asset-card h3 {
+    font-size: 10.5pt;
+  }
+
+  .report-shell .strategic-asset-source {
+    align-self: start;
+    font-size: 6pt;
+  }
+
+  .report-shell .strategic-asset-card > p {
+    font-size: 7.3pt;
+    line-height: 1.3;
+  }
+
+  .report-shell .strategic-asset-card dl,
+  .report-shell .strategic-asset-grid > li:last-child:nth-child(odd) .strategic-asset-card dl {
+    grid-column: 3;
+    grid-row: 1 / 4;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.04in;
+  }
+
+  .report-shell .strategic-asset-card dl > div {
+    padding-top: 0.04in;
+  }
+
+  .report-shell .strategic-asset-card dt {
+    font-size: 6.2pt;
+  }
+
+  .report-shell .strategic-asset-card dd {
+    font-size: 7.2pt;
+    line-height: 1.28;
+  }
+
+  .report-shell .opportunity-spotlight {
+    gap: 0.11in;
+    padding: 0.16in;
+  }
+
+  .report-shell .opportunity-heading {
+    padding-bottom: 0.09in;
+  }
+
+  .report-shell .opportunity-heading h3 {
+    font-size: 18pt;
+  }
+
+  .report-shell .opportunity-detail-grid {
+    gap: 0.07in;
+  }
+
+  .report-shell .opportunity-detail {
+    min-height: 0;
+    padding: 0.08in;
+  }
+
+  .report-shell .opportunity-detail p {
+    font-size: 7.6pt;
+    line-height: 1.3;
+  }
+
+  /* Journey and sprint share one intentional action page. */
+  .report-shell .premium-journey-card {
+    grid-template-columns: minmax(0, 1fr) 0.22in minmax(0, 1fr) 0.22in minmax(0, 1fr);
+    align-items: stretch;
+    gap: 0.045in;
+    padding: 0.1in;
+  }
+
+  .report-shell .journey-stage {
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    gap: 0.035in;
+    padding: 0.08in;
+  }
+
+  .report-shell .journey-stage > :is(span, h3, strong, p) {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .report-shell .journey-stage h3 {
+    font-size: 10.5pt;
+  }
+
+  .report-shell .journey-stage > strong {
+    font-size: 6.7pt;
+  }
+
+  .report-shell .journey-stage p {
+    font-size: 7pt;
+    line-height: 1.26;
+  }
+
+  .report-shell .journey-arrow {
+    align-self: center;
+    width: 0.18in;
+    height: 0.18in;
+    transform: rotate(-90deg);
+  }
+
+  .report-shell .progress-summary {
+    grid-template-columns: 1.65in minmax(0, 1fr);
+    gap: 0.06in 0.09in;
+    align-items: center;
+    padding: 0.09in;
+  }
+
+  .report-shell .progress-section-heading {
+    grid-column: 1;
+  }
+
+  .report-shell .progress-stat-grid {
+    grid-column: 2;
+  }
+
+  .report-shell .next-action-callout {
+    grid-column: 1 / -1;
+    padding: 0.07in;
+  }
+
+  .report-shell .progress-stat {
+    min-height: 0;
+    padding: 0.06in;
+  }
+
+  .report-shell .planning-estimate-note {
+    padding: 0.07in 0.09in;
+  }
+
+  .report-shell .sprint-day-grid {
+    gap: 0.09in;
+  }
+
+  .report-shell :is(.sprint-day-card, .authority-week-card) {
+    gap: 0.055in;
+    padding: 0.1in !important;
+  }
+
+  .report-shell :is(.sprint-day-heading, .authority-week-heading) {
+    min-height: 0;
+    padding-bottom: 0.05in;
+  }
+
+  .report-shell .sprint-day-card h3 {
+    font-size: 10.5pt;
+  }
+
+  .report-shell :is(.sprint-day-card > p, .week-goal) {
+    font-size: 7.4pt;
+    line-height: 1.28;
+  }
+
+  .report-shell .roadmap-detail-list dd {
+    font-size: 7.1pt;
+    line-height: 1.25;
+  }
+
+  .report-shell .authority-roadmap-page {
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    min-height: 10.4in !important;
+  }
+
+  .report-shell .authority-week-grid {
+    grid-auto-rows: minmax(0, 1fr);
+    gap: 0.09in;
+  }
+
+  .report-shell .blueprint-sequence-note {
+    padding: 0.1in;
+  }
+
+  /* Compact metadata reserves more of each evidence page for proof and rationale. */
+  .report-shell .evidence-summary-strip {
+    grid-template-columns: repeat(3, minmax(0, 0.78fr)) minmax(0, 1.66fr);
+    gap: 0.055in;
+    margin-bottom: 0.08in;
+  }
+
+  .report-shell .evidence-stat,
+  .report-shell .evidence-stat.wide {
+    grid-column: auto;
+    min-height: 0;
+    padding: 0.07in;
+  }
+
+  .report-shell .evidence-stat span {
+    font-size: 6pt;
+  }
+
+  .report-shell .evidence-stat strong,
+  .report-shell .evidence-stat.wide strong {
+    font-size: 8pt;
+  }
+
+  .report-shell .evidence-sample-line {
+    margin-bottom: 0.1in;
+    padding: 0.07in 0.09in;
+  }
+
+  .report-shell .client-evidence-card {
+    gap: 0.08in;
+    margin-bottom: 0.13in;
+    padding: 0.12in;
+  }
+
+  .report-shell .client-evidence-card:has(.client-evidence-figure) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .report-shell .client-evidence-card:has(.client-evidence-figure) .client-evidence-header,
+  .report-shell .client-evidence-card:has(.client-evidence-figure) .evidence-direction-comparison,
+  .report-shell .client-evidence-card:has(.client-evidence-figure) .client-evidence-links {
+    grid-column: 1 / -1;
+  }
+
+  .report-shell .client-evidence-card:has(.client-evidence-figure) .client-evidence-figure {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .report-shell .client-evidence-card:has(.client-evidence-figure) .client-evidence-source {
+    grid-column: 1;
+  }
+
+  .report-shell .client-evidence-card:has(.client-evidence-figure) .client-evidence-findings {
+    grid-column: 2;
+    grid-row: 2 / span 2;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .report-shell .client-evidence-card:has(.client-evidence-figure) .client-evidence-image,
+  .report-shell .client-evidence-card:has(.client-evidence-figure) .client-evidence-image img {
+    max-height: 4in;
+  }
+
+  .report-shell .client-evidence-card:has(.client-evidence-figure) .client-evidence-image img {
+    width: 100%;
+    object-fit: contain;
+  }
+
+  .report-shell .evidence-report-page:has(.client-evidence-card:only-child)
+    .client-evidence-card:has(.client-evidence-figure) {
+    grid-template-rows: auto minmax(0, 1fr) auto auto auto;
+    min-height: 7.45in;
+    align-items: stretch;
+  }
+
+  .report-shell .evidence-report-page:has(.client-evidence-card:only-child)
+    .client-evidence-card:has(.client-evidence-figure) .client-evidence-header {
+    grid-row: 1;
+  }
+
+  .report-shell .evidence-report-page:has(.client-evidence-card:only-child)
+    .client-evidence-card:has(.client-evidence-figure) .client-evidence-source {
+    grid-row: 3;
+  }
+
+  .report-shell .evidence-report-page:has(.client-evidence-card:only-child)
+    .client-evidence-card:has(.client-evidence-figure) .evidence-direction-comparison {
+    grid-row: 4;
+  }
+
+  .report-shell .evidence-report-page:has(.client-evidence-card:only-child)
+    .client-evidence-card:has(.client-evidence-figure) .client-evidence-links {
+    grid-row: 5;
+  }
+
+  .report-shell .client-evidence-header {
+    padding-bottom: 0.07in;
+  }
+
+  .report-shell .client-evidence-header h3 {
+    font-size: 12.5pt;
+  }
+
+  .report-shell .evidence-finding {
+    min-height: 0;
+  }
+
+  /* Closing content and UpgradeOS lockup occupy the final sheet together. */
+  .report-shell .implementation-paths-page {
+    grid-template-rows: auto minmax(0, 1fr) auto auto;
+    min-height: 9.35in !important;
+  }
+
+  .report-shell:has(.preliminary-evidence-note) .implementation-paths-page {
+    min-height: 8.75in !important;
+  }
+
+  .report-shell .implementation-path-grid {
+    gap: 0.1in;
+    align-items: stretch;
+  }
+
+  .report-shell .implementation-path-card {
+    grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+    gap: 0.075in;
+    padding: 0.13in;
+  }
+
+  .report-shell .implementation-path-card h3 {
+    font-size: 15pt;
+  }
+
+  .report-shell .implementation-path-card > p,
+  .report-shell .implementation-path-card li {
+    font-size: 7.8pt;
+    line-height: 1.3;
+  }
+
+  .report-shell .implementation-choice-note {
+    padding: 0.08in 0.1in;
+  }
+
+  .report-shell .final-report-cta {
+    grid-template-columns: 0.38in minmax(0, 1fr);
+    gap: 0.09in;
+    padding: 0.12in;
+  }
+
+  .report-shell .final-cta-icon {
+    width: 0.38in;
+    height: 0.38in;
+  }
+
+  .report-shell .final-report-cta h2 {
+    font-size: 14pt;
+  }
+
+  .report-shell .report-footer.upgradeos-footer {
+    display: grid !important;
+    grid-template-columns: 2.1in minmax(0, 1fr);
+    gap: 0.08in;
+    margin-top: 0.08in;
+    padding: 0.1in 0.12in !important;
+    border: 1px solid #d7c6aa !important;
+    border-top: 0.03in solid var(--report-gold) !important;
+    border-radius: 4px;
+    background: var(--report-paper) !important;
+  }
+}
