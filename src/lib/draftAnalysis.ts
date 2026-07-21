@@ -604,7 +604,7 @@ function buildHoroscopeCandidates(
     return [{
       name,
       basis: 'Candidate produced by the ' + label
-        + ". The final Horoscope follows the operator's final scores.",
+        + ". The final archetype follows the operator's final scores.",
     }]
   }).slice(0, 3)
 }

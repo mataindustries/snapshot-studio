@@ -1351,7 +1351,7 @@ button:disabled {
 }
 
 
-/* Premium Business Horoscope export */
+/* Premium Business Archetype export */
 .report-shell {
   overflow: hidden;
   border: 1px solid #eadfca;
@@ -2023,7 +2023,7 @@ button:disabled {
 }
 
 
-/* Business Horoscope share asset follows docs/PREMIUM_EXPORT_RULES.md. */
+/* Business Archetype share asset follows docs/PREMIUM_EXPORT_RULES.md. */
 .report-share-hero {
   align-content: start;
   gap: 16px;
@@ -2191,6 +2191,37 @@ button:disabled {
   font-size: 1rem;
   font-weight: 700;
   line-height: 1.45;
+}
+
+.share-card-archetype-details {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+
+.share-card-archetype-details div {
+  display: grid;
+  grid-template-columns: minmax(88px, 0.35fr) minmax(0, 1fr);
+  gap: 10px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(155, 107, 35, 0.2);
+}
+
+.share-card-archetype-details dt {
+  color: #8b6425;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.share-card-archetype-details dd {
+  margin: 0;
+  color: #352d25;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .report-share-hero .share-card em {
@@ -2518,13 +2549,6 @@ button:disabled {
 
   .report-cover-group .share-card {
     min-height: 0;
-  }
-
-  .progress-page,
-  .authority-roadmap-page,
-  .implementation-paths-page {
-    break-before: page;
-    page-break-before: always;
   }
 
   .evidence-report-page {

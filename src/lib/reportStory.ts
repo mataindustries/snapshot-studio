@@ -8,6 +8,7 @@ import type {
 } from '../types'
 import {
   capitalizeFirst,
+  formatSentencePhrase,
   getCustomerAudience,
   getDisplayBusinessName,
   getDisplayCity,
@@ -15,6 +16,7 @@ import {
   hasClientFacingValue,
 } from './reportDisplay'
 import { isEvidenceReportReady } from './evidence'
+import { isClientFacingStrength } from './clientStrengths'
 import type { ProgressJourneyModel } from './progressJourney'
 import type { ConsultingRoadmap } from './roadmap'
 
@@ -125,7 +127,7 @@ function assetTitle(key: ScoreKey, score: number) {
 
 function measuredAsset(key: ScoreKey, score: number, form: SnapshotForm): StrategicAsset {
   const businessName = getDisplayBusinessName(form)
-  const service = getRecommendationSubject(form)
+  const service = formatSentencePhrase(getRecommendationSubject(form))
   const city = getDisplayCity(form)
   const focus: Record<ScoreKey, string> = {
     visibility: 'how clearly ' + service + ' connects to ' + city,
@@ -167,6 +169,7 @@ function buildStrategicAssets(
   const assets: StrategicAsset[] = []
   const seen = new Set<string>()
   const add = (asset: StrategicAsset) => {
+    if (!isClientFacingStrength(asset.title)) return
     const key = asset.title.trim().toLocaleLowerCase()
     if (!key || seen.has(key) || assets.length >= 5) return
     seen.add(key)
@@ -206,9 +209,10 @@ function buildStrategicAssets(
 
   if (hasClientFacingValue(form.mainService)) {
     const service = getRecommendationSubject(form)
+    const serviceInSentence = formatSentencePhrase(service)
     add({
       title: service + ' focus',
-      explanation: service + ' is the specific primary service recorded for this Snapshot.',
+      explanation: serviceInSentence + ' is the specific primary service recorded for this Snapshot.',
       whyItMatters: 'A precise service focus helps customers recognize fit before they compare another provider.',
       leverage: 'Carry the same service language through the homepage, dedicated service page, customer proof, and next-step prompts.',
       sourceLabel: 'Assessment input',
@@ -238,7 +242,7 @@ function buildStrategicAssets(
 }
 
 function currentSituationFor(category: ActionCategory, form: SnapshotForm) {
-  const service = getRecommendationSubject(form)
+  const service = formatSentencePhrase(getRecommendationSubject(form))
   const city = getDisplayCity(form)
   const businessName = getDisplayBusinessName(form)
   const audience = getCustomerAudience(form)
@@ -281,11 +285,12 @@ function buildFeaturedOpportunity(
 
   if (!action) {
     const service = getRecommendationSubject(form)
+    const serviceInSentence = formatSentencePhrase(service)
     return {
       title: 'Clarify the ' + service + ' customer decision path',
       currentSituation: operatorOpportunity.trim() || 'The Snapshot has identified an opportunity to connect the offer, proof, and next step more clearly.',
       whyItMatters: 'Clarity and trust give every later visibility improvement a stronger foundation.',
-      recommendedFirstMove: 'Make the audience, local fit, proof, and next step for ' + service + ' explicit on the first screen.',
+      recommendedFirstMove: 'Make the audience, local fit, proof, and next step for ' + serviceInSentence + ' explicit on the first screen.',
       potentialBusinessBenefit: 'Potential customers can evaluate fit with greater confidence and less friction.',
     }
   }
@@ -338,7 +343,7 @@ export function createExecutiveSummary(input: {
   roadmap: ConsultingRoadmap
 }): ExecutiveSummary {
   const businessName = getDisplayBusinessName(input.form)
-  const service = getRecommendationSubject(input.form)
+  const service = formatSentencePhrase(getRecommendationSubject(input.form))
   const city = getDisplayCity(input.form)
   const audience = getCustomerAudience(input.form)
   const firstPhase = input.roadmap.sprint[0]

@@ -103,6 +103,23 @@ export function capitalizeFirst(value: string) {
   return value ? value.charAt(0).toLocaleUpperCase() + value.slice(1) : value
 }
 
+export function formatSentencePhrase(value: string) {
+  return value.trim().split(' ').filter(Boolean).map((word) =>
+    word.split(/([/-])/).map((part) => {
+      if (part === '/' || part === '-') return part
+      const acronym = displayAcronyms.get(part.toLocaleLowerCase())
+      return acronym ?? part.toLocaleLowerCase()
+    }).join(''),
+  ).join(' ')
+}
+
+export function withIndefiniteArticle(value: string) {
+  const phrase = formatSentencePhrase(value)
+  const initialism = phrase.match(/^([A-Z]{2,})(?:[^A-Za-z]|$)/)?.[1] ?? ''
+  const usesAn = /^[aeiou]/i.test(phrase) || /^[AEFHILMNORSX]/.test(initialism)
+  return (usesAn ? 'an' : 'a') + ' ' + phrase
+}
+
 export function isLikelyValidWebsiteUrl(value: string) {
   const trimmed = value.trim()
   if (!trimmed) return true

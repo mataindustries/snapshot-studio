@@ -7,6 +7,7 @@ import type {
 } from '../types/proposal'
 import { createStableId } from './evidence'
 import { createConsultingRoadmap } from './roadmap'
+import { formatSentencePhrase } from './reportDisplay'
 import { createReportStory } from './reportStory'
 import { getTotalScore } from './scoring'
 import { buildBusinessHoroscope } from '../templates/snapshotTemplates'
@@ -88,7 +89,7 @@ function defaultCustomDeliverables(
   )
   if (hasVerificationAction) return []
 
-  const service = snapshot.mainService.trim() || 'primary service'
+  const service = formatSentencePhrase(snapshot.mainService) || 'primary service'
   const city = snapshot.city.trim() || 'the local market'
   return [{
     id: createStableId('proposal-deliverable', [snapshot.id, 'mobile-verification']),
@@ -143,7 +144,7 @@ export function actionToDeliverable(
   action: RecommendedAction,
   snapshot: Pick<SavedSnapshot, 'mainService' | 'city'>,
 ): ProposalDeliverable {
-  const service = snapshot.mainService.trim() || 'primary service'
+  const service = formatSentencePhrase(snapshot.mainService) || 'primary service'
   const city = snapshot.city.trim() || 'the local market'
   return {
     id: createStableId('deliverable', [action.id]),
@@ -203,7 +204,7 @@ export function createProposalFromSnapshot(
     preparedBy: snapshot.branding?.preparedBy || 'Sergio',
     brandName: snapshot.branding?.brandName || 'Snapshot Studio',
     contactLine: snapshot.branding?.contactLine || snapshot.ctaContactLine || lead?.email || lead?.phone || '',
-    proposalSummary: `A focused implementation plan to make ${snapshot.businessName || 'the business'} easier to understand, trust, and contact for ${snapshot.mainService || 'its primary service'} in ${snapshot.city || 'its local market'}.`,
+    proposalSummary: `A focused implementation plan to make ${snapshot.businessName || 'the business'} easier to understand, trust, and contact for ${formatSentencePhrase(snapshot.mainService) || 'its primary service'} in ${snapshot.city || 'its local market'}.`,
     selectedActionIds,
     customDeliverables: defaultCustomDeliverables(snapshot, proposalType, selectedActionIds),
     timeline: proposalType === '48-Hour Visibility Sprint'

@@ -22,6 +22,7 @@ import {
   saveIntakeDraft,
 } from './intakeStorage'
 import { parseWebsiteText } from './intakeParser'
+import { filterClientFacingStrengths, isClientFacingStrength } from './clientStrengths'
 import { loadLeads, persistLeads } from './leads'
 import { createProposalFromSnapshot } from './proposalBuilder'
 import { deleteProposal, loadProposals, saveProposal } from './proposalStorage'
@@ -42,6 +43,7 @@ export const contestDemoIds = {
 const createdAt = '2026-06-16T16:00:00.000Z'
 const reviewedAt = '2026-06-18T18:30:00.000Z'
 const websiteUrl = 'https://harborpine.example'
+const demoBiggestStrength = 'Customers consistently mention respectful technicians, clear arrival updates, and tidy work areas.'
 
 export type ContestDemoData = {
   lead: Lead
@@ -58,7 +60,7 @@ function createDemoForm(): SnapshotForm {
     city: 'Riverton',
     niche: 'Residential HVAC',
     mainService: 'Emergency heating and air conditioning repair',
-    notes: 'Customers consistently mention respectful technicians, clear arrival updates, and tidy work areas.',
+    notes: demoBiggestStrength,
     weakness: 'The first screen leads with a broad comfort promise before naming emergency HVAC repair, Riverton, or the response process.',
     competitorNote: 'Nearby competitors make same-day availability and financing easier to compare from the first screen.',
     competitorUrl1: 'https://northstarcomfort.example',
@@ -90,9 +92,9 @@ function createDemoLead(): Lead {
     phone: '+1 202-555-0147',
     email: 'hello@harborpine.example',
     contactFormUrl: 'https://harborpine.example/request-service',
-    leadSource: 'Fictional Contest Demo',
+    leadSource: 'Starter Workspace',
     priority: 'High',
-    researchNotes: 'Fictional demonstration record. Public-profile notes and website copy were entered manually for the contest walkthrough.',
+    researchNotes: demoBiggestStrength,
     suggestedAngle: 'Lead with the gap between strong customer proof and the vague first-screen service promise.',
     status: 'Snapshot made',
     lastContactedAt: '',
@@ -134,7 +136,7 @@ We confirm the issue, arrival window, and diagnostic fee before dispatch.`
       contactFormUrl: 'https://harborpine.example/request-service',
       bookingUrl: 'https://harborpine.example/request-service',
       businessAgeOrFoundingYear: 'Serving local homeowners since 2012',
-      ownerFamilyNote: 'Fictional locally operated service team.',
+      ownerFamilyNote: 'Locally operated service team.',
       serviceAreas: 'Riverton; Eastbank; Cedar Grove',
       differentiators: 'Respectful technicians, clear arrival updates, tidy work areas, and practical repair options.',
     },
@@ -148,20 +150,20 @@ We confirm the issue, arrival window, and diagnostic fee before dispatch.`
       servicesListed: 'Furnace repair, air conditioning repair, maintenance, and replacement consultations.',
       trustReviewCopy: '4.8 average rating from 126 customer reviews. Licensed and insured.',
       faqText: 'What happens after I request service? We confirm the issue, arrival window, and diagnostic fee before dispatch.',
-      aboutTeamCopy: 'A fictional locally operated HVAC team serving Riverton since 2012.',
+      aboutTeamCopy: 'A locally operated HVAC team serving Riverton since 2012.',
       footerContactDetails: '+1 202-555-0147 · hello@harborpine.example',
       pageText,
     },
     publicProfile: {
       googleRating: '4.8',
       reviewCount: '126',
-      latestReviewRecency: 'Recent review observed during the fictional demo review.',
+      latestReviewRecency: 'Recent review noted during the operator review.',
       profileCompletenessNotes: 'Services and hours are present; emergency response expectations and review themes could be more explicit.',
       categories: 'HVAC contractor; heating repair service; air conditioning repair service',
       hours: 'Monday–Saturday, with after-hours requests accepted by form',
       photos: 'Team, service vehicles, and equipment photos noted',
       socialProfiles: 'Public social profile noted; content cadence not assessed',
-      credentials: 'Licensed and insured claim entered from supplied demo material',
+      credentials: 'Licensed and insured claim entered from supplied review material',
       awards: 'No awards entered',
       financing: 'Financing mentioned on an interior service section',
       guarantees: 'Workmanship language noted; terms require confirmation',
@@ -173,15 +175,15 @@ We confirm the issue, arrival window, and diagnostic fee before dispatch.`
         {
           name: 'Northstar Comfort',
           url: 'https://northstarcomfort.example',
-          notes: 'Fictional competitor presents same-day availability and financing prominently.',
+          notes: 'Competitor presents same-day availability and financing prominently.',
         },
         {
           name: 'Cedar Air & Heat',
           url: 'https://cedarair.example',
-          notes: 'Fictional competitor organizes repair services and FAQs more clearly.',
+          notes: 'Competitor organizes repair services and FAQs more clearly.',
         },
       ],
-      comparisonNotes: 'Harbor & Pine has stronger review proof, while the fictional comparison set makes response expectations easier to scan.',
+      comparisonNotes: 'Harbor & Pine has stronger review proof, while the comparison set makes response expectations easier to scan.',
     },
     observationClassifications: {},
     observationEvidenceLinks: {},
@@ -245,7 +247,7 @@ function createDemoEvidence(actionIds: string[]): EvidenceItem[] {
       title: 'Strong review proof is available for the decision point',
       sourceUrl: websiteUrl,
       pageLabel: 'Operator-entered public-profile notes',
-      observation: 'The fictional review notes record a 4.8 average across 126 reviews, plus recurring mentions of respectful technicians and clear arrival updates.',
+      observation: 'The supplied review notes record a 4.8 average across 126 reviews, plus recurring mentions of respectful technicians and clear arrival updates.',
       whyItMatters: 'Specific customer proof can reduce hesitation when it appears beside the service request rather than later in the page.',
       recommendedChange: 'Place a concise review proof block beside the primary request-service action and confirm the figures before client delivery.',
       expectedOutcome: 'Visitors see a concrete reason to trust the next step before leaving to compare alternatives.',
@@ -279,9 +281,9 @@ export function createContestDemoData(): ContestDemoData {
       linkedEvidence: linkedEvidenceIds,
       linkedEvidenceIds,
       implementationNote: index === 0
-        ? 'Demo status: revised first-screen copy has been reviewed internally.'
+        ? 'Revised first-screen copy has been reviewed internally.'
         : index === 1
-          ? 'Demo status: proof selection and placement are in progress.'
+          ? 'Proof selection and placement are in progress.'
           : undefined,
     }
   })
@@ -295,9 +297,9 @@ export function createContestDemoData(): ContestDemoData {
     scores,
     outputs: generateOutputs(form, scores, totalScore),
     branding: {
-      preparedBy: 'Snapshot Studio Demo',
+      preparedBy: 'Snapshot Studio',
       brandName: 'Snapshot Studio',
-      contactLine: 'demo@upgradeos.example',
+      contactLine: 'studio@upgradeos.example',
     },
     offerMode: 'Fixed Price',
     fixedPrice: '1850',
@@ -306,11 +308,11 @@ export function createContestDemoData(): ContestDemoData {
     ctaHeadline: 'Start with the highest-impact friction points',
     ctaBody: 'Confirm the 48-Hour Visibility Sprint scope, access, and approval window. After implementation, generate a follow-up Snapshot to verify progress.',
     ctaLabel: 'Review the sprint scope',
-    ctaContactLine: 'demo@upgradeos.example',
-    bookingUrl: 'https://upgradeos.example/demo-call',
+    ctaContactLine: 'studio@upgradeos.example',
+    bookingUrl: 'https://upgradeos.example/consultation',
     strengths: [
-      'Strong fictional review proof gives the business a credible trust foundation.',
-      'The supplied material identifies a clear residential HVAC focus and local service area.',
+      demoBiggestStrength,
+      'Residential emergency HVAC repair is clearly defined for Riverton and nearby service areas.',
       'A direct request-service path already exists and can support clearer expectations.',
     ],
     visibilityLeaks: [
@@ -356,13 +358,13 @@ export function createContestDemoData(): ContestDemoData {
     createdAt: reviewedAt,
     updatedAt: reviewedAt,
     proposalStatus: 'Ready',
-    preparedBy: 'Snapshot Studio Demo',
-    contactLine: 'demo@upgradeos.example',
+    preparedBy: 'Snapshot Studio',
+    contactLine: 'studio@upgradeos.example',
     fixedPrice: '1850',
     currency: 'USD',
     paymentTerms: '50% to schedule; 50% after the implementation review.',
     startWindow: 'Within five business days of approval',
-    notes: 'Fictional contest demonstration proposal.',
+    notes: 'Prepared from the reviewed Snapshot scope.',
   }
   const fastLaneSession: FastLaneSession = {
     schemaVersion: 1,
@@ -436,6 +438,53 @@ export function getContestDemoData(): ContestDemoData | null {
     .find((item) => item.id === contestDemoIds.fastLaneSession)
   if (!lead || !intake || !snapshot || !proposal || !fastLaneSession) return null
   return { lead, intake, snapshot, proposal, fastLaneSession }
+}
+
+export function refreshContestDemoClientCopy(data: ContestDemoData) {
+  const knownLegacyStrengths = new Set([
+    'Strong review proof gives the business a credible trust foundation.',
+    'Strong fictional review proof gives the business a credible trust foundation.',
+  ])
+  const snapshotNeedsRepair = !isClientFacingStrength(data.snapshot.notes)
+    || knownLegacyStrengths.has(data.snapshot.strengths[0]?.trim() || '')
+  const leadNeedsRepair = !isClientFacingStrength(data.lead.researchNotes)
+
+  if (!snapshotNeedsRepair && !leadNeedsRepair) return data
+
+  const lead = leadNeedsRepair
+    ? { ...data.lead, researchNotes: demoBiggestStrength }
+    : data.lead
+  const snapshotBase = snapshotNeedsRepair
+    ? {
+        ...data.snapshot,
+        notes: isClientFacingStrength(data.snapshot.notes)
+          ? data.snapshot.notes
+          : demoBiggestStrength,
+        strengths: [
+          demoBiggestStrength,
+          ...filterClientFacingStrengths(data.snapshot.strengths)
+            .filter((strength) => strength !== demoBiggestStrength
+              && !knownLegacyStrengths.has(strength)),
+        ].slice(0, 3),
+      }
+    : data.snapshot
+  const snapshot = snapshotNeedsRepair
+    ? {
+        ...snapshotBase,
+        outputs: generateOutputs(
+          snapshotBase,
+          snapshotBase.scores,
+          getTotalScore(snapshotBase.scores),
+        ),
+      }
+    : snapshotBase
+
+  if (leadNeedsRepair) {
+    persistLeads([lead, ...loadLeads().filter((item) => item.id !== lead.id)])
+  }
+  if (snapshotNeedsRepair) saveSnapshot(snapshot)
+
+  return { ...data, lead, snapshot }
 }
 
 export function resetContestDemo() {

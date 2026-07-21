@@ -116,8 +116,8 @@ export function BiggestOpportunityReport({
         <p className="section-kicker">The move to lead with</p>
         <h2 id="biggest-opportunity-title">The Highest-Leverage Improvement</h2>
         <p>
-          This is the improvement most likely to create momentum now and make later
-          work more valuable.
+          It addresses the clearest point where customers may hesitate, so later
+          work builds on a stronger decision path.
         </p>
       </div>
 

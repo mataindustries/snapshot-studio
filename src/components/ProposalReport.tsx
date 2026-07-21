@@ -166,7 +166,7 @@ export function ProposalReport({ proposal, snapshot }: {
           <p className="proposal-kicker">The highest-leverage opportunity</p>
           <h2>{proposal.snapshotContext.biggestOpportunityTitle || 'A focused implementation opportunity'}</h2>
           <div className="proposal-context-grid">
-            <div><span>Business Horoscope</span><strong>{proposal.snapshotContext.horoscopeName}</strong></div>
+            <div><span>Business Archetype</span><strong>{proposal.snapshotContext.horoscopeName}</strong></div>
             <div><span>Growth Stage</span><strong>{proposal.snapshotContext.growthStage}</strong></div>
             <div><span>Current Position</span><strong>{proposal.snapshotContext.currentScore}/100</strong></div>
             <div><span>Planning range</span><strong>{proposal.snapshotContext.targetScoreLow}–{proposal.snapshotContext.targetScoreHigh}</strong></div>

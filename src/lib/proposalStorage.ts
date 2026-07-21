@@ -113,7 +113,7 @@ export function migrateProposal(value: unknown, index = 0): Proposal | null {
       ...context,
       primaryService: stringValue(context.primaryService),
       city: stringValue(context.city),
-      horoscopeName: stringValue(context.horoscopeName, 'Business Horoscope'),
+      horoscopeName: stringValue(context.horoscopeName, 'Business Archetype'),
       growthStage: stringValue(context.growthStage, 'Emerging Presence') as Proposal['snapshotContext']['growthStage'],
       currentScore: typeof context.currentScore === 'number' ? context.currentScore : 0,
       targetScoreLow: typeof context.targetScoreLow === 'number' ? context.targetScoreLow : 0,

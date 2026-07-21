@@ -72,11 +72,10 @@ import {
   formatProgressJourneyText,
   type ProgressJourneyModel,
 } from './lib/progressJourney'
-import { createConsultingRoadmap, formatRoadmapText, type ConsultingRoadmap } from './lib/roadmap'
+import { createConsultingRoadmap } from './lib/roadmap'
 import {
   createExecutiveSummary,
   createReportStory,
-  formatExecutiveSummaryText,
   formatFeaturedOpportunityText,
   formatImplementationPathsText,
   formatStrategicAssetsText,
@@ -117,6 +116,7 @@ import {
   contestDemoIds,
   getContestDemoData,
   installContestDemo,
+  refreshContestDemoClientCopy,
   isContestDemoInstalled,
   resetContestDemo,
 } from './lib/contestDemo'
@@ -188,7 +188,7 @@ const outputLabels: Array<{
   title: string
   icon: typeof FileText
 }> = [
-  { key: 'snapshot', title: 'Business Horoscope report', icon: FileText },
+  { key: 'snapshot', title: 'Business Archetype report', icon: FileText },
   { key: 'text', title: 'Short text message', icon: MessageSquare },
   { key: 'email', title: 'Short cold email', icon: Send },
   { key: 'shareable', title: 'Shareable result', icon: Clipboard },
@@ -229,7 +229,6 @@ function buildReportText({
   visualDiagnostics,
   actions,
   progressJourney,
-  roadmap,
   evidenceText,
 }: {
   form: SnapshotForm
@@ -245,7 +244,6 @@ function buildReportText({
   visualDiagnostics: VisualDiagnostics
   actions: RecommendedAction[]
   progressJourney: ProgressJourneyModel
-  roadmap: ConsultingRoadmap
   evidenceText: string
 }) {
   const businessName = getDisplayBusinessName(form)
@@ -258,22 +256,46 @@ function buildReportText({
   const categoryScores = scoreKeys.map((key) => `- ${scoreLabels[key]}: ${scores[key]}/20`).join('\n')
   const evidenceSection = evidenceText ? '\n\n' + evidenceText : ''
   const preliminarySection = evidenceText ? '' : '\n' + preliminaryEvidenceNote
+  const sprintSummary = visualDiagnostics.sprintPhases.map((phase) =>
+    phase.window + ' [' + phase.status + '] — ' + phase.mainAction
+      + '\nDeliverable: ' + phase.deliverable,
+  ).join('\n\n')
+  const monthSummary = visualDiagnostics.monthWeeks.map((week) =>
+    'Week ' + week.week + ' — ' + week.theme + ' [' + week.status + ']'
+      + '\n' + week.objective
+      + '\nSuccess signal: ' + week.successSignal,
+  ).join('\n\n')
 
-  return `Business Horoscope
+  return `Your Business Archetype
 
-Business: ${businessName}
-Market: ${city} | ${industry}
+${businessName} — ${city} | ${industry}
+${horoscope.archetype}
+${horoscope.archetypeExplanation}
+Biggest Strength: ${horoscope.biggestStrength}
+Blind Spot: ${horoscope.blindSpot}
+
+Current Score
+${totalScore}/100 — ${reportRating}
+
+Biggest Opportunity
+${reportStory.featuredOpportunity.title}
+${reportStory.featuredOpportunity.currentSituation}
+Expected Outcome: ${executiveSummary.expectedOutcome}
+
+Fastest Win
+${horoscope.fastestWin}
+
+48-Hour Sprint
+${sprintSummary}
+
+One Month Roadmap
+${monthSummary}
+
 Prepared by: ${preparedBy}, ${brandName}${contact}
 Date: ${reportDate}
-Business Horoscope: ${horoscope.archetype}
-Image: ${horoscope.archetypeImagePath}
-${horoscope.archetypeSummary}
-Score: ${totalScore}/100 - ${reportRating}
 
-Category scores
+Executive Score Detail
 ${categoryScores}
-
-${formatExecutiveSummaryText(executiveSummary)}
 
 ${formatScoreDiagnosticsText(visualDiagnostics.scores)}
 
@@ -290,19 +312,18 @@ ${formatActionStatusText(actions)}
 ${formatMomentumTimelineText(visualDiagnostics.momentumTimeline)}
 
 ${formatProgressJourneyText(progressJourney)}
-
-${formatRoadmapText(roadmap)}
 ${evidenceSection}
 
 ${formatImplementationPathsText()}
 
 ${formatOfferAndCtaText(offer)}
 
-
 ${preliminarySection}
 Snapshot Studio
 Powered by UpgradeOS
-${upgradeOsSupportingText}`
+${upgradeOsSupportingText}
+
+Generate your own Snapshot Studio report.`
 }
 
 function formatDate(value: string) {
@@ -491,7 +512,6 @@ function App() {
       visualDiagnostics,
       actions: growthFoundation.recommendedActions,
       progressJourney,
-      roadmap,
       evidenceText,
     }),
     [
@@ -504,7 +524,6 @@ function App() {
       horoscope,
       progressJourney,
       reportStory,
-      roadmap,
       reportDate,
       reportRating,
       scores,
@@ -1410,7 +1429,9 @@ function App() {
   function loadContestDemo(startTour: 'if-new' | 'always' = 'if-new') {
     try {
       const existingDemo = getContestDemoData()
-      const data = existingDemo || installContestDemo()
+      const data = existingDemo
+        ? refreshContestDemoClientCopy(existingDemo)
+        : installContestDemo()
       const nextLeads = loadLeads()
       const nextIntakes = loadIntakeDrafts()
       const nextSnapshots = loadSnapshots()
@@ -1426,14 +1447,14 @@ function App() {
       setPriorityFilter('All')
       setNicheFilter('All')
       setLeadSearch('')
-      setIntakeStorageMessage('Contest Demo intake loaded with reviewed deterministic draft inputs.')
+      setIntakeStorageMessage('Starter Workspace intake loaded with reviewed deterministic draft inputs.')
       setContestDemoInstalled(true)
       setContestDataRevision((current) => current + 1)
       setFastLaneLaunchRequest({ nonce: Date.now(), leadId: data.lead.id })
       setContestDemoMessage(
         existingDemo
-          ? 'Contest Demo resumed from its existing browser-local progress. Use Reset Contest Demo to restore the original reviewed state.'
-          : 'Contest Demo loaded: reviewed Snapshot, live roadmap, ready proposal, and Send Kit are linked under stable fictional records.',
+          ? 'Starter Workspace resumed from its existing browser-local progress. Use Reset Starter Workspace to restore the original reviewed state.'
+          : 'Starter Workspace loaded: the reviewed Snapshot, live roadmap, ready proposal, and Send Kit are linked under stable records.',
       )
       if (startTour === 'always' || !isDemoTourDismissed()) {
         setDemoTourRestartNonce((current) => current + 1)
@@ -1441,14 +1462,14 @@ function App() {
     } catch (error) {
       setContestDemoMessage(
         isStorageQuotaError(error)
-          ? 'Contest Demo could not be loaded because browser storage is full. Remove a large screenshot or old local record, then try again.'
-          : 'Contest Demo could not be loaded. Existing operator data was left in place; refresh and try again.',
+          ? 'Starter Workspace could not be loaded because browser storage is full. Remove a large screenshot or old local record, then try again.'
+          : 'Starter Workspace could not be loaded. Existing operator data was left in place; refresh and try again.',
       )
     }
   }
 
   function handleResetContestDemo() {
-    if (!window.confirm('Restore the fictional Contest Demo to its original state? Changes to demo records will be replaced; every non-demo lead, Snapshot, evidence item, proposal, and session will remain.')) return
+    if (!window.confirm('Restore the Starter Workspace to its original state? Its linked records will be replaced; every other lead, Snapshot, evidence item, proposal, and session will remain.')) return
     try {
       const data = resetContestDemo()
       const nextLeads = loadLeads()
@@ -1466,7 +1487,7 @@ function App() {
       setPriorityFilter('All')
       setNicheFilter('All')
       setLeadSearch('')
-      setIntakeStorageMessage('Contest Demo intake restored with its reviewed deterministic draft.')
+      setIntakeStorageMessage('Starter Workspace intake restored with its reviewed deterministic draft.')
       setProposalCreationRequest(undefined)
       setProposalFocusRequest(undefined)
       setFastLaneLaunchRequest({ nonce: Date.now(), leadId: data.lead.id })
@@ -1477,9 +1498,9 @@ function App() {
         setDemoTourRestartNonce((current) => current + 1)
       }
       setContestDataRevision((current) => current + 1)
-      setContestDemoMessage('Contest Demo restored to its original reviewed state. Non-demo browser records were left unchanged.')
+      setContestDemoMessage('Starter Workspace restored to its original reviewed state. All other browser records were left unchanged.')
     } catch {
-      setContestDemoMessage('Contest Demo reset could not finish. Non-demo browser records were left unchanged; refresh and try again.')
+      setContestDemoMessage('Starter Workspace reset could not finish. All other browser records were left unchanged; refresh and try again.')
     }
   }
 
@@ -1734,7 +1755,7 @@ function App() {
           {filteredLeads.length === 0 ? (
             <p className="empty-state">
               {leads.length === 0
-                ? 'No leads yet. Add one manually, import a list, or load the fictional Contest Demo to see the complete workflow.'
+                ? 'No leads yet. Add one manually, import a list, or load the Starter Workspace to see the complete workflow.'
                 : 'No leads match these filters. Clear the search or broaden a filter to return to the queue.'}
             </p>
           ) : (
@@ -1861,7 +1882,7 @@ function App() {
         <div className="panel form-panel">
           <div className="section-heading">
             <div>
-              <p className="section-kicker">Business Horoscope</p>
+              <p className="section-kicker">Business Archetype</p>
               <h2>Audit Profile</h2>
             </div>
             <button className="ghost-button" type="button" onClick={handleNewSnapshot}>
@@ -1949,7 +1970,7 @@ function App() {
             <div className="section-heading">
               <div>
                 <p className="section-kicker">Assessment</p>
-                <h2>Business Horoscope Score</h2>
+                <h2>Business Archetype Score</h2>
               </div>
               <span className={`rating-badge ${rating.toLowerCase().replace(' ', '-')}`}>
                 {rating}
@@ -2115,7 +2136,7 @@ function App() {
         <div className="report-toolbar screen-only">
           <div>
             <p className="section-kicker">Client preview</p>
-            <h2>Business Horoscope Preview</h2>
+            <h2>Business Archetype Preview</h2>
           </div>
           <ReportReadiness readiness={reportReadiness} />
           <div className="report-actions">
@@ -2140,7 +2161,7 @@ function App() {
         </div>
 
         <article className="report-shell">
-          <section className="report-page share-page report-share-hero report-cover-group" aria-label="Share-ready Business Horoscope result">
+          <section className="report-page share-page report-share-hero report-cover-group" aria-label="Share-ready Business Archetype result">
             <div className="share-page-topline">
               <p className="report-brand">
                 {valueOrFallback(branding.brandName, defaultBranding.brandName)}
@@ -2153,7 +2174,7 @@ function App() {
                 <img src={horoscope.archetypeImagePath} alt={`${horoscope.archetype} archetype`} />
               </div>
               <div className="share-card-copy">
-                <p className="share-card-kicker">Business Horoscope</p>
+                <p className="share-card-kicker">Business Archetype</p>
                 <div className="share-card-business">
                   <strong>{getDisplayBusinessName(form)}</strong>
                   <small>
@@ -2162,7 +2183,7 @@ function App() {
                 </div>
                 <div className="share-card-result">
                   <div>
-                    <span>Business Horoscope</span>
+                    <span>Business Archetype</span>
                     <h3>{horoscope.archetype}</h3>
                   </div>
                   <div className="share-card-score" aria-label={`Report score ${totalScore} out of 100`}>
@@ -2171,6 +2192,11 @@ function App() {
                   </div>
                 </div>
                 <p className="share-card-diagnosis">{horoscope.shareSummary}</p>
+                <dl className="share-card-archetype-details">
+                  <div><dt>Biggest strength</dt><dd>{horoscope.biggestStrength}</dd></div>
+                  <div><dt>Blind spot</dt><dd>{horoscope.blindSpot}</dd></div>
+                  <div><dt>Fastest win</dt><dd>{horoscope.fastestWin}</dd></div>
+                </dl>
                 <em>{horoscope.shareCta}</em>
               </div>
             </section>

@@ -425,7 +425,7 @@ export function FastLaneSnapshotStep({
         <div className="fast-lane-snapshot-score"><span>Current Position</span><strong>{totalScore}<small>/100</small></strong><em>{snapshot ? 'Saved Snapshot' : 'Unsaved review'}</em></div>
         <dl>
           <div><dt>Business</dt><dd>{form.businessName || 'Business name needed'}{form.city ? ` · ${form.city}` : ''}</dd></div>
-          <div><dt>Business Horoscope</dt><dd>{horoscope}</dd></div>
+          <div><dt>Business Archetype</dt><dd>{horoscope}</dd></div>
           <div><dt>Growth Stage</dt><dd>{growthStage}</dd></div>
           <div><dt>Highest-leverage improvement</dt><dd>{highestOpportunity}</dd></div>
           <div><dt>Report readiness</dt><dd>{reportReadiness.state}</dd></div>

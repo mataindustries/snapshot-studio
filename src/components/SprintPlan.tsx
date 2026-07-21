@@ -19,8 +19,8 @@ export function SprintPlan({
         <p className="section-kicker">Focused implementation</p>
         <h2>48-Hour Visibility Sprint</h2>
         <p>
-          Two numbered work windows show the action, deliverable, effort, expected gain,
-          and live completion state already recorded in the action plan.
+          Two focused work windows turn the highest-priority actions into clear deliverables,
+          with effort, expected gain, and current completion status visible at a glance.
         </p>
       </div>
 

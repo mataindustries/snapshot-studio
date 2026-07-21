@@ -55,9 +55,9 @@ export function DemoTour({
   if (!open) return null
 
   return (
-    <aside className="demo-tour screen-only" aria-live="polite" aria-label="Contest Demo tour">
+    <aside className="demo-tour screen-only" aria-live="polite" aria-label="Workspace tour">
       <header>
-        <span>Demo tour · {stepIndex + 1}/{demoTourSteps.length}</span>
+        <span>Workflow tour · {stepIndex + 1}/{demoTourSteps.length}</span>
         <button type="button" aria-label="Skip tour" title="Skip tour" onClick={closeTour}>
           <X size={17} aria-hidden="true" />
         </button>

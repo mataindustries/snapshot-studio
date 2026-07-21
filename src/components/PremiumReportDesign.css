@@ -620,8 +620,8 @@
 
   /* Cover occupies the complete printable sheet without cropping the archetype. */
   .report-shell .report-cover-group {
-    grid-template-rows: minmax(0, 1fr);
-    min-height: 10.4in !important;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    min-height: 0 !important;
     padding: 0 !important;
     break-after: page !important;
     page-break-after: always !important;
@@ -629,16 +629,16 @@
 
   .report-shell .report-share-hero .share-card {
     grid-template-columns: minmax(0, 1fr) !important;
-    grid-template-rows: minmax(0, 6.25in) minmax(0, 1fr);
+    grid-template-rows: 4.55in auto;
     width: 100%;
-    min-height: 10.4in;
+    min-height: 0;
     border: 1px solid #cfb477 !important;
     border-radius: 6px !important;
     background: var(--report-paper) !important;
   }
 
   .report-shell .report-share-hero .share-card-media {
-    padding: 0.1in 0.16in;
+    padding: 0.06in 0.12in;
     border-right: 0;
     border-bottom: 1px solid #dbc69f !important;
     background: #f2e5cf !important;
@@ -653,40 +653,40 @@
   }
 
   .report-shell .report-share-hero .share-card-copy {
-    align-content: center;
-    gap: 0.1in;
-    padding: 0.22in 0.34in 0.26in !important;
+    align-content: start;
+    gap: 0.055in;
+    padding: 0.13in 0.22in 0.16in !important;
     background: var(--report-paper) !important;
   }
 
   .report-shell .share-card-business strong {
-    font-size: 27pt;
-    line-height: 0.94;
+    font-size: 23pt;
+    line-height: 0.96;
   }
 
   .report-shell .report-share-hero .share-card h3 {
-    font-size: 33pt;
-    line-height: 0.94;
+    font-size: 28pt;
+    line-height: 0.96;
   }
 
   .report-shell .report-share-hero .share-card-score {
-    min-width: 0.72in;
-    padding: 0.08in 0.1in;
+    min-width: 0.68in;
+    padding: 0.055in 0.08in;
   }
 
   .report-shell .report-share-hero .share-card-score strong {
-    font-size: 27pt;
+    font-size: 23pt;
   }
 
   .report-shell .report-share-hero .share-card-diagnosis,
   .report-shell .report-share-hero .share-card p:not(.share-card-kicker) {
-    font-size: 10.5pt !important;
-    line-height: 1.34 !important;
+    font-size: 9.2pt !important;
+    line-height: 1.27 !important;
   }
 
   .report-shell .report-share-hero .share-card em {
-    padding: 0.07in 0.11in !important;
-    font-size: 9pt !important;
+    padding: 0.045in 0.09in !important;
+    font-size: 8.5pt !important;
   }
 
   /* Full-width asset rows remove dangling cells and balance the overview sheet. */
@@ -883,8 +883,8 @@
   }
 
   .report-shell .authority-roadmap-page {
-    grid-template-rows: auto minmax(0, 1fr) auto;
-    min-height: 10.4in !important;
+    grid-template-rows: auto;
+    min-height: 0 !important;
   }
 
   .report-shell .authority-week-grid {
@@ -968,8 +968,8 @@
 
   .report-shell .evidence-report-page:has(.client-evidence-card:only-child)
     .client-evidence-card:has(.client-evidence-figure) {
-    grid-template-rows: auto minmax(0, 1fr) auto auto auto;
-    min-height: 7.45in;
+    grid-template-rows: auto;
+    min-height: 0;
     align-items: stretch;
   }
 
@@ -1007,12 +1007,12 @@
 
   /* Closing content and UpgradeOS lockup occupy the final sheet together. */
   .report-shell .implementation-paths-page {
-    grid-template-rows: auto minmax(0, 1fr) auto auto;
-    min-height: 9.35in !important;
+    grid-template-rows: auto;
+    min-height: 0 !important;
   }
 
   .report-shell:has(.preliminary-evidence-note) .implementation-paths-page {
-    min-height: 8.75in !important;
+    min-height: 0 !important;
   }
 
   .report-shell .implementation-path-grid {
@@ -1065,5 +1065,46 @@
     border-top: 0.03in solid var(--report-gold) !important;
     border-radius: 4px;
     background: var(--report-paper) !important;
+  }
+}
+
+/* Compact the Phase 8 archetype diagnostics for the printed cover. */
+@media print {
+  .report-shell .report-cover-group {
+    gap: 0.07in !important;
+    align-content: start;
+  }
+
+  .report-shell .share-page-topline {
+    padding-bottom: 0.055in;
+  }
+
+  .report-shell .report-share-hero .report-meta {
+    gap: 0.04in;
+    padding: 0.045in 0;
+  }
+
+  .report-shell .report-share-hero .report-meta span {
+    padding: 0.015in 0.045in;
+    font-size: 7pt;
+  }
+
+  .report-shell .share-card-archetype-details {
+    gap: 0.025in;
+  }
+
+  .report-shell .share-card-archetype-details div {
+    grid-template-columns: 1.02in minmax(0, 1fr);
+    gap: 0.07in;
+    padding-top: 0.035in;
+  }
+
+  .report-shell .share-card-archetype-details dt {
+    font-size: 7pt;
+  }
+
+  .report-shell .share-card-archetype-details dd {
+    font-size: 8pt;
+    line-height: 1.24;
   }
 }

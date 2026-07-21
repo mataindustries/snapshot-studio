@@ -10,10 +10,12 @@ import { normalizeActionStatus } from './actionProgress'
 import { createStableId } from './evidence'
 import {
   capitalizeFirst,
+  formatSentencePhrase,
   getCustomerAudience,
   getDisplayBusinessName,
   getDisplayCity,
   getRecommendationSubject,
+  withIndefiniteArticle,
 } from './reportDisplay'
 import { scoreAction } from './prioritization'
 import { emptyScores } from './scoring'
@@ -139,7 +141,7 @@ const profileByCategory: Record<ActionCategory, ActionProfile> = {
     expectedOutcome: 'Improve the reliability of the public-facing experience.',
   },
   'Brand Positioning': {
-    objective: 'State a specific, supportable reason to choose the business.',
+    objective: 'State a specific, credible reason to choose the business.',
     businessValue: 'Comparison shoppers can distinguish the offer from nearby alternatives.',
     reason: 'Clear differentiation makes proof and service detail easier to interpret.',
     expectedOutcome: 'Clarify why the business is a relevant choice.',
@@ -266,27 +268,29 @@ function firstScreenRecommendation(form: SnapshotForm) {
   const audience = capitalizeFirst(getCustomerAudience(form))
   const businessName = getDisplayBusinessName(form)
   const service = getRecommendationSubject(form)
+  const serviceInSentence = formatSentencePhrase(service)
   const city = getDisplayCity(form)
   const signal = (form.niche + ' ' + form.mainService).toLocaleLowerCase()
 
   if (/plumb/.test(signal)) {
-    return audience + ' should immediately understand that ' + businessName + ' specializes in ' + service + ' throughout ' + city + ' before they begin comparing local options.'
+    return audience + ' should immediately understand that ' + businessName + ' specializes in ' + serviceInSentence + ' throughout ' + city + ' before they begin comparing local options.'
   }
   if (/dental|dentist|orthodont|periodont|endodont/.test(signal)) {
-    return 'Patients should know within seconds whether ' + businessName + ' is the right practice for ' + service + ' in ' + city + ' before they look for another provider.'
+    return 'Patients should know within seconds whether ' + businessName + ' is the right practice for ' + serviceInSentence + ' in ' + city + ' before they look for another provider.'
   }
   if (/hvac|heating|air condition/.test(signal)) {
-    return 'Homeowners should instantly recognize that ' + businessName + ' handles ' + service + ' in ' + city + ' when speed and local availability shape the decision.'
+    return 'Homeowners should instantly recognize that ' + businessName + ' handles ' + serviceInSentence + ' in ' + city + ' when speed and local availability shape the decision.'
   }
   if (/attorney|lawyer|legal|law firm/.test(signal)) {
-    return 'Potential clients should immediately understand which ' + service + ' problems ' + businessName + ' solves and whether the firm serves ' + city + '.'
+    return 'Potential clients should immediately understand which ' + serviceInSentence + ' problems ' + businessName + ' solves and whether the firm serves ' + city + '.'
   }
 
-  return audience + ' should understand within seconds that ' + businessName + ' provides ' + service + ' in ' + city + ', before they compare another local option.'
+  return audience + ' should understand within seconds that ' + businessName + ' provides ' + serviceInSentence + ' in ' + city + ', before they compare another local option.'
 }
 
 function buildCandidates(form: SnapshotForm): ActionCandidate[] {
   const service = getRecommendationSubject(form)
+  const serviceInSentence = formatSentencePhrase(service)
   const city = getDisplayCity(form)
   const businessName = getDisplayBusinessName(form)
   const audience = getCustomerAudience(form)
@@ -300,7 +304,7 @@ function buildCandidates(form: SnapshotForm): ActionCandidate[] {
       description: firstScreenRecommendation(form) + ' Lead with that message, then add one credible proof point and a clear next step.',
       reason: 'The first screen must establish local fit before ' + audience + ' invest time comparing proof or pricing.',
       businessValue: audienceLead + ' can recognize the right local option without hunting for basic details.',
-      expectedOutcome: 'The homepage communicates ' + service + ', ' + city + ', and the next step at a glance.',
+      expectedOutcome: 'The homepage communicates ' + serviceInSentence + ', ' + city + ', and the next step at a glance.',
       estimatedEffort: 'Small',
       estimatedImpact: 'High',
       estimatedHours: 2,
@@ -309,7 +313,7 @@ function buildCandidates(form: SnapshotForm): ActionCandidate[] {
       ...profileByCategory.Trust,
       category: 'Trust',
       title: 'Put decision-making proof beside the primary action',
-      description: 'Bring together the reviews, credentials, guarantees, process details, or results that best reassure ' + audience + ' considering ' + service + '.',
+      description: 'Bring together the reviews, credentials, guarantees, process details, or results that best reassure ' + audience + ' considering ' + serviceInSentence + '.',
       reason: audienceLead + ' need confidence at the moment they decide whether contacting ' + businessName + ' feels worthwhile.',
       businessValue: 'Stronger proof near the contact step can prevent qualified interest from turning into another comparison search.',
       expectedOutcome: 'The strongest credibility cues appear before the call, form, or booking decision.',
@@ -321,9 +325,9 @@ function buildCandidates(form: SnapshotForm): ActionCandidate[] {
       ...profileByCategory['Service Pages'],
       category: 'Service Pages',
       title: 'Build a complete decision page for ' + service,
-      description: 'Give ' + audience + ' in ' + city + ' one place to understand fit, process, proof, common concerns, and the next step for ' + service + '.',
+      description: 'Give ' + audience + ' in ' + city + ' one place to understand fit, process, proof, common concerns, and the next step for ' + serviceInSentence + '.',
       reason: 'A focused page lets ' + audience + ' resolve their main questions without piecing the offer together across the site.',
-      businessValue: service + ' becomes easier to evaluate and easier to choose in the ' + city + ' market.',
+      businessValue: serviceInSentence.charAt(0).toLocaleUpperCase() + serviceInSentence.slice(1) + ' becomes easier to evaluate and easier to choose in the ' + city + ' market.',
       expectedOutcome: 'The priority service has a complete page that supports a confident inquiry.',
       estimatedEffort: 'Large',
       estimatedImpact: 'High',
@@ -333,7 +337,7 @@ function buildCandidates(form: SnapshotForm): ActionCandidate[] {
       ...profileByCategory.FAQ,
       category: 'FAQ',
       title: 'Answer the five questions that delay first contact',
-      description: 'Publish concise answers about fit, process, timing, preparation, and what happens after a ' + service + ' inquiry.',
+      description: 'Publish concise answers about fit, process, timing, preparation, and what happens after ' + withIndefiniteArticle(service) + ' inquiry.',
       reason: 'Direct answers keep ' + audience + ' from leaving the site to resolve basic concerns elsewhere.',
       businessValue: businessName + ' can earn confidence before a conversation begins.',
       expectedOutcome: 'Common pre-contact questions have clear answers that people and AI systems can interpret.',
@@ -345,8 +349,8 @@ function buildCandidates(form: SnapshotForm): ActionCandidate[] {
       ...profileByCategory['Google Business Profile'],
       category: 'Google Business Profile',
       title: 'Make the local profile match the strongest ' + service + ' story',
-      description: 'Confirm the primary category, ' + service + ' details, ' + city + ' service area, description, photos, and review response cadence.',
-      reason: audienceLead + ' may judge local fit from the profile before they ever reach the website.',
+      description: 'Confirm the primary category, ' + serviceInSentence + ' details, ' + city + ' service area, description, photos, and review response cadence.',
+      reason: audienceLead + ' may assess local fit from the profile before they ever reach the website.',
       businessValue: 'Searchers see a complete, consistent reason to consider ' + businessName + ' from the first local result.',
       expectedOutcome: 'The local profile accurately reflects the service, market, and strongest credibility cues.',
       estimatedEffort: 'Medium',
@@ -357,7 +361,7 @@ function buildCandidates(form: SnapshotForm): ActionCandidate[] {
       ...profileByCategory['Calls To Action'],
       category: 'Calls To Action',
       title: 'Turn the contact button into a clear promise',
-      description: 'Use one action phrase across the site and explain the response time, first conversation, and next step for a ' + service + ' inquiry.',
+      description: 'Use one action phrase across the site and explain the response time, first conversation, and next step for ' + withIndefiniteArticle(service) + ' inquiry.',
       reason: 'A specific promise makes first contact feel more predictable and less risky for ' + audience + '.',
       businessValue: 'Qualified visitors know what they are agreeing to and are less likely to stall at the final step.',
       expectedOutcome: 'Every primary action sets the same clear expectation for what happens next.',

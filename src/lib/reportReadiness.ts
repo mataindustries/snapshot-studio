@@ -40,7 +40,7 @@ export function getReportReadiness(input: {
     input.form.niche,
     input.form.mainService,
   ].filter((value) => value.trim() && isGenericPlaceholder(value))
-  if (placeholderFields.length > 0) warnings.push('Replace generic placeholder text before sharing.')
+  if (placeholderFields.length > 0) warnings.push('Replace generic temporary text before sharing.')
 
   const validScores = Object.values(input.scores).every(
     (score) => Number.isFinite(score) && score >= 0 && score <= 20,

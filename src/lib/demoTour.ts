@@ -4,7 +4,7 @@ export const demoTourSteps = [
   {
     title: 'Lead',
     targetId: 'lead-queue',
-    copy: 'Start with a complete lead and one usable contact route. The Contest Demo is fictional and safe to reset.',
+    copy: 'Start with a complete lead and one usable contact route. The starter workspace is safe to reset whenever you want a clean walkthrough.',
   },
   {
     title: 'Review',

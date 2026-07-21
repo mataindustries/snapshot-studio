@@ -21,7 +21,7 @@ export function AuthorityRoadmap({
         <h2>Your First Month of Momentum</h2>
         <p>
           Each week builds on the last: clarify the offer, strengthen trust, demonstrate
-          authority, then make the business easier for people and AI systems to understand.
+          authority, then make the business easier for customers, search engines, and answer systems to understand.
         </p>
       </div>
 
@@ -78,7 +78,7 @@ export function AuthorityRoadmap({
           <strong>How momentum compounds</strong>
           <small>
             Clear positioning makes proof easier to trust. Strong proof gives expertise
-            weight. Together, they create a business story customers and AI systems can understand.
+            weight. Together, they create a business story customers and answer systems can understand.
           </small>
         </span>
         <ArrowRight size={19} aria-hidden="true" />

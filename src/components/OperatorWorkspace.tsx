@@ -1289,7 +1289,7 @@ function DraftAnalysisStep({
           </section>
 
           <section className="draft-section">
-            <h5>Business Horoscope candidates</h5>
+            <h5>Business Archetype candidates</h5>
             <p className="operator-inline-note">
               Candidates follow suggested score scenarios. Final scores still control the report.
             </p>
