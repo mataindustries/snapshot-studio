@@ -2,7 +2,9 @@
 
 ## Brand Direction
 
-Business Horoscope should feel premium, editorial, and diagnostic. It is a luxury mini-read on a business website, not a generic audit, worksheet, or software report.
+Business Archetype should feel premium, editorial, and diagnostic. It is a luxury mini-read on a business website, not a generic audit, worksheet, or software report.
+
+Client-facing copy uses **Reputation Magnet**. The current illustration belongs to the legacy **Trust Magnet** artwork family; its embedded labels will be refreshed in a future visual-asset pass. This internal asset note does not belong in client deliverables.
 
 ## Visual Palette
 

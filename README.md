@@ -1,12 +1,16 @@
 # Snapshot Studio
 
-**Turn a local-business lead into a client-ready growth plan.**
+**Discover the growth pattern shaping a local business.**
 
-Snapshot Studio, powered by UpgradeOS, is a local-first operator workspace for turning manually reviewed business research into a premium Snapshot report, prioritized implementation roadmap, proposal, and outreach package.
+Snapshot Studio, powered by UpgradeOS, turns reviewed local-business information into a memorable Business Archetype, premium assessment, implementation roadmap, proposal, and outreach Send Kit.
+
+**Lead → Review → Archetype → Roadmap → Proposal → Outreach**
 
 ## What it is
 
-Snapshot Studio brings lead intake, structured research, consultant-style reporting, evidence, action tracking, proposals, and follow-up preparation into one browser workflow. The operator remains the decision-maker at every step; the app organizes the work and keeps linked deliverables consistent.
+Snapshot Studio reveals a Business Archetype derived from a structured five-part assessment, then turns it into a prioritized roadmap, live implementation plan, proposal, and Send Kit. Lead intake, reviewed research, consultant-style reporting, evidence, action tracking, proposals, and follow-up preparation stay connected in one browser workflow. The operator remains the decision-maker at every step.
+
+The Business Archetype is not astrology and does not predict outcomes. It is a branded pattern derived from the reviewed scores for visibility, trust, conversion, AI-search readiness, and competitive position.
 
 ## Problem
 
@@ -16,7 +20,7 @@ Local-business audits often become a loose collection of notes, screenshots, gen
 
 Snapshot Studio creates one traceable path:
 
-**Lead → Snapshot → Roadmap → Proposal → Outreach**
+**Lead → Review → Archetype → Roadmap → Proposal → Outreach**
 
 Research is entered by the operator, deterministic suggestions are reviewed before use, and the same canonical actions power the client report, visual diagnostics, implementation plan, proposal scope, and Send Kit.
 
@@ -25,7 +29,7 @@ Research is entered by the operator, deterministic suggestions are reviewed befo
 - Lead Queue with manual entry and CSV, TSV, or Markdown import
 - One-Screen Fast Lane for a focused lead-to-outreach workflow
 - Structured Operator Intake Workspace with deterministic draft analysis
-- Manual Audit Profile with Business Horoscope and Growth Stages
+- Manual Audit Profile with Business Archetype and Growth Stages
 - Premium client Snapshot with executive summary and visual diagnostics
 - Evidence Manager with linked observations and screenshot support
 - Opportunity / Effort Matrix, 48-Hour Visibility Sprint, and first-month roadmap
@@ -34,7 +38,7 @@ Research is entered by the operator, deterministic suggestions are reviewed befo
 - Editable Send Kit for email, contact form, text, phone notes, and follow-up
 - Browser Print / Save PDF for Snapshot and proposal deliverables
 - Browser-local saved leads, intakes, Snapshots, proposals, and Fast Lane sessions
-- Deterministic fictional Contest Demo with a six-step guided tour
+- Deterministic fictional Starter Workspace with a six-step guided tour
 
 ## Architecture
 
@@ -87,14 +91,19 @@ For a subdirectory deployment, set the Vite base and update public artwork paths
 
 ## Demo
 
-For the fastest review:
+The Starter Workspace uses fictional example data, reserved `.example` contact details, and stable IDs. Loading resumes the same linked records without duplication; resetting restores only Starter Workspace data and leaves user-created records unchanged.
 
-1. Start the app and select **Load Contest Demo** in the first screen.
-2. Follow the tour through **Lead**, **Review**, **Snapshot**, **Roadmap**, **Proposal**, and **Send Kit**.
-3. Use **Previous**, **Next**, **Skip**, or **Restart** at any point.
-4. Select **Reset Contest Demo** to restore only the fictional demo records to their original state.
+1. Launch the app.
+2. Select **Load Starter Workspace**.
+3. Reveal the **Business Archetype**.
+4. Open the **Executive Snapshot**.
+5. Review the **Opportunity Matrix**.
+6. Change one action status and observe live progress.
+7. Open the proposal.
+8. Open the **Send Kit**.
+9. Select **Reset Starter Workspace** to restore the example workflow.
 
-The demo uses stable IDs and reserved `.example` contact details. Loading resumes the existing linked demo, while resetting restores its original reviewed state. Neither action duplicates records, and non-demo records are left unchanged. See [the 3-minute demo script](docs/DEMO_SCRIPT.md) or [the judge quickstart](docs/JUDGE_QUICKSTART.md).
+Continue with the [3-minute demo script](docs/DEMO_SCRIPT.md), [judge quickstart](docs/JUDGE_QUICKSTART.md), [submission copy](docs/SUBMISSION_COPY.md), or [Build Week phase summary](docs/BUILD_WEEK.md).
 
 ## Project structure
 
@@ -105,7 +114,7 @@ src/
   templates/    Snapshot and outreach copy generation
   types/        Focused proposal and Fast Lane types
   App.tsx       Composition and cross-workspace handoffs
-docs/           Product, architecture, validation, and contest documentation
+docs/           Product, architecture, validation, and submission documentation
 public/         Static assets and the browser-local Signal companion
 ```
 
@@ -130,12 +139,43 @@ Additional technical context is available in [Architecture](docs/ARCHITECTURE.md
 
 These are future directions, not current product claims.
 
+## Built with Codex and GPT-5.6
+
+Codex and GPT-5.6 supported the development process by helping to:
+
+- inspect and understand the evolving React and TypeScript codebase
+- plan modular implementation phases
+- build and refactor the report system
+- develop deterministic analysis and recommendation helpers
+- create the evidence, action tracking, proposal, Fast Lane, and Send Kit workflows
+- diagnose print and PDF pagination regressions
+- perform lint, build, diff, migration, and regression checks
+- improve mobile behavior and submission documentation
+
+Key product decisions remained operator-directed, including:
+
+- UpgradeOS positioning
+- the Business Archetype concept
+- the responsible operator-review model
+- the five-part score framework
+- the 48-Hour Visibility Sprint
+- the client-facing report structure
+- the sales workflow
+
+Codex and GPT-5.6 were development tools. The shipped application does not call GPT-5.6 at runtime, crawl websites autonomously, or send outreach autonomously.
+
 ## Build Week summary
 
-The build progressed from a lightweight local-business Snapshot into a complete operator-controlled consulting workflow: Business Horoscope and Growth Stages, evidence-backed recommendations, execution roadmaps, structured intake, proposals, premium report storytelling, executive visual diagnostics, live action progress, and the Fast Lane Send Kit. The final contest pass adds a deterministic judge demo, guided tour, public documentation, resilient empty states, and focused mobile polish without changing the core scoring or persistence architecture.
+The build progressed from a lightweight local-business Snapshot into a complete operator-controlled consulting workflow: Business Archetype and Growth Stages, evidence-backed recommendations, execution roadmaps, structured intake, proposals, premium report storytelling, executive visual diagnostics, live action progress, and the Fast Lane Send Kit. The final preparation pass adds a deterministic Starter Workspace, guided tour, public documentation, resilient empty states, and focused mobile polish without changing the core scoring or persistence architecture.
 
 Read the phase-by-phase summary in [docs/BUILD_WEEK.md](docs/BUILD_WEEK.md).
+
+## License
+
+Licensed under the GNU Affero General Public License v3.0 or later. See [LICENSE](LICENSE).
 
 ## Author
 
 Built by **Mata Industries** as Snapshot Studio, powered by **UpgradeOS**.
+
+Copyright (c) 2026 Mata Industries.

@@ -4,7 +4,7 @@
 
 1. Run `npm ci` and `npm run dev`.
 2. Open the app at desktop width with browser zoom at 100%.
-3. For the cleanest recording, use fresh site storage. Otherwise select **Reset Contest Demo**, then reload and return to the top.
+3. For the cleanest recording, use fresh site storage. Otherwise select **Reset Starter Workspace**, then reload and return to the top.
 
 ## 0:00–0:15 — The promise
 
@@ -12,7 +12,7 @@ Show the first screen.
 
 > Snapshot Studio turns one local-business lead into a reviewed growth plan, client Snapshot, implementation roadmap, proposal, and outreach package. The operator stays in control from start to finish.
 
-Select **Load Contest Demo**.
+Select **Load Starter Workspace**.
 
 If the guide was dismissed in this browser, select **Restart tour** immediately afterward.
 
@@ -68,8 +68,8 @@ Show the route tabs and PDF actions.
 
 > Snapshot Studio connects research, judgment, delivery, and follow-up in one local-first workflow—without automatic crawling, invented facts, or guaranteed results.
 
-Select **Finish**. Mention that **Reset Contest Demo** restores only the fictional demo chain to its pristine state.
+Select **Finish**. Mention that **Reset Starter Workspace** restores only the fictional demo chain to its pristine state.
 
 ## If the tour was previously dismissed
 
-Select **Restart tour** beside the Contest Demo controls. The dismissal is remembered only in the current browser.
+Select **Restart tour** beside the Starter Workspace controls. The dismissal is remembered only in the current browser.

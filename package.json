@@ -27,5 +27,12 @@
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.2",
     "vite": "^8.0.12"
+  },
+  "description": "Operator-assisted local-business assessment, roadmap, proposal, and outreach workflow powered by UpgradeOS.",
+  "author": "Mata Industries",
+  "license": "AGPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mataindustries/snapshot-studio"
   }
 }

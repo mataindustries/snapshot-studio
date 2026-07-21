@@ -4,7 +4,7 @@ Snapshot Studio began as a browser-based local-business Snapshot and grew into a
 
 ## 1. Snapshot foundation
 
-The first build established the manual Audit Profile, category scoring, Business Horoscope presentation, generated report, outreach assets, and browser-based export experience. The core promise was simple: turn a structured operator assessment into an understandable client deliverable.
+The first build established the manual Audit Profile, category scoring, Business Archetype presentation, generated report, outreach assets, and browser-based export experience. The core promise was simple: turn a structured operator assessment into an understandable client deliverable.
 
 ## 2. Growth model and progress story
 
@@ -46,7 +46,7 @@ Fast Lane orchestrated the existing systems into six focused steps: Lead, Resear
 
 The contest pass adds:
 
-- A deterministic fictional Contest Demo with stable linked IDs
+- A deterministic fictional Starter Workspace with stable linked IDs
 - Load and demo-only reset controls
 - A dismissible six-step guided tour
 - A judge-readable first screen
