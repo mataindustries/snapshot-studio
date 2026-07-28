@@ -1,5 +1,7 @@
 import type {
+  EvidenceItem,
   RecommendedAction,
+  ReportMode,
   ScoreKey,
   SnapshotForm,
 } from '../types'
@@ -14,6 +16,7 @@ import type {
 import {
   hasClientFacingValue,
 } from './reportDisplay.ts'
+import { harborPineDemoReport } from './harborPineDemoReport.ts'
 import {
   isKnownDefaultScoreFailure,
   requiredScoreKeys,
@@ -46,6 +49,9 @@ export type ReportValidationResult = {
 }
 
 export type ReportValidationInput = {
+  reportMode: ReportMode
+  snapshotId: string | null
+  archetype: string
   form: SnapshotForm
   scores: Partial<Record<ScoreKey, unknown>>
   actions: RecommendedAction[]
@@ -53,6 +59,7 @@ export type ReportValidationInput = {
   achievements: BusinessAchievement[]
   strategicAssets: StrategicAsset[]
   executiveSummary: ExecutiveSummary
+  evidenceItems: EvidenceItem[]
   configuration: ReportConfiguration
   resolvedOutput: unknown
 }
@@ -64,7 +71,7 @@ export const forbiddenClientOutputPatterns = [
   { label: '[Business Name]', pattern: /\[business name\]/i },
   { label: '[City]', pattern: /\[city\]/i },
   { label: 'fictional', pattern: /\bfictional\b/i },
-  { label: 'example domain', pattern: /\b(?:[a-z0-9-]+\.)*example\.(?:com|org|net)\b|https?:\/\/[^\s]*\.example\b/i },
+  { label: 'example domain', pattern: /\bexample\.(?:com|org|net)\b|\b(?:[a-z0-9-]+\.)+example\b/i },
   { label: 'upgradeos.example', pattern: /\bupgradeos\.example\b/i },
   { label: 'harborpine.example', pattern: /\bharborpine\.example\b/i },
   { label: 'demo-call', pattern: /\bdemo-call\b/i },
@@ -140,6 +147,72 @@ export function validateReportForRender(
   input: ReportValidationInput,
 ): ReportValidationResult {
   const issues: ReportValidationIssue[] = []
+
+  if (input.reportMode === 'demo') {
+    if (input.snapshotId !== harborPineDemoReport.ids.snapshot) {
+      addIssue(issues, {
+        code: 'demo-canonical-snapshot',
+        section: 'Personalization',
+        message: 'Demo Mode is available only for the canonical Harbor & Pine sample Snapshot.',
+      })
+    }
+
+    const canonicalFields = [
+      ['business-name', 'business name', input.form.businessName, harborPineDemoReport.business.name],
+      ['city', 'city', input.form.city, harborPineDemoReport.business.city],
+      ['category', 'category', input.form.niche, harborPineDemoReport.business.category],
+      ['primary-service', 'primary service', input.form.mainService, harborPineDemoReport.business.primaryService],
+    ] as const
+    canonicalFields.forEach(([key, label, value, expected]) => {
+      if (value.trim() !== expected) {
+        addIssue(issues, {
+          code: `demo-canonical-${key}`,
+          section: 'Personalization',
+          message: `Demo Mode requires the canonical Harbor & Pine ${label}.`,
+        })
+      }
+    })
+
+    if (input.form.websiteUrl.trim()) {
+      addIssue(issues, {
+        code: 'demo-business-url-present',
+        section: 'Personalization',
+        message: 'The canonical sample does not include a public business URL.',
+      })
+    }
+    if (input.archetype !== harborPineDemoReport.archetype) {
+      addIssue(issues, {
+        code: 'demo-canonical-archetype',
+        section: 'Scores',
+        message: `The canonical sample must resolve to ${harborPineDemoReport.archetype}.`,
+      })
+    }
+    requiredScoreKeys.forEach((key) => {
+      if (input.scores[key] !== harborPineDemoReport.scores[key]) {
+        addIssue(issues, {
+          code: `demo-canonical-score-${key}`,
+          section: 'Scores',
+          message: `Demo Mode requires the canonical ${key} score.`,
+        })
+      }
+    })
+    if (input.evidenceItems.some((item) => item.sourceUrl.trim())) {
+      addIssue(issues, {
+        code: 'demo-source-url-present',
+        section: 'Output',
+        message: 'The canonical sample evidence uses source labels without public source URLs.',
+      })
+    }
+    if (!collectStrings(input.resolvedOutput).some((entry) =>
+      entry.value.includes(harborPineDemoReport.sampleLabel),
+    )) {
+      addIssue(issues, {
+        code: 'demo-sample-label-missing',
+        section: 'Output',
+        message: `Demo Mode must display “${harborPineDemoReport.sampleLabel}.”`,
+      })
+    }
+  }
 
   if (!hasClientFacingValue(input.form.businessName)) {
     addIssue(issues, {

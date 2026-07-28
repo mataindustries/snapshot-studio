@@ -75,6 +75,7 @@ type BusinessArchetypeCoverProps = {
   nextEvolution: string
   brandName: string
   reportDate: string
+  sampleLabel?: string
 }
 
 export function BusinessArchetypeCover({
@@ -90,6 +91,7 @@ export function BusinessArchetypeCover({
   nextEvolution,
   brandName,
   reportDate,
+  sampleLabel,
 }: BusinessArchetypeCoverProps) {
   const presentation = archetypePresentations[archetype]
     ?? archetypePresentations['Category Builder']
@@ -187,7 +189,10 @@ export function BusinessArchetypeCover({
       </div>
 
       <footer className="archetype-cover-signature">
-        <span>{brandName}</span>
+        <span>
+          {brandName}
+          {sampleLabel && <em> · {sampleLabel}</em>}
+        </span>
         <small>{reportDate}</small>
         <strong>Powered by UpgradeOS</strong>
       </footer>

@@ -22,7 +22,7 @@ import {
   saveIntakeDraft,
 } from './intakeStorage'
 import { parseWebsiteText } from './intakeParser'
-import { filterClientFacingStrengths, isClientFacingStrength } from './clientStrengths'
+import { harborPineDemoReport } from './harborPineDemoReport'
 import { loadLeads, persistLeads } from './leads'
 import { createProposalFromSnapshot } from './proposalBuilder'
 import { deleteProposal, loadProposals, saveProposal } from './proposalStorage'
@@ -30,20 +30,13 @@ import { getTotalScore } from './scoring'
 import { deleteSnapshot, loadSnapshots, saveSnapshot } from './storage'
 import { generateOutputs } from '../templates/snapshotTemplates'
 
-export const contestDemoIds = {
-  lead: 'contest-demo-lead-harbor-pine',
-  intake: 'contest-demo-intake-harbor-pine',
-  snapshot: 'contest-demo-snapshot-harbor-pine',
-  proposal: 'contest-demo-proposal-harbor-pine',
-  fastLaneSession: 'contest-demo-fast-lane-harbor-pine',
-  homepageEvidence: 'contest-demo-evidence-homepage',
-  trustEvidence: 'contest-demo-evidence-trust',
-} as const
+export const contestDemoIds = harborPineDemoReport.ids
 
-const createdAt = '2026-06-16T16:00:00.000Z'
-const reviewedAt = '2026-06-18T18:30:00.000Z'
-const websiteUrl = ''
-const demoBiggestStrength = 'Customers consistently mention respectful technicians, clear arrival updates, and tidy work areas.'
+const createdAt = harborPineDemoReport.createdAt
+const reviewedAt = harborPineDemoReport.reviewedAt
+const demoBusiness = harborPineDemoReport.business
+const websiteUrl = demoBusiness.businessUrl ?? ''
+const demoBiggestStrength = demoBusiness.biggestStrength
 
 export type ContestDemoData = {
   lead: Lead
@@ -55,11 +48,11 @@ export type ContestDemoData = {
 
 function createDemoForm(): SnapshotForm {
   return {
-    businessName: 'Harbor & Pine Heating Co.',
+    businessName: demoBusiness.name,
     websiteUrl,
-    city: 'Riverton',
-    niche: 'Residential HVAC',
-    mainService: 'Emergency heating and air conditioning repair',
+    city: demoBusiness.city,
+    niche: demoBusiness.category,
+    mainService: demoBusiness.primaryService,
     notes: demoBiggestStrength,
     weakness: 'The first screen leads with a broad comfort promise before naming emergency HVAC repair, Riverton, or the response process.',
     competitorNote: 'Nearby competitors make same-day availability and financing easier to compare from the first screen.',
@@ -71,28 +64,22 @@ function createDemoForm(): SnapshotForm {
 }
 
 function createDemoScores(): Scores {
-  return {
-    visibility: 14,
-    trust: 17,
-    conversion: 11,
-    aiSearchReadiness: 9,
-    competitorPosition: 12,
-  }
+  return { ...harborPineDemoReport.scores }
 }
 
 function createDemoLead(): Lead {
   return {
     id: contestDemoIds.lead,
     createdAt,
-    businessName: 'Harbor & Pine Heating Co.',
+    businessName: demoBusiness.name,
     websiteUrl,
-    city: 'Riverton',
-    niche: 'Residential HVAC',
-    mainService: 'Emergency heating and air conditioning repair',
+    city: demoBusiness.city,
+    niche: demoBusiness.category,
+    mainService: demoBusiness.primaryService,
     phone: '',
     email: '',
     contactFormUrl: '',
-    leadSource: 'Starter Workspace',
+    leadSource: 'Polished sample report',
     priority: 'High',
     researchNotes: demoBiggestStrength,
     suggestedAngle: 'Lead with the gap between strong customer proof and the vague first-screen service promise.',
@@ -105,9 +92,9 @@ function createDemoLead(): Lead {
 }
 
 function createDemoIntake(): BusinessIntakePayload {
-  const pageText = `Harbor & Pine Heating Co.
+  const pageText = `${demoBusiness.name}
 Comfort starts here.
-Emergency furnace and air conditioning repair for Riverton homeowners.
+Emergency furnace and air conditioning repair for ${demoBusiness.city} homeowners.
 Request service online.
 Same-day appointments when the schedule allows.
 4.8 average rating from 126 customer reviews.
@@ -124,12 +111,12 @@ We confirm the issue, arrival window, and diagnostic fee before dispatch.`
     linkedSnapshotId: contestDemoIds.snapshot,
     appliedAt: reviewedAt,
     identity: {
-      businessName: 'Harbor & Pine Heating Co.',
+      businessName: demoBusiness.name,
       websiteUrlRaw: websiteUrl,
       websiteUrlNormalized: websiteUrl,
-      city: 'Riverton',
-      niche: 'Residential HVAC',
-      primaryService: 'Emergency heating and air conditioning repair',
+      city: demoBusiness.city,
+      niche: demoBusiness.category,
+      primaryService: demoBusiness.primaryService,
       secondaryServices: 'Furnace repair; AC repair; seasonal maintenance',
       phone: '',
       email: '',
@@ -141,7 +128,7 @@ We confirm the issue, arrival window, and diagnostic fee before dispatch.`
       differentiators: 'Respectful technicians, clear arrival updates, tidy work areas, and practical repair options.',
     },
     website: {
-      homepageTitle: 'Harbor & Pine Heating Co. | Riverton HVAC Service',
+      homepageTitle: `${demoBusiness.name} | ${demoBusiness.city} HVAC Service`,
       metaDescription: 'Residential heating and air conditioning repair for Riverton and nearby communities.',
       heroHeadline: 'Comfort starts here.',
       heroSupportCopy: 'Responsive local HVAC help from respectful, licensed technicians.',
@@ -227,7 +214,7 @@ function createDemoEvidence(actionIds: string[]): EvidenceItem[] {
       sentiment: 'Opportunity',
       title: 'The first-screen promise is broader than the urgent service need',
       sourceUrl: websiteUrl,
-      pageLabel: 'Homepage first screen',
+      pageLabel: 'Recorded homepage headline',
       observation: 'The recorded headline says “Comfort starts here” before naming emergency HVAC repair or Riverton.',
       whyItMatters: 'A homeowner with a failed furnace should recognize service fit and local availability before comparing another provider.',
       recommendedChange: 'Lead with emergency heating and air conditioning repair in Riverton, then support it with one proof point and the request-service action.',
@@ -441,50 +428,79 @@ export function getContestDemoData(): ContestDemoData | null {
 }
 
 export function refreshContestDemoClientCopy(data: ContestDemoData) {
-  const knownLegacyStrengths = new Set([
-    'Strong review proof gives the business a credible trust foundation.',
-    ['Strong ', 'fictional ', 'review proof gives the business a credible trust foundation.'].join(''),
-  ])
-  const snapshotNeedsRepair = !isClientFacingStrength(data.snapshot.notes)
-    || knownLegacyStrengths.has(data.snapshot.strengths[0]?.trim() || '')
-  const leadNeedsRepair = !isClientFacingStrength(data.lead.researchNotes)
+  const canonical = createContestDemoData()
+  const actionProgress = new Map(
+    data.snapshot.recommendedActions.map((action) => [action.id, action]),
+  )
+  const recommendedActions = canonical.snapshot.recommendedActions.map((action) => {
+    const current = actionProgress.get(action.id)
+    return current
+      ? {
+          ...action,
+          status: current.status,
+          implementationNote: current.implementationNote,
+        }
+      : action
+  })
+  const currentEvidence = new Map(
+    data.snapshot.evidenceItems.map((item) => [item.id, item]),
+  )
+  const evidenceItems = canonical.snapshot.evidenceItems.map((item) => {
+    const current = currentEvidence.get(item.id)
+    return current?.screenshotDataUrl
+      ? {
+          ...item,
+          screenshotDataUrl: current.screenshotDataUrl,
+          screenshotFileName: current.screenshotFileName,
+          screenshotAltText: current.screenshotAltText,
+        }
+      : item
+  })
 
-  if (!snapshotNeedsRepair && !leadNeedsRepair) return data
-
-  const lead = leadNeedsRepair
-    ? { ...data.lead, researchNotes: demoBiggestStrength }
-    : data.lead
-  const snapshotBase = snapshotNeedsRepair
-    ? {
-        ...data.snapshot,
-        notes: isClientFacingStrength(data.snapshot.notes)
-          ? data.snapshot.notes
-          : demoBiggestStrength,
-        strengths: [
-          demoBiggestStrength,
-          ...filterClientFacingStrengths(data.snapshot.strengths)
-            .filter((strength) => strength !== demoBiggestStrength
-              && !knownLegacyStrengths.has(strength)),
-        ].slice(0, 3),
-      }
-    : data.snapshot
-  const snapshot = snapshotNeedsRepair
-    ? {
-        ...snapshotBase,
-        outputs: generateOutputs(
-          snapshotBase,
-          snapshotBase.scores,
-          getTotalScore(snapshotBase.scores),
-        ),
-      }
-    : snapshotBase
-
-  if (leadNeedsRepair) {
-    persistLeads([lead, ...loadLeads().filter((item) => item.id !== lead.id)])
+  const lead: Lead = {
+    ...canonical.lead,
+    status: data.lead.status,
+    lastContactedAt: data.lead.lastContactedAt,
+    lastContactRoute: data.lead.lastContactRoute,
+    nextFollowUpDate: data.lead.nextFollowUpDate,
+    outreachActivity: data.lead.outreachActivity,
   }
-  if (snapshotNeedsRepair) saveSnapshot(snapshot)
+  const intake: BusinessIntakePayload = {
+    ...canonical.intake,
+    currentStep: data.intake.currentStep,
+  }
+  const snapshot: SavedSnapshot = {
+    ...canonical.snapshot,
+    recommendedActions,
+    actionStatusHistory: data.snapshot.actionStatusHistory,
+    progressStatus: data.snapshot.progressStatus,
+    reviewDate: data.snapshot.reviewDate,
+    evidenceItems,
+  }
+  const proposal: Proposal = {
+    ...canonical.proposal,
+    proposalStatus: data.proposal.proposalStatus,
+  }
+  const fastLaneSession: FastLaneSession = {
+    ...canonical.fastLaneSession,
+    status: data.fastLaneSession.status,
+    currentStep: data.fastLaneSession.currentStep,
+    completedSteps: data.fastLaneSession.completedSteps,
+    selectedContactRoute: data.fastLaneSession.selectedContactRoute,
+    followUpDate: data.fastLaneSession.followUpDate,
+    noFollowUp: data.fastLaneSession.noFollowUp,
+    proposalIncluded: data.fastLaneSession.proposalIncluded,
+    activity: data.fastLaneSession.activity,
+    completedAt: data.fastLaneSession.completedAt,
+  }
 
-  return { ...data, lead, snapshot }
+  persistLeads([lead, ...loadLeads().filter((item) => item.id !== lead.id)])
+  saveIntakeDraft(intake)
+  saveSnapshot(snapshot)
+  saveProposal(proposal)
+  saveFastLaneSession(fastLaneSession)
+
+  return { lead, intake, snapshot, proposal, fastLaneSession }
 }
 
 export function resetContestDemo() {

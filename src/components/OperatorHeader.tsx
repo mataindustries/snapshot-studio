@@ -55,12 +55,12 @@ export function OperatorHeader({
         <section className="contest-demo-controls" aria-labelledby="contest-demo-title">
           <div>
             <span>Guided starting point</span>
-            <strong id="contest-demo-title">Starter Workspace</strong>
-            <small>Complete data · stable records · safe to reset</small>
+            <strong id="contest-demo-title">Polished sample report</strong>
+            <small>Reviewed assessment · stable records · safe to reset</small>
           </div>
           <div className="contest-demo-actions">
             <button className="primary-button" type="button" onClick={onLoadDemo}>
-              <Play size={17} aria-hidden="true" /> Load Starter Workspace
+              <Play size={17} aria-hidden="true" /> View sample report
             </button>
             <button className="secondary-button" type="button" onClick={onRestartTour}>
               <Map size={17} aria-hidden="true" /> Restart tour
@@ -71,7 +71,7 @@ export function OperatorHeader({
               disabled={!demoInstalled}
               onClick={onResetDemo}
             >
-              <RotateCcw size={17} aria-hidden="true" /> Reset Starter Workspace
+              <RotateCcw size={17} aria-hidden="true" /> Reset sample report
             </button>
           </div>
           {demoMessage && <p role="status">{demoMessage}</p>}

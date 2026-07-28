@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import type {
+  EvidenceItem,
   RecommendedAction,
   Scores,
   SnapshotForm,
@@ -14,6 +15,7 @@ import {
   getAudienceNoun,
   getBusinessNameFitClass,
 } from '../src/lib/reportDisplay.ts'
+import { harborPineDemoReport } from '../src/lib/harborPineDemoReport.ts'
 import {
   getRenderableReportConfiguration,
   isValidContactEmail,
@@ -163,6 +165,9 @@ const validConfiguration: ReportConfiguration = {
 
 function validInput(): ReportValidationInput {
   return {
+    reportMode: 'production',
+    snapshotId: 'snapshot-production',
+    archetype: 'Reputation Magnet',
     form: form(),
     scores: { ...validScores },
     actions: [action(0), action(1), action(2)],
@@ -170,6 +175,7 @@ function validInput(): ReportValidationInput {
     achievements: [achievement(0), achievement(1), achievement(2)],
     strategicAssets: [asset(0), asset(1), asset(2)],
     executiveSummary: summary(),
+    evidenceItems: [],
     configuration: { ...validConfiguration },
     resolvedOutput: {
       heading: 'Harbor & Pine Heating Co. operating manual',
@@ -187,6 +193,70 @@ test('a complete report model passes pre-render validation', () => {
     valid: true,
     issues: [],
   })
+})
+
+test('Demo Mode accepts only the canonical labeled Harbor & Pine report', () => {
+  const input = validInput()
+  input.reportMode = 'demo'
+  input.snapshotId = harborPineDemoReport.ids.snapshot
+  input.archetype = harborPineDemoReport.archetype
+  input.configuration = {
+    CONTACT_EMAIL: '',
+    CONSULTATION_URL: '',
+    BRAND_URL: '',
+  }
+  input.resolvedOutput = {
+    heading: harborPineDemoReport.sampleLabel,
+    business: harborPineDemoReport.business.name,
+  }
+
+  assert.deepEqual(validateReportForRender(input), {
+    valid: true,
+    issues: [],
+  })
+})
+
+test('Demo Mode rejects noncanonical identity, scores, URLs, evidence, and missing label', () => {
+  const input = validInput()
+  input.reportMode = 'demo'
+  input.snapshotId = 'another-snapshot'
+  input.archetype = 'Category Builder'
+  input.form = form({
+    businessName: 'Another Company',
+    city: 'Elsewhere',
+    niche: 'Plumbing',
+    mainService: 'Drain repair',
+    websiteUrl: 'https://public.company',
+  })
+  input.scores = { ...validScores, trust: 16 }
+  input.evidenceItems = [{
+    id: 'evidence-1',
+    evidenceType: 'Website',
+    sentiment: 'Opportunity',
+    title: 'Recorded service-path observation',
+    sourceUrl: 'https://public.company/service',
+    pageLabel: 'Public-facing website review',
+    observation: 'The service path requires clarification.',
+    whyItMatters: 'Homeowners need a direct next step.',
+    recommendedChange: 'Clarify the request path.',
+    expectedOutcome: 'The next step becomes easier to understand.',
+    linkedActionIds: [],
+    createdAt: '2026-06-16T16:00:00.000Z',
+    updatedAt: '2026-06-18T18:30:00.000Z',
+  } satisfies EvidenceItem]
+  input.resolvedOutput = { heading: 'Operating Manual' }
+
+  const result = codes(input)
+  assert.ok(result.includes('demo-canonical-snapshot'))
+  assert.ok(result.includes('demo-canonical-business-name'))
+  assert.ok(result.includes('demo-canonical-city'))
+  assert.ok(result.includes('demo-canonical-category'))
+  assert.ok(result.includes('demo-canonical-primary-service'))
+  assert.ok(result.includes('demo-business-url-present'))
+  assert.ok(result.includes('demo-canonical-archetype'))
+  assert.ok(result.includes('demo-canonical-score-trust'))
+  assert.ok(result.includes('demo-source-url-present'))
+  assert.ok(result.includes('demo-sample-label-missing'))
 })
 
 test('personalization requires business name, service area, and category', () => {

@@ -2,6 +2,8 @@ export type Tone = 'fun' | 'professional' | 'spicy' | 'premium' | 'friendly' | '
 
 export type CtaStyle = 'ask-permission' | 'send-snapshot' | 'book-call'
 
+export type ReportMode = 'demo' | 'production'
+
 export type ScoreKey =
   | 'visibility'
   | 'trust'

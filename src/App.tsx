@@ -93,6 +93,7 @@ import {
   getRecommendationSubject,
 } from './lib/reportDisplay'
 import { reportConfiguration } from './lib/runtimeReportConfig'
+import { getReportMode, harborPineDemoReport } from './lib/harborPineDemoReport'
 import { validateReportForRender } from './lib/reportValidation'
 import {
   defaultReportOffer,
@@ -168,6 +169,7 @@ import type {
   LeadPriority,
   LeadStatus,
   OfferMode,
+  ReportMode,
   ReportOfferFields,
   RecommendedAction,
   RecommendedActionStatus,
@@ -250,6 +252,7 @@ function buildReportText({
   upgradeOS,
   evidenceText,
   scoreAvailable,
+  reportMode,
 }: {
   form: SnapshotForm
   branding: BrandingFields
@@ -265,6 +268,7 @@ function buildReportText({
   upgradeOS: UpgradeOSReportModel
   evidenceText: string
   scoreAvailable: boolean
+  reportMode: ReportMode
 }) {
   const businessName = getDisplayBusinessName(form)
   const city = getDisplayCity(form)
@@ -281,8 +285,11 @@ function buildReportText({
     : 'Score unavailable — assessment review required'
   const evidenceSection = evidenceText ? '\n\n' + evidenceText : ''
   const preliminarySection = evidenceText ? '' : '\n' + preliminaryEvidenceNote
+  const sampleLabel = reportMode === 'demo'
+    ? harborPineDemoReport.sampleLabel + '\n\n'
+    : ''
 
-  return `Your Business Archetype
+  return `${sampleLabel}Your Business Archetype
 
 ${businessName} — ${city} | ${industry}
 ${horoscope.archetype}
@@ -401,6 +408,7 @@ function App() {
   const [demoTourRestartNonce, setDemoTourRestartNonce] = useState(0)
   const [interactionMessage, setInteractionMessage] = useState('')
 
+  const reportMode = getReportMode(loadedId)
   const totalScore = useMemo(() => getTotalScore(scores), [scores])
   const scoreAvailable = useMemo(() => areScoresDisplayable(scores), [scores])
   const audience = useMemo(() => getAudienceNoun(form), [form])
@@ -577,6 +585,7 @@ function App() {
       upgradeOS,
       evidenceText,
       scoreAvailable,
+      reportMode,
     }),
     [
       branding,
@@ -588,6 +597,7 @@ function App() {
       reportStory,
       reportDate,
       reportRating,
+      reportMode,
       scoreAvailable,
       scores,
       totalScore,
@@ -597,6 +607,9 @@ function App() {
   )
   const reportValidation = useMemo(
     () => validateReportForRender({
+      reportMode,
+      snapshotId: loadedId,
+      archetype: horoscope.archetype,
       form,
       scores,
       actions: growthFoundation.recommendedActions,
@@ -604,6 +617,7 @@ function App() {
       achievements: upgradeOS.achievements,
       strategicAssets: reportStory.strategicAssets,
       executiveSummary,
+      evidenceItems: reportEvidence,
       configuration: reportConfiguration,
       resolvedOutput: {
         reportText,
@@ -620,10 +634,12 @@ function App() {
       form,
       growthFoundation.recommendedActions,
       horoscope,
+      loadedId,
       outputs,
       reportEvidence,
       reportStory,
       reportText,
+      reportMode,
       scores,
       upgradeOS,
     ],
@@ -1556,14 +1572,14 @@ function App() {
       setPriorityFilter('All')
       setNicheFilter('All')
       setLeadSearch('')
-      setIntakeStorageMessage('Starter Workspace intake loaded with reviewed deterministic draft inputs.')
+      setIntakeStorageMessage('Sample report intake loaded with reviewed assessment inputs.')
       setContestDemoInstalled(true)
       setContestDataRevision((current) => current + 1)
       setFastLaneLaunchRequest({ nonce: Date.now(), leadId: data.lead.id })
       setContestDemoMessage(
         existingDemo
-          ? 'Starter Workspace resumed from its existing browser-local progress. Use Reset Starter Workspace to restore the original reviewed state.'
-          : 'Starter Workspace loaded: the reviewed Snapshot, live roadmap, ready proposal, and Send Kit are linked under stable records.',
+          ? 'Sample report resumed with its existing browser-local progress. Use Reset sample report to restore the original reviewed state.'
+          : 'Polished sample report loaded: its reviewed Snapshot, live roadmap, ready proposal, and Send Kit are linked under stable records.',
       )
       if (startTour === 'always' || !isDemoTourDismissed()) {
         setDemoTourRestartNonce((current) => current + 1)
@@ -1571,14 +1587,14 @@ function App() {
     } catch (error) {
       setContestDemoMessage(
         isStorageQuotaError(error)
-          ? 'Starter Workspace could not be loaded because browser storage is full. Remove a large screenshot or old local record, then try again.'
-          : 'Starter Workspace could not be loaded. Existing operator data was left in place; refresh and try again.',
+          ? 'The sample report could not be loaded because browser storage is full. Remove a large screenshot or old local record, then try again.'
+          : 'The sample report could not be loaded. Existing operator data was left in place; refresh and try again.',
       )
     }
   }
 
   function handleResetContestDemo() {
-    if (!window.confirm('Restore the Starter Workspace to its original state? Its linked records will be replaced; every other lead, Snapshot, evidence item, proposal, and session will remain.')) return
+    if (!window.confirm('Restore the sample report to its original state? Its linked records will be replaced; every other lead, Snapshot, evidence item, proposal, and session will remain.')) return
     try {
       const data = resetContestDemo()
       const nextLeads = loadLeads()
@@ -1596,7 +1612,7 @@ function App() {
       setPriorityFilter('All')
       setNicheFilter('All')
       setLeadSearch('')
-      setIntakeStorageMessage('Starter Workspace intake restored with its reviewed deterministic draft.')
+      setIntakeStorageMessage('Sample report intake restored with its reviewed assessment.')
       setProposalCreationRequest(undefined)
       setProposalFocusRequest(undefined)
       setFastLaneLaunchRequest({ nonce: Date.now(), leadId: data.lead.id })
@@ -1607,9 +1623,9 @@ function App() {
         setDemoTourRestartNonce((current) => current + 1)
       }
       setContestDataRevision((current) => current + 1)
-      setContestDemoMessage('Starter Workspace restored to its original reviewed state. All other browser records were left unchanged.')
+      setContestDemoMessage('Sample report restored to its original reviewed state. All other browser records were left unchanged.')
     } catch {
-      setContestDemoMessage('Starter Workspace reset could not finish. All other browser records were left unchanged; refresh and try again.')
+      setContestDemoMessage('Sample report reset could not finish. All other browser records were left unchanged; refresh and try again.')
     }
   }
 
@@ -1864,7 +1880,7 @@ function App() {
           {filteredLeads.length === 0 ? (
             <p className="empty-state">
               {leads.length === 0
-                ? 'No leads yet. Add one manually, import a list, or load the Starter Workspace to see the complete workflow.'
+                ? 'No leads yet. Add one manually, import a list, or view the polished sample report to see the complete workflow.'
                 : 'No leads match these filters. Clear the search or broaden a filter to return to the queue.'}
             </p>
           ) : (
@@ -2279,6 +2295,7 @@ function App() {
         <article
           className="report-shell"
           data-report-valid={reportValidation.valid ? 'true' : 'false'}
+          data-report-mode={reportMode}
         >
           <section className="report-page share-page report-share-hero report-cover-group" aria-label="Share-ready Business Archetype result">
             <div className="share-page-topline">
@@ -2301,6 +2318,7 @@ function App() {
               nextEvolution={horoscope.nextEvolution}
               brandName={valueOrFallback(branding.brandName, defaultBranding.brandName)}
               reportDate={reportDate}
+              sampleLabel={reportMode === 'demo' ? harborPineDemoReport.sampleLabel : undefined}
             />
 
             <div className="report-meta">

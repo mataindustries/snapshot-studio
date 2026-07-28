@@ -309,6 +309,12 @@
   font-weight: 850;
 }
 
+.archetype-cover-signature em {
+  color: var(--archetype-accent-ink);
+  font-style: normal;
+  font-weight: 800;
+}
+
 @media (min-width: 760px) {
   .archetype-cover-main {
     grid-template-columns: minmax(0, 1.22fr) minmax(260px, 0.78fr);
