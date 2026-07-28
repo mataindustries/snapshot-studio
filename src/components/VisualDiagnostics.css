@@ -56,7 +56,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 8px;
-  margin: 0;
+  margin: 8px 0;
   padding: 0;
   list-style: none;
 }
@@ -124,6 +124,16 @@
   font-size: 0.66rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+.score-diagnostic-list li.score-unavailable {
+  border-top-color: var(--report-gold);
+}
+
+.score-diagnostic-list li.score-unavailable .score-diagnostic-result {
+  justify-content: flex-start;
+  color: #5b5147;
+  font-weight: 800;
 }
 
 .diagnostic-method-note {
@@ -846,6 +856,7 @@
   .score-diagnostic-list {
     grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 0.045in;
+    margin: 8px 0;
   }
 
   .score-diagnostic-list li {

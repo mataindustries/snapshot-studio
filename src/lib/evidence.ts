@@ -341,7 +341,7 @@ export function formatEvidenceReportText(
     const source = [item.pageLabel, safeSourceUrl].filter(Boolean).join(' — ') || 'Not specified'
     const expectedOutcome = item.expectedOutcome.trim() || 'Not specified'
     const supports = linkedActions.map((action) => action.title).filter(Boolean).join('; ')
-      || 'No recommendation linked'
+      || 'No operating action linked'
 
     return `Evidence ${index + 1} — ${item.title || 'Untitled evidence'}
 Source: ${source}
@@ -352,11 +352,11 @@ Potential business effect: ${expectedOutcome}
 Supports: ${supports}`
   }).join('\n\n')
 
-  return `Evidence Behind Every Recommendation
+  return `Evidence Behind the Operating Plan
 
 Quick public-facing review: ${summary.itemCount} evidence item${summary.itemCount === 1 ? '' : 's'} sampled across ${categoryText}.
 Screenshots included: ${summary.screenshotCount}
-Recommendations supported by evidence: ${summary.supportedActionCount}
+Operating actions supported by evidence: ${summary.supportedActionCount}
 
 ${evidenceText}`
 }

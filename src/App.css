@@ -2551,11 +2551,6 @@ button:disabled {
     min-height: 0;
   }
 
-  .evidence-report-page {
-    break-before: page;
-    page-break-before: always;
-  }
-
   .implementation-paths-page {
     break-after: avoid !important;
     page-break-after: avoid !important;
@@ -2662,5 +2657,154 @@ button:disabled {
 
   .saved-item > button:first-child {
     grid-column: 1 / -1;
+  }
+}
+
+/* Final delivery validation and print continuity. */
+.report-validation-banner {
+  display: grid;
+  gap: 8px;
+  width: min(100%, 520px);
+  padding: 11px 13px;
+  border: 1px solid #b86854;
+  border-radius: 8px;
+  background: #fff3ef;
+  color: #713829;
+}
+
+.report-validation-banner header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.report-validation-banner ul {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 19px;
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
+.report-print-metadata {
+  display: none;
+}
+
+.report-closing-sheet {
+  display: contents;
+}
+
+@media screen {
+  .report-closing-sheet > .implementation-paths-page {
+    margin-top: clamp(12px, 1.8vw, 20px);
+  }
+}
+
+.report-shell :is(
+  .executive-summary-grid > div,
+  .strategic-asset-card,
+  .executive-score-strip,
+  .score-diagnostic-list li,
+  .opportunity-matrix,
+  .momentum-timeline,
+  .evidence-trust-indicator,
+  .upgrade-position-card:not(.next),
+  .upgrade-mission-preview-card,
+  .upgrade-mission-card,
+  .upgrade-mission-detail,
+  .impact-ledger-entry,
+  .achievement-card,
+  .snapshot-record article,
+  .client-evidence-card,
+  .implementation-path-card:not(.featured),
+  .final-report-cta,
+  .report-footer.upgradeos-footer
+) {
+  border-color: var(--report-line);
+}
+
+@media print {
+  .report-print-metadata {
+    position: fixed;
+    top: 0.02in;
+    right: 0.14in;
+    left: 0.14in;
+    z-index: 1;
+    display: block;
+    height: 0.2in;
+    padding-bottom: 0.04in;
+    border-bottom: 1px solid var(--report-line);
+    color: #6a573d;
+    font-size: 6.5pt;
+    font-weight: 850;
+    letter-spacing: 0.045em;
+    line-height: 1;
+    text-align: right;
+    text-transform: uppercase;
+  }
+
+  .report-cover-group {
+    position: relative;
+    z-index: 2;
+    background: var(--report-paper) !important;
+  }
+
+  .report-page:not(.report-cover-group) {
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    padding-top: 0.34in !important;
+  }
+
+  .report-closing-sheet {
+    display: flex;
+    min-height: calc(11in - 0.8in);
+    box-sizing: border-box;
+    flex-direction: column;
+    break-before: page;
+    page-break-before: always;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /*
+   * Chromium reserves the remainder of a sheet after fragmenting these grid
+   * wrappers. Flatten only the print wrappers so the next compatible block can
+   * use that space; the cards and matrix below remain indivisible.
+   */
+  .report-shell .strategic-assets-page,
+  .report-shell .opportunity-page {
+    display: contents !important;
+  }
+
+  .upgrade-mission-card,
+  .upgrade-mission-detail,
+  .client-evidence-card,
+  .client-evidence-figure,
+  .evidence-direction-comparison,
+  .strategic-asset-card,
+  .opportunity-matrix,
+  .snapshot-record article,
+  .impact-ledger-entry,
+  .achievement-card,
+  .implementation-path-card,
+  .implementation-choice-note,
+  .final-report-cta,
+  .report-footer.upgradeos-footer {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .implementation-paths-page,
+  .report-footer.upgradeos-footer {
+    min-height: 0 !important;
+    height: auto !important;
+    padding-bottom: 0 !important;
+  }
+
+  .report-closing-sheet > .report-footer.upgradeos-footer {
+    align-self: stretch;
+    margin-top: auto !important;
+    margin-bottom: 0 !important;
   }
 }

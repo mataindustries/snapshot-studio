@@ -1,5 +1,6 @@
 import { ArrowUpRight, Gem, Lightbulb } from 'lucide-react'
 import type { ExecutiveSummary, FeaturedOpportunity, StrategicAsset } from '../lib/reportStory'
+import type { AudienceNoun } from '../lib/reportDisplay'
 import type {
   EvidenceDiagnostic,
   OpportunityMatrixDiagnostic,
@@ -56,18 +57,24 @@ export function ExecutiveSummaryReport({
   )
 }
 
-export function StrategicAssetsReport({ assets }: { assets: StrategicAsset[] }) {
+export function StrategicAssetsReport({
+  assets,
+  audience,
+}: {
+  assets: StrategicAsset[]
+  audience: AudienceNoun
+}) {
   return (
     <section
       className="report-page strategic-assets-page report-overview-group"
       aria-labelledby="strategic-assets-title"
     >
       <div className="report-page-heading">
-        <p className="section-kicker">What is already working</p>
-        <h2 id="strategic-assets-title">What You're Already Winning</h2>
+        <p className="section-kicker">What already creates an advantage</p>
+        <h2 id="strategic-assets-title">Competitive Assets</h2>
         <p>
-          These strengths give the plan a head start. The next move is to put each one
-          where it can shape a customer decision.
+          These assets give the operating plan a head start. Put each one where it can
+          shape a {audience.singular} decision.
         </p>
       </div>
 
@@ -84,7 +91,7 @@ export function StrategicAssetsReport({ assets }: { assets: StrategicAsset[] }) 
               <p>{asset.explanation}</p>
               <dl>
                 <div>
-                  <dt>Customer impact</dt>
+                  <dt>{audience.singular.charAt(0).toLocaleUpperCase() + audience.singular.slice(1)} impact</dt>
                   <dd>{asset.whyItMatters}</dd>
                 </div>
                 <div>
@@ -103,9 +110,11 @@ export function StrategicAssetsReport({ assets }: { assets: StrategicAsset[] }) 
 export function BiggestOpportunityReport({
   opportunity,
   matrix,
+  audience,
 }: {
   opportunity: FeaturedOpportunity
   matrix: OpportunityMatrixDiagnostic
+  audience: AudienceNoun
 }) {
   return (
     <section
@@ -113,10 +122,10 @@ export function BiggestOpportunityReport({
       aria-labelledby="biggest-opportunity-title"
     >
       <div className="report-page-heading">
-        <p className="section-kicker">The move to lead with</p>
+        <p className="section-kicker">Primary constraint and growth opportunity</p>
         <h2 id="biggest-opportunity-title">The Highest-Leverage Improvement</h2>
         <p>
-          It addresses the clearest point where customers may hesitate, so later
+          It addresses the clearest point where {audience.plural} may hesitate, so later
           work builds on a stronger decision path.
         </p>
       </div>
@@ -132,7 +141,7 @@ export function BiggestOpportunityReport({
 
         <div className="opportunity-detail-grid">
           <OpportunityDetail
-            label="What customers experience"
+            label={`What ${audience.plural} experience`}
             text={opportunity.currentSituation}
           />
           <OpportunityDetail label="Business consequence" text={opportunity.whyItMatters} />

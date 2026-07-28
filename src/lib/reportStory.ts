@@ -8,7 +8,9 @@ import type {
 } from '../types'
 import {
   capitalizeFirst,
+  firstCompleteSentence,
   formatSentencePhrase,
+  getAudienceNoun,
   getCustomerAudience,
   getDisplayBusinessName,
   getDisplayCity,
@@ -31,9 +33,21 @@ export type ExecutiveSummary = {
 }
 
 export type StrategicAssetSource =
-  | 'Verified observation'
+  | 'Recorded observation'
   | 'Assessment input'
   | 'Measured Foundation'
+
+export type StrategicAssetType =
+  | 'Reputation'
+  | 'Service Clarity'
+  | 'Local Relevance'
+  | 'Contact Path'
+  | 'Credentials'
+  | 'Response Expectations'
+  | 'Specialization'
+  | 'Operational Process'
+  | 'Customer Experience'
+  | 'Website Structure'
 
 export type StrategicAsset = {
   title: string
@@ -41,6 +55,7 @@ export type StrategicAsset = {
   whyItMatters: string
   leverage: string
   sourceLabel: StrategicAssetSource
+  assetType: StrategicAssetType
 }
 
 export type FeaturedOpportunity = {
@@ -79,7 +94,7 @@ export const implementationPaths: readonly ImplementationPath[] = [
   {
     option: 'Option B',
     title: '48-Hour Visibility Sprint',
-    description: 'A focused implementation engagement for the changes most likely to reduce customer hesitation.',
+    description: 'A focused implementation engagement for the changes most likely to reduce decision hesitation.',
     includes: [
       'Confirm the decision-making evidence',
       'Focused website refinements',
@@ -92,7 +107,7 @@ export const implementationPaths: readonly ImplementationPath[] = [
 ] as const
 
 export const upgradeOsSupportingText =
-  'UpgradeOS helps local businesses become easier to discover, easier to trust, and easier to choose through structured improvement plans.'
+  'UpgradeOS helps service companies become easier to discover, easier to trust, and easier to choose through structured improvement plans.'
 
 export const preliminaryEvidenceNote =
   'This preliminary Snapshot is based on a manual public-facing review. Screenshot-backed evidence can be added during implementation planning.'
@@ -136,28 +151,117 @@ function measuredAsset(key: ScoreKey, score: number, form: SnapshotForm): Strate
     aiSearchReadiness: 'how explicitly services, location, proof, and common questions are explained',
     competitorPosition: 'how confidently the offer can be compared with nearby alternatives',
   }
-  const why: Record<ScoreKey, string> = {
-    visibility: 'Clear local relevance helps the right customer recognize fit without extra searching.',
-    trust: 'Credible proof reduces uncertainty at the moment a visitor is deciding what to do next.',
-    conversion: 'A usable contact path preserves intent and reduces avoidable conversion friction.',
-    aiSearchReadiness: 'Explicit business information improves understanding for both people and AI systems.',
-    competitorPosition: 'A credible point of difference gives comparison shoppers more decision confidence.',
+  const assetTypes: Record<ScoreKey, StrategicAssetType> = {
+    visibility: 'Local Relevance',
+    trust: 'Reputation',
+    conversion: 'Contact Path',
+    aiSearchReadiness: 'Website Structure',
+    competitorPosition: 'Specialization',
   }
-  const leverage: Record<ScoreKey, string> = {
-    visibility: 'Repeat the strongest service-and-location language across the homepage, service pages, and local profile.',
-    trust: 'Place the most relevant reviews, credentials, and outcomes beside primary calls to action.',
-    conversion: 'Standardize the next-step promise across buttons, forms, phone links, and mobile layouts.',
-    aiSearchReadiness: 'Turn core facts and customer questions into short, direct, well-labeled answers.',
-    competitorPosition: 'Carry the clearest differentiator into headlines, proof sections, and service comparisons.',
-  }
+  const guidance = getAssetGuidance(assetTypes[key], form)
 
   return {
     title: assetTitle(key, score),
-    explanation: businessName + "'s " + scoreLabel[key] + ' score is ' + score + '/20. This is a measured planning signal about ' + focus[key] + ', not a verified factual claim.',
-    whyItMatters: why[key],
-    leverage: leverage[key],
+    explanation: businessName + "'s " + scoreLabel[key] + ' assessment is ' + score + '/20. This is a measured planning signal about ' + focus[key] + ', not a verified factual claim.',
+    whyItMatters: guidance.whyItMatters,
+    leverage: guidance.leverage,
     sourceLabel: 'Measured Foundation',
+    assetType: assetTypes[key],
   }
+}
+
+function classifyAsset(
+  value: string,
+  evidenceType?: EvidenceItem['evidenceType'],
+): StrategicAssetType {
+  const signal = value.toLocaleLowerCase()
+  if (
+    evidenceType === 'Review Platform'
+    || /\breview|\brating|\bstars?\b|\btestimonial|\brecommend/.test(signal)
+  ) return 'Reputation'
+  if (/\blicens|\binsur|\bcertif|\bcredential|\baward/.test(signal)) return 'Credentials'
+  if (
+    /\bclearly defined\b|\bservice clarity\b|\bclear(?:ly)? (?:service|offer|specialty)\b/.test(signal)
+  ) {
+    return 'Service Clarity'
+  }
+  if (/\barrival|\bresponse|\bcallback|\b24\/7|\bemergency|\bsame day|\bupdates?\b/.test(signal)) {
+    return 'Response Expectations'
+  }
+  if (/\brespect|\btidy|\bclean|\bcourteous|\bexperience|\bcareful/.test(signal)) {
+    return 'Customer Experience'
+  }
+  if (evidenceType === 'Conversion Path' || /\bcall|\bcontact|\bbook|\bschedul|\brequest/.test(signal)) {
+    return 'Contact Path'
+  }
+  if (/\bprocess|\bworkflow|\bchecklist|\bfollow[- ]?up|\bstandard/.test(signal)) {
+    return 'Operational Process'
+  }
+  if (/\bspecial|\bfocus|\bexpert|\bprimary service|\bonly\b/.test(signal)) {
+    return 'Specialization'
+  }
+  if (/\bcity|\bservice area|\blocal|\bnearby|\bneighborhood/.test(signal)) {
+    return 'Local Relevance'
+  }
+  if (evidenceType === 'Website' || /\bpage|\bheadline|\bheading|\bsite|\bwebsite|\bstructure/.test(signal)) {
+    return 'Website Structure'
+  }
+  return 'Service Clarity'
+}
+
+function getAssetGuidance(
+  assetType: StrategicAssetType,
+  form: SnapshotForm,
+): Pick<StrategicAsset, 'whyItMatters' | 'leverage'> {
+  const audience = getAudienceNoun(form)
+  const audienceLead = capitalizeFirst(audience.plural)
+  const service = formatSentencePhrase(getRecommendationSubject(form))
+  const city = getDisplayCity(form)
+
+  const guidance: Record<StrategicAssetType, Pick<StrategicAsset, 'whyItMatters' | 'leverage'>> = {
+    Reputation: {
+      whyItMatters: `Specific proof lowers perceived risk before a ${audience.singular} makes contact.`,
+      leverage: 'Place the strongest review themes beside the service promise and primary contact action.',
+    },
+    'Service Clarity': {
+      whyItMatters: `${audienceLead} decide faster when the offer is easy to understand and compare.`,
+      leverage: `Repeat the clearest ${service} language in the headline, service summary, and next-step prompt.`,
+    },
+    'Local Relevance': {
+      whyItMatters: `${audienceLead} should be able to confirm service in ${city} without searching through the site.`,
+      leverage: `Pair ${city} with ${service} on the first screen, core service page, and public profile.`,
+    },
+    'Contact Path': {
+      whyItMatters: `A direct next step protects the intent a ${audience.singular} already has when ready to act.`,
+      leverage: 'Use one consistent request path and explain what happens immediately after contact.',
+    },
+    Credentials: {
+      whyItMatters: `Relevant credentials reduce uncertainty when a ${audience.singular} compares providers.`,
+      leverage: 'Place verified credentials beside the claims and calls to action they substantiate.',
+    },
+    'Response Expectations': {
+      whyItMatters: `Clear response expectations make it easier for ${audience.plural} to choose the next step with confidence.`,
+      leverage: 'State the response window beside every primary call, form, and scheduling prompt.',
+    },
+    Specialization: {
+      whyItMatters: `A specific specialty helps ${audience.plural} recognize fit before comparing another provider.`,
+      leverage: `Make ${service} the lead promise, then support it with focused proof and one dedicated path.`,
+    },
+    'Operational Process': {
+      whyItMatters: `A visible process reassures ${audience.plural} that follow-through will be organized and predictable.`,
+      leverage: 'Turn the strongest internal process into a short public-facing sequence with a clear owner and outcome.',
+    },
+    'Customer Experience': {
+      whyItMatters: `A consistent service experience gives ${audience.plural} a concrete reason to trust the promise.`,
+      leverage: 'Turn the recurring experience into a short proof block near the service and request sections.',
+    },
+    'Website Structure': {
+      whyItMatters: `Clear structure helps ${audience.plural} and search systems find the same accurate business facts.`,
+      leverage: 'Organize services, location, proof, common questions, and contact details under direct labels.',
+    },
+  }
+
+  return guidance[assetType]
 }
 
 function buildStrategicAssets(
@@ -168,65 +272,100 @@ function buildStrategicAssets(
 ) {
   const assets: StrategicAsset[] = []
   const seen = new Set<string>()
+  const seenGuidance = new Set<string>()
   const add = (asset: StrategicAsset) => {
     if (!isClientFacingStrength(asset.title)) return
     const key = asset.title.trim().toLocaleLowerCase()
     if (!key || seen.has(key) || assets.length >= 5) return
     seen.add(key)
-    assets.push(asset)
+    const guidanceKey = `${asset.whyItMatters} ${asset.leverage}`
+      .toLocaleLowerCase()
+      .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+      .trim()
+      .replace(/\s+/g, ' ')
+    const nextAsset = seenGuidance.has(guidanceKey)
+      ? {
+          ...asset,
+          leverage: `Use this ${asset.assetType.toLocaleLowerCase()} asset as visible proof: ${
+            firstCompleteSentence(asset.title)
+            || 'Connect this asset to the nearest decision point.'
+          }`,
+        }
+      : asset
+    seenGuidance.add(
+      `${nextAsset.whyItMatters} ${nextAsset.leverage}`
+        .toLocaleLowerCase()
+        .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+        .trim()
+        .replace(/\s+/g, ' '),
+    )
+    assets.push(nextAsset)
   }
 
   evidenceItems
     .filter((item) => item.sentiment === 'Strength' && isEvidenceReportReady(item))
-    .forEach((item) => add({
-      title: item.observation.trim(),
-      explanation: item.title.trim() + (item.pageLabel.trim() ? ' — ' + item.pageLabel.trim() : ''),
-      whyItMatters: item.whyItMatters.trim(),
-      leverage: item.recommendedChange.trim(),
-      sourceLabel: 'Verified observation',
-    }))
+    .forEach((item) => {
+      const assetType = classifyAsset(
+        `${item.title} ${item.observation} ${item.whyItMatters}`,
+        item.evidenceType,
+      )
+      const guidance = getAssetGuidance(assetType, form)
+      add({
+        title: item.observation.trim(),
+        explanation: item.title.trim() + (item.pageLabel.trim() ? ' — ' + item.pageLabel.trim() : ''),
+        ...guidance,
+        sourceLabel: 'Recorded observation',
+        assetType,
+      })
+    })
 
   operatorStrengths.forEach((strength) => {
     if (!strength.trim()) return
+    const assetType = classifyAsset(strength)
+    const guidance = getAssetGuidance(assetType, form)
     add({
       title: strength.trim(),
-      explanation: 'This business strength was selected during the consultant review.',
-      whyItMatters: 'A credible business strength earns more trust when customers can see the proof behind it.',
-      leverage: 'Verify the detail publicly, then place it beside the customer decision it can strengthen.',
+      explanation: 'This competitive asset was selected during the consultant review.',
+      ...guidance,
       sourceLabel: 'Assessment input',
+      assetType,
     })
   })
 
   if (form.notes.trim()) {
+    const assetType = classifyAsset(form.notes)
+    const guidance = getAssetGuidance(assetType, form)
     add({
       title: form.notes.trim(),
-      explanation: 'This business strength comes from the consultant review notes.',
-      whyItMatters: 'A strong detail only helps when customers can see it before making a decision.',
-      leverage: 'Verify the detail on the public-facing site, then move it closer to the decision it supports.',
+      explanation: 'This competitive asset comes from the consultant review notes.',
+      ...guidance,
       sourceLabel: 'Assessment input',
+      assetType,
     })
   }
 
   if (hasClientFacingValue(form.mainService)) {
     const service = getRecommendationSubject(form)
     const serviceInSentence = formatSentencePhrase(service)
+    const guidance = getAssetGuidance('Specialization', form)
     add({
       title: service + ' focus',
       explanation: serviceInSentence + ' is the specific primary service recorded for this Snapshot.',
-      whyItMatters: 'A precise service focus helps customers recognize fit before they compare another provider.',
-      leverage: 'Carry the same service language through the homepage, dedicated service page, customer proof, and next-step prompts.',
+      ...guidance,
       sourceLabel: 'Assessment input',
+      assetType: 'Specialization',
     })
   }
 
   if (hasClientFacingValue(form.city)) {
     const city = getDisplayCity(form)
+    const guidance = getAssetGuidance('Local Relevance', form)
     add({
       title: city + ' service area',
       explanation: city + ' is the market recorded for this Snapshot.',
-      whyItMatters: 'Local customers should never have to search the site to learn whether they are in the service area.',
-      leverage: 'Pair the city with the priority service in the places where customers confirm local fit.',
+      ...guidance,
       sourceLabel: 'Assessment input',
+      assetType: 'Local Relevance',
     })
   }
 
@@ -252,7 +391,7 @@ function currentSituationFor(category: ActionCategory, form: SnapshotForm) {
     return audienceLead + ' should see immediately that ' + businessName + ' provides ' + service + ' in ' + city + ', followed by one credibility cue and a clear next step.'
   }
   if (category === 'Trust' || category === 'Reviews') {
-    return 'The strongest customer proof appears too far from the moment ' + audience + ' decide whether to contact ' + businessName + '.'
+    return 'The strongest proof appears too far from the moment ' + audience + ' decide whether to contact ' + businessName + '.'
   }
   if (category === 'Service Pages' || category === 'Authority' || category === 'Content' || category === 'FAQ') {
     return audienceLead + ' need one complete ' + service + ' resource that explains fit, process, proof, and the next step in ' + city + '.'
@@ -286,12 +425,14 @@ function buildFeaturedOpportunity(
   if (!action) {
     const service = getRecommendationSubject(form)
     const serviceInSentence = formatSentencePhrase(service)
+    const audience = getAudienceNoun(form)
     return {
-      title: 'Clarify the ' + service + ' customer decision path',
+      title: 'Clarify the ' + service + ' decision path',
       currentSituation: operatorOpportunity.trim() || 'The Snapshot has identified an opportunity to connect the offer, proof, and next step more clearly.',
       whyItMatters: 'Clarity and trust give every later visibility improvement a stronger foundation.',
       recommendedFirstMove: 'Make the audience, local fit, proof, and next step for ' + serviceInSentence + ' explicit on the first screen.',
-      potentialBusinessBenefit: 'Potential customers can evaluate fit with greater confidence and less friction.',
+      potentialBusinessBenefit: capitalizeFirst(audience.plural)
+        + ' can evaluate fit with greater confidence and less friction.',
     }
   }
 
@@ -331,9 +472,9 @@ export function createReportStory(input: {
   }
 }
 
-function limitWords(value: string, maximum: number) {
-  const words = value.trim().replace(/\s+/g, ' ').split(' ').filter(Boolean)
-  return words.length <= maximum ? words.join(' ') : words.slice(0, maximum).join(' ') + '…'
+function completeSummarySentence(value: string, fallback: string) {
+  const sentence = firstCompleteSentence(value) || fallback
+  return /[.!?]$/.test(sentence) ? sentence : sentence + '.'
 }
 
 export function createExecutiveSummary(input: {
@@ -341,38 +482,46 @@ export function createExecutiveSummary(input: {
   opportunity: FeaturedOpportunity
   progress: ProgressJourneyModel
   roadmap: ConsultingRoadmap
+  scoreAvailable?: boolean
 }): ExecutiveSummary {
   const businessName = getDisplayBusinessName(input.form)
   const service = formatSentencePhrase(getRecommendationSubject(input.form))
   const city = getDisplayCity(input.form)
   const audience = getCustomerAudience(input.form)
   const firstPhase = input.roadmap.sprint[0]
+  const scoreAvailable = input.scoreAvailable ?? true
 
   return {
-    businessSnapshot: limitWords(
+    businessSnapshot:
       businessName + ' serves ' + audience + ' looking for ' + service + ' in ' + city + '.',
-      18,
+    currentPosition: scoreAvailable
+      ? input.progress.currentScore + '/100 — ' + input.progress.currentGrowthStage + '. '
+        + completeSummarySentence(
+          input.progress.currentPositionMeaning,
+          'The reviewed baseline is ready for prioritization.',
+        )
+      : 'Score unavailable — review all five assessment dimensions before client delivery.',
+    largestOpportunity: input.opportunity.title + '. '
+      + completeSummarySentence(
+        input.opportunity.currentSituation,
+        'This is the first constraint to resolve.',
+      ),
+    fastestWin: completeSummarySentence(
+      firstPhase?.description ?? '',
+      `Clarify ${service} in ${city}, pair it with proof, and make the next step unmistakable.`,
     ),
-    currentPosition: limitWords(
-      input.progress.currentScore + '/100 — ' + input.progress.currentGrowthStage + '. '
-        + input.progress.currentPositionMeaning,
-      18,
+    longTermGoal: input.progress.longTermGrowthGoal + '. '
+      + completeSummarySentence(
+        input.progress.longTermGrowthGoalMeaning,
+        'A future Snapshot should verify whether the operating condition improved.',
+      ),
+    estimatedEffort: (firstPhase?.estimatedEffort ?? 'Medium') + ' effort to start; '
+      + (input.roadmap.weeks[0]?.estimatedEffort ?? 'Medium')
+      + ' across the first month.',
+    expectedOutcome: completeSummarySentence(
+      input.opportunity.potentialBusinessBenefit,
+      `The intended outcome is a clearer, lower-friction ${getAudienceNoun(input.form).singular} decision.`,
     ),
-    largestOpportunity: limitWords(
-      input.opportunity.title + '. ' + input.opportunity.currentSituation,
-      18,
-    ),
-    fastestWin: limitWords(firstPhase.description, 18),
-    longTermGoal: limitWords(
-      input.progress.longTermGrowthGoal + ': ' + input.progress.longTermGrowthGoalMeaning,
-      18,
-    ),
-    estimatedEffort: limitWords(
-      firstPhase.estimatedEffort + ' effort to start; '
-        + input.roadmap.weeks[0].estimatedEffort + ' across the first month.',
-      14,
-    ),
-    expectedOutcome: limitWords(input.opportunity.potentialBusinessBenefit, 18),
   }
 }
 
@@ -390,18 +539,18 @@ Expected Outcome: ${summary.expectedOutcome}`
 }
 
 export function formatStrategicAssetsText(assets: StrategicAsset[]) {
-  return "What You're Already Winning\n\n" + assets.map((asset) =>
+  return 'Competitive Assets\n\n' + assets.map((asset) =>
     asset.title
     + '\n- Source: ' + asset.sourceLabel
     + '\n- Current advantage: ' + asset.explanation
-    + '\n- Customer impact: ' + asset.whyItMatters
+    + '\n- Decision impact: ' + asset.whyItMatters
     + '\n- Best next use: ' + asset.leverage,
   ).join('\n\n')
 }
 
 export function formatFeaturedOpportunityText(opportunity: FeaturedOpportunity) {
-  return 'The Highest-Leverage Improvement\n\n' + opportunity.title
-    + '\n- What customers experience: ' + opportunity.currentSituation
+  return 'Primary Constraint and Highest-Leverage Improvement\n\n' + opportunity.title
+    + '\n- Current decision experience: ' + opportunity.currentSituation
     + '\n- Business consequence: ' + opportunity.whyItMatters
     + '\n- First move: ' + opportunity.recommendedFirstMove
     + '\n- Likely upside: ' + opportunity.potentialBusinessBenefit

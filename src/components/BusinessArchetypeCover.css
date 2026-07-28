@@ -1,0 +1,581 @@
+/* Signature Business Archetype cover */
+.report-shell .report-share-hero {
+  --archetype-accent: #426f6a;
+  --archetype-accent-soft: #e7efed;
+  --archetype-accent-ink: #244a47;
+  background: #f1eee8;
+}
+
+.archetype-cover-card[data-archetype='hidden-authority'] {
+  --archetype-accent: #2f7069;
+  --archetype-accent-soft: #e2efec;
+  --archetype-accent-ink: #1f504b;
+}
+
+.archetype-cover-card[data-archetype='local-legend'] {
+  --archetype-accent: #9a6b25;
+  --archetype-accent-soft: #f3ead8;
+  --archetype-accent-ink: #6c4817;
+}
+
+.archetype-cover-card[data-archetype='sleeping-giant'] {
+  --archetype-accent: #955746;
+  --archetype-accent-soft: #f2e6e1;
+  --archetype-accent-ink: #65382e;
+}
+
+.archetype-cover-card[data-archetype='invisible-expert'] {
+  --archetype-accent: #526b91;
+  --archetype-accent-soft: #e8ecf4;
+  --archetype-accent-ink: #354968;
+}
+
+.archetype-cover-card[data-archetype='reputation-magnet'] {
+  --archetype-accent: #87495e;
+  --archetype-accent-soft: #f2e7eb;
+  --archetype-accent-ink: #5e3040;
+}
+
+.archetype-cover-card[data-archetype='category-builder'] {
+  --archetype-accent: #625a8d;
+  --archetype-accent-soft: #eceaf3;
+  --archetype-accent-ink: #413a66;
+}
+
+.archetype-cover-card[data-archetype='search-signal-builder'] {
+  --archetype-accent: #3f7182;
+  --archetype-accent-soft: #e4eef1;
+  --archetype-accent-ink: #28505d;
+}
+
+.archetype-cover-card[data-archetype='market-challenger'] {
+  --archetype-accent: #98603c;
+  --archetype-accent-soft: #f2e8e0;
+  --archetype-accent-ink: #673d25;
+}
+
+.report-shell .report-share-hero .archetype-cover-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  width: min(100%, 980px);
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--report-line);
+  border-top: 6px solid var(--archetype-accent);
+  border-radius: 14px;
+  background: #fbfaf7;
+  box-shadow: 0 28px 70px rgba(31, 38, 42, 0.14);
+  color: #17283b;
+}
+
+.archetype-cover-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+  background: #fbfaf7;
+}
+
+.archetype-cover-copy {
+  display: grid;
+  align-content: center;
+  gap: clamp(18px, 2.6vw, 28px);
+  min-width: 0;
+  padding: clamp(28px, 5vw, 58px);
+}
+
+.report-shell .archetype-cover-card .share-card-kicker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: var(--archetype-accent-ink);
+  font-size: 0.76rem;
+  font-weight: 850;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.archetype-mark,
+.archetype-insight-icon {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  color: var(--archetype-accent-ink);
+  background: var(--archetype-accent-soft);
+}
+
+.archetype-mark {
+  width: 38px;
+  height: 38px;
+  border: 1px solid color-mix(in srgb, var(--archetype-accent) 38%, white);
+  border-radius: 50%;
+}
+
+.report-shell .archetype-cover-card .share-card-business {
+  gap: 7px;
+}
+
+.report-shell .archetype-cover-card .share-card-business strong {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+  color: #17283b;
+  font-family: 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  font-size: clamp(2.25rem, 6vw, 4.25rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 0.94;
+}
+
+.report-shell .archetype-cover-card .share-card-business strong.business-name-medium {
+  font-size: clamp(2rem, 5.2vw, 3.75rem);
+}
+
+.report-shell .archetype-cover-card .share-card-business strong.business-name-long {
+  font-size: clamp(1.65rem, 4.4vw, 3.1rem);
+  line-height: 0.98;
+}
+
+.report-shell .archetype-cover-card .share-card-business strong.business-name-very-long {
+  font-size: clamp(18px, 3.7vw, 2.55rem);
+  line-height: 1;
+}
+
+.report-shell .archetype-cover-card .share-card-business small {
+  color: #6b665e;
+  font-size: 0.76rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+}
+
+.archetype-identity-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: clamp(16px, 2.4vw, 28px);
+  align-items: end;
+  padding-top: 24px;
+  border-top: 1px solid var(--report-line);
+}
+
+.archetype-title-block {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.archetype-title-block > span {
+  color: var(--archetype-accent-ink);
+  font-size: 0.7rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.report-shell .report-share-hero .archetype-cover-card h3 {
+  color: #17283b;
+  font-family: 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  font-size: clamp(2.7rem, 7vw, 5.2rem);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 0.88;
+}
+
+.report-shell .archetype-cover-card .share-card-score {
+  align-content: center;
+  min-width: 94px;
+  padding: 14px 13px 12px;
+  border: 1px solid color-mix(in srgb, var(--archetype-accent) 44%, white);
+  border-radius: 12px;
+  background: var(--archetype-accent-soft);
+  box-shadow: none;
+}
+
+.report-shell .archetype-cover-card .share-card-score strong {
+  color: var(--archetype-accent-ink);
+  font-size: clamp(2.2rem, 5vw, 3.15rem);
+  font-weight: 650;
+}
+
+.report-shell .archetype-cover-card .share-card-score small {
+  color: var(--archetype-accent-ink);
+}
+
+.report-shell .archetype-cover-card .share-card-score span {
+  margin-top: 5px;
+  color: #5f5b54;
+  font-size: 0.58rem;
+  font-weight: 850;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.report-shell .report-share-hero .archetype-cover-card .share-card-diagnosis,
+.report-shell .report-share-hero .archetype-cover-card p.share-card-diagnosis {
+  max-width: 34ch;
+  margin: 0;
+  color: #283541;
+  font-family: 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  font-size: clamp(1.35rem, 2.7vw, 2rem);
+  font-weight: 500;
+  letter-spacing: -0.018em;
+  line-height: 1.16;
+  text-wrap: balance;
+}
+
+.report-shell .report-share-hero .archetype-cover-artwork {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  padding: clamp(22px, 4vw, 44px);
+  border: 0;
+  border-top: 1px solid #ddd5c8;
+  background: var(--archetype-accent-soft);
+}
+
+.report-shell .report-share-hero .archetype-cover-artwork img {
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  max-height: 380px;
+  object-fit: contain;
+  filter: saturate(0.82) contrast(0.98);
+}
+
+.archetype-insight-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 12px;
+  padding: clamp(20px, 3.5vw, 34px);
+  border-top: 1px solid var(--report-line);
+  background: #f5f2ec;
+}
+
+.archetype-insight-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 13px;
+  align-items: start;
+  min-width: 0;
+  height: 100%;
+  padding: 18px;
+  border: 1px solid var(--report-line);
+  border-left: 3px solid var(--archetype-accent);
+  border-radius: 9px;
+  background: #fffefa;
+}
+
+.archetype-insight-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+}
+
+.archetype-insight-card h4 {
+  margin: 0 0 6px;
+  color: var(--archetype-accent-ink);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.085em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.report-shell .report-share-hero .archetype-cover-card .archetype-insight-card p {
+  margin: 0;
+  color: #303a42;
+  font-size: 0.92rem;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.archetype-cover-signature {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 16px;
+  align-items: baseline;
+  padding: 14px clamp(22px, 3.5vw, 34px);
+  border-top: 1px solid var(--report-line);
+  background: #fbfaf7;
+  color: #68645d;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.archetype-cover-signature span,
+.archetype-cover-signature strong {
+  color: #273848;
+  font-weight: 850;
+}
+
+@media (min-width: 760px) {
+  .archetype-cover-main {
+    grid-template-columns: minmax(0, 1.22fr) minmax(260px, 0.78fr);
+  }
+
+  .report-shell .report-share-hero .archetype-cover-artwork {
+    border-top: 0;
+    border-left: 1px solid var(--report-line);
+  }
+
+  .report-shell .report-share-hero .archetype-cover-artwork img {
+    max-height: 520px;
+  }
+
+  .archetype-insight-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .archetype-cover-copy {
+    gap: 16px;
+    padding: 24px 20px;
+  }
+
+  .archetype-identity-row {
+    grid-template-columns: minmax(0, 1fr) 78px;
+    gap: 12px;
+  }
+
+  .report-shell .archetype-cover-card .share-card-score {
+    min-width: 0;
+    padding: 10px 8px;
+  }
+
+  .report-shell .archetype-cover-card .share-card-score span {
+    font-size: 0.5rem;
+  }
+
+  .archetype-insight-grid {
+    padding: 16px;
+  }
+
+  .archetype-insight-card {
+    padding: 15px;
+  }
+
+  .archetype-cover-signature {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 7px 12px;
+  }
+
+  .archetype-cover-signature strong {
+    grid-column: 1 / -1;
+  }
+}
+
+@media print {
+  .report-shell .report-cover-group {
+    display: grid !important;
+    align-content: start;
+    min-height: 10.3in !important;
+    height: 10.3in !important;
+    gap: 0 !important;
+    padding: 0 !important;
+    overflow: hidden;
+  }
+
+  .report-shell .report-cover-group > .share-page-topline,
+  .report-shell .report-cover-group > .report-meta {
+    display: none !important;
+  }
+
+
+  .report-shell .report-share-hero .archetype-cover-card {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: 5.72in 3.92in 0.45in !important;
+    width: 100%;
+    box-sizing: border-box;
+    height: 10.16in;
+    min-height: 0;
+    margin: 0 !important;
+    border: 1px solid var(--report-line) !important;
+    border-top: 0.055in solid var(--archetype-accent) !important;
+    border-radius: 0.06in !important;
+    background: #fbfaf7 !important;
+    box-shadow: none !important;
+  }
+
+  .report-shell .archetype-cover-main {
+    grid-template-columns: minmax(0, 1.22fr) minmax(2.25in, 0.78fr) !important;
+    min-height: 0;
+  }
+
+  .report-shell .archetype-cover-copy {
+    align-content: center;
+    gap: 0.16in;
+    padding: 0.34in 0.36in !important;
+  }
+
+  .report-shell .archetype-cover-card .share-card-kicker {
+    gap: 0.08in;
+    font-size: 7pt !important;
+  }
+
+  .report-shell .archetype-mark {
+    width: 0.32in;
+    height: 0.32in;
+  }
+
+  .report-shell .archetype-cover-card .share-card-business strong {
+    max-width: 100%;
+    font-size: 27pt;
+    line-height: 0.92;
+  }
+
+  .report-shell .archetype-cover-card .share-card-business strong.business-name-medium {
+    font-size: 24pt;
+  }
+
+  .report-shell .archetype-cover-card .share-card-business strong.business-name-long {
+    font-size: 21pt;
+  }
+
+  .report-shell .archetype-cover-card .share-card-business strong.business-name-very-long {
+    font-size: 18pt;
+  }
+
+  .report-shell .archetype-cover-card .share-card-business small {
+    font-size: 6.7pt;
+  }
+
+  .report-shell .archetype-identity-row {
+    gap: 0.16in;
+    padding-top: 24px;
+  }
+
+  .report-shell .archetype-title-block > span {
+    font-size: 6.2pt;
+  }
+
+  .report-shell .report-share-hero .archetype-cover-card h3 {
+    font-size: 34pt;
+    line-height: 0.88;
+  }
+
+  .report-shell .archetype-cover-card .share-card-score {
+    min-width: 0.7in;
+    padding: 0.08in !important;
+  }
+
+  .report-shell .archetype-cover-card .share-card-score strong {
+    font-size: 25pt;
+  }
+
+  .report-shell .archetype-cover-card .share-card-score span {
+    font-size: 5.2pt;
+  }
+
+  .report-shell .report-share-hero .archetype-cover-card .share-card-diagnosis,
+  .report-shell .report-share-hero .archetype-cover-card p.share-card-diagnosis {
+    max-width: 31ch;
+    font-size: 13pt !important;
+    line-height: 1.14 !important;
+  }
+
+  .report-shell .report-share-hero .archetype-cover-artwork {
+    padding: 0.16in !important;
+    border-top: 0 !important;
+    border-left: 1px solid #c9c3b9 !important;
+    background: var(--archetype-accent-soft) !important;
+  }
+
+  .report-shell .report-share-hero .archetype-cover-artwork img {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 4.8in !important;
+    object-fit: contain !important;
+  }
+
+  .report-shell .archetype-insight-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-content: stretch;
+    gap: 0.12in;
+    padding: 0.24in 0.28in !important;
+    border-top: 1px solid var(--report-line) !important;
+    background: #f3f1ec !important;
+  }
+
+  .report-shell .archetype-insight-card {
+    grid-template-columns: 0.3in minmax(0, 1fr);
+    gap: 0.08in;
+    align-content: start;
+    padding: 0.14in !important;
+    border: 1px solid var(--report-line) !important;
+    border-left: 0.035in solid var(--archetype-accent) !important;
+    border-radius: 0.04in !important;
+    background: #fff !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .report-shell .archetype-insight-icon {
+    width: 0.28in;
+    height: 0.28in;
+  }
+
+  .report-shell .archetype-insight-card h4 {
+    margin-bottom: 0.04in;
+    font-size: 6.5pt;
+  }
+
+  .report-shell .report-share-hero .archetype-cover-card .archetype-insight-card p {
+    font-size: 8.6pt !important;
+    line-height: 1.28 !important;
+  }
+
+  .report-shell .archetype-cover-signature {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 0.12in;
+    padding: 0.08in 0.28in !important;
+    align-items: baseline;
+    border-top: 1px solid var(--report-line) !important;
+    background: #fbfaf7 !important;
+    font-size: 6.4pt;
+  }
+}
+
+/* Approved archetype artwork is primary; the icon remains the no-asset fallback. */
+.report-shell .report-share-hero .archetype-cover-artwork {
+  align-content: center;
+  gap: 22px;
+}
+
+.report-shell .archetype-cover-artwork .archetype-hero-icon {
+  width: clamp(132px, 19vw, 196px);
+  height: clamp(132px, 19vw, 196px);
+  padding: clamp(24px, 3.6vw, 38px);
+  border: 1px solid color-mix(in srgb, var(--archetype-accent) 42%, white);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.56);
+  color: var(--archetype-accent-ink);
+}
+
+.report-shell .archetype-cover-artwork > span {
+  color: var(--archetype-accent-ink);
+  font-size: 0.64rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+@media print {
+  .report-shell .report-share-hero .archetype-cover-artwork {
+    gap: 0.18in;
+  }
+
+  .report-shell .archetype-cover-artwork .archetype-hero-icon {
+    width: 1.72in;
+    height: 1.72in;
+    padding: 0.3in;
+    border: 1px solid #aaa49b !important;
+    background: #fff !important;
+  }
+
+  .report-shell .archetype-cover-artwork > span {
+    font-size: 6.2pt;
+  }
+}

@@ -81,7 +81,7 @@ function DeliverableCard({ item, action }: {
         </div>
         {action && (
           <div>
-            <dt>Linked recommendation</dt>
+            <dt>Linked scope action</dt>
             <dd>{action.title}</dd>
           </div>
         )}
@@ -172,7 +172,7 @@ export function ProposalReport({ proposal, snapshot }: {
             <div><span>Planning range</span><strong>{proposal.snapshotContext.targetScoreLow}–{proposal.snapshotContext.targetScoreHigh}</strong></div>
           </div>
           <p>{proposal.snapshotContext.biggestOpportunitySummary || proposal.proposalSummary}</p>
-          <p className="proposal-callout">This scope starts with the changes most likely to reduce customer hesitation and create visible momentum.</p>
+          <p className="proposal-callout">This scope starts with the changes most likely to reduce decision hesitation and create visible momentum.</p>
         </section>
 
         <section className="proposal-section">
@@ -234,7 +234,7 @@ export function ProposalReport({ proposal, snapshot }: {
               {evidence.map((item) => <EvidenceCard key={item.id} item={item} />)}
             </div>
           ) : (
-            <p>{proposal.snapshotContext.biggestOpportunitySummary || 'The selected scope follows the approved recommendation order, with clarity and trust improvements completed before broader authority work.'}</p>
+            <p>{proposal.snapshotContext.biggestOpportunitySummary || 'The selected scope follows the approved operating-action order, with clarity and trust improvements completed before broader authority work.'}</p>
           )}
         </section>
 

@@ -53,7 +53,7 @@ export function formatReportDisplay(value: string) {
 export function getRecommendationSubject(form: Pick<SnapshotForm, 'mainService' | 'niche'>) {
   if (hasClientFacingValue(form.mainService)) return formatReportDisplay(form.mainService)
   if (hasClientFacingValue(form.niche)) return formatReportDisplay(form.niche)
-  return 'Local Business'
+  return 'Primary service pending'
 }
 
 export const getDisplayService = getRecommendationSubject
@@ -61,46 +61,73 @@ export const getDisplayService = getRecommendationSubject
 export function getClientFacingCategoryLabel(
   form: Pick<SnapshotForm, 'mainService' | 'niche'>,
 ) {
-  return getRecommendationSubject(form)
+  if (hasClientFacingValue(form.niche)) return formatReportDisplay(form.niche)
+  if (hasClientFacingValue(form.mainService)) return formatReportDisplay(form.mainService)
+  return 'Category pending'
 }
 
 export function getDisplayCity(form: Pick<SnapshotForm, 'city'>) {
-  return hasClientFacingValue(form.city) ? formatReportDisplay(form.city) : 'Local Area'
+  return hasClientFacingValue(form.city) ? formatReportDisplay(form.city) : 'Service area pending'
 }
 
 export function getDisplayBusinessName(form: Pick<SnapshotForm, 'businessName'>) {
   return hasClientFacingValue(form.businessName)
     ? formatReportDisplay(form.businessName)
-    : 'Local Business'
+    : 'Business name pending'
 }
 
 export function getMarketLabel(form: Pick<SnapshotForm, 'city' | 'mainService' | 'niche'>) {
   return getDisplayCity(form) + ' | ' + getClientFacingCategoryLabel(form)
 }
 
+export type AudienceNoun = {
+  singular: 'patient' | 'homeowner' | 'customer'
+  plural: 'patients' | 'homeowners' | 'customers'
+}
+
+export function getAudienceNoun(
+  form: Pick<SnapshotForm, 'mainService' | 'niche'>,
+): AudienceNoun {
+  const signal = `${form.niche} ${form.mainService}`.toLocaleLowerCase()
+
+  if (
+    /\bdental\b|\bdentist\b|\borthodontist\b|\bmedical\b|\bclinic\b|\bmed spa\b|\bmedical spa\b/.test(signal)
+  ) {
+    return { singular: 'patient', plural: 'patients' }
+  }
+  if (
+    /\bhvac\b|\bheating and air conditioning\b|\bcontractor\b|\bgeneral contractor\b|\bhome services\b|\bplumbing\b|\belectrician\b|\broofing\b|\blandscaping\b/.test(signal)
+  ) {
+    return { singular: 'homeowner', plural: 'homeowners' }
+  }
+
+  return { singular: 'customer', plural: 'customers' }
+}
+
 export function getCustomerAudience(
   form: Pick<SnapshotForm, 'mainService' | 'niche'>,
 ) {
-  const signal = `${form.niche} ${form.mainService}`.toLocaleLowerCase()
-
-  if (/dental|dentist|orthodont|periodont|endodont|implant|veneers|teeth/.test(signal)) {
-    return 'patients'
-  }
-  if (/attorney|lawyer|legal|law firm/.test(signal)) return 'potential clients'
-  if (/plumb|hvac|heating|air condition|electric|roof|remodel|landscap|pest/.test(signal)) {
-    return 'homeowners'
-  }
-  if (/medical|clinic|therapy|therapist|chiropract|optometr|health/.test(signal)) {
-    return 'patients'
-  }
-  if (/restaurant|cafe|bakery|catering/.test(signal)) return 'local diners'
-  if (/real estate|realtor|mortgage/.test(signal)) return 'local buyers and sellers'
-
-  return 'prospective customers'
+  return getAudienceNoun(form).plural
 }
 
 export function capitalizeFirst(value: string) {
   return value ? value.charAt(0).toLocaleUpperCase() + value.slice(1) : value
+}
+
+export function firstCompleteSentence(value: string) {
+  const normalized = value.trim().replace(/\s+/g, ' ')
+  if (!normalized) return ''
+
+  const sentenceEnd = /[.!?](?=\s|$)/g
+  let match = sentenceEnd.exec(normalized)
+  while (match) {
+    const candidate = normalized.slice(0, match.index + 1)
+    if (!/\b(?:co|inc|corp|ltd|llc|dr|st|mr|ms|mrs)\.$/i.test(candidate)) {
+      return candidate
+    }
+    match = sentenceEnd.exec(normalized)
+  }
+  return normalized
 }
 
 export function formatSentencePhrase(value: string) {
@@ -118,6 +145,20 @@ export function withIndefiniteArticle(value: string) {
   const initialism = phrase.match(/^([A-Z]{2,})(?:[^A-Za-z]|$)/)?.[1] ?? ''
   const usesAn = /^[aeiou]/i.test(phrase) || /^[AEFHILMNORSX]/.test(initialism)
   return (usesAn ? 'an' : 'a') + ' ' + phrase
+}
+
+export type BusinessNameFitClass =
+  | 'business-name-short'
+  | 'business-name-medium'
+  | 'business-name-long'
+  | 'business-name-very-long'
+
+export function getBusinessNameFitClass(value: string): BusinessNameFitClass {
+  const length = value.trim().replace(/\s+/g, ' ').length
+  if (length <= 24) return 'business-name-short'
+  if (length <= 42) return 'business-name-medium'
+  if (length <= 68) return 'business-name-long'
+  return 'business-name-very-long'
 }
 
 export function isLikelyValidWebsiteUrl(value: string) {

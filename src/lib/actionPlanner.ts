@@ -64,7 +64,7 @@ const profileByCategory: Record<ActionCategory, ActionProfile> = {
   },
   Trust: {
     objective: 'Place concrete proof beside the main decision point.',
-    businessValue: 'Potential customers have fewer unanswered credibility concerns.',
+    businessValue: 'Potential clients have fewer unanswered credibility concerns.',
     reason: 'Proof is most useful where a visitor is deciding whether to make contact.',
     expectedOutcome: 'Reduce hesitation before a visitor calls or submits a request.',
   },
@@ -87,10 +87,10 @@ const profileByCategory: Record<ActionCategory, ActionProfile> = {
     expectedOutcome: 'Clarify expertise and make the service easier to evaluate.',
   },
   Reviews: {
-    objective: 'Turn customer feedback into accessible decision support.',
-    businessValue: 'Visitors can see relevant customer experience before contacting the business.',
+    objective: 'Turn public feedback into accessible decision support.',
+    businessValue: 'Visitors can see relevant service experience before contacting the business.',
     reason: 'Specific, recent feedback answers trust questions better than generic claims.',
-    expectedOutcome: 'Increase trust with specific customer proof.',
+    expectedOutcome: 'Increase trust with specific public proof.',
   },
   Conversion: {
     objective: 'Remove friction from the inquiry path.',
@@ -102,13 +102,13 @@ const profileByCategory: Record<ActionCategory, ActionProfile> = {
     objective: 'Align the public business profile with current services and proof.',
     businessValue: 'People comparing local options see accurate, useful information.',
     reason: 'The profile often shapes the decision before a visitor reaches the website.',
-    expectedOutcome: 'Present a more complete and consistent local business summary.',
+    expectedOutcome: 'Present a more complete and consistent public-facing profile.',
   },
   Content: {
-    objective: 'Answer one high-value customer question in depth.',
+    objective: 'Answer one high-value pre-contact question in depth.',
     businessValue: 'Prospects can learn from the business before they are ready to contact it.',
     reason: 'Useful answers demonstrate expertise without relying on promotional claims.',
-    expectedOutcome: 'Build authority around a real customer concern.',
+    expectedOutcome: 'Build authority around a real pre-contact concern.',
   },
   FAQ: {
     objective: 'Publish direct answers to common pre-contact questions.',

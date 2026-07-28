@@ -24,8 +24,6 @@ import { ActionControlCenter } from './components/ActionControlCenter'
 import { DemoTour } from './components/DemoTour'
 import { OperatorHeader } from './components/OperatorHeader'
 import './components/ContestPreparation.css'
-import { AuthorityRoadmap } from './components/AuthorityRoadmap'
-import { SprintPlan } from './components/SprintPlan'
 import { EvidenceManager } from './components/EvidenceManager'
 import {
   FastLane,
@@ -37,8 +35,8 @@ import {
 } from './components/OperatorWorkspace'
 import type { DraftApplication } from './lib/draftApplication'
 import { EvidenceReport } from './components/EvidenceReport'
-import { ProgressJourneyReport } from './components/ProgressJourneyReport'
 import { ReportReadiness } from './components/ReportReadiness'
+import { ReportValidationBanner } from './components/ReportValidationBanner'
 import { ImplementationPathsReport } from './components/ImplementationPathsReport'
 import { PoweredByFooter } from './components/PoweredByFooter'
 import {
@@ -52,9 +50,15 @@ import {
   StrategicAssetsReport,
 } from './components/ReportStrategy'
 import './components/PremiumReportDesign.css'
+import { BusinessArchetypeCover } from './components/BusinessArchetypeCover'
+import './components/BusinessArchetypeCover.css'
+import {
+  UpgradeAccountabilityReport,
+  UpgradeJourneyReport,
+  UpgradeMissionsReport,
+} from './components/UpgradeOSReport'
 import {
   appendActionStatusHistory,
-  formatActionStatusText,
   getBlockingActions,
   getNextMilestone,
   requiresDependencyOverride,
@@ -67,11 +71,7 @@ import {
 } from './lib/evidence'
 import { planRecommendations } from './lib/actionPlanner'
 import { createGrowthFoundation, refreshGrowthFoundation } from './lib/growthPlanning'
-import {
-  createProgressJourneyModel,
-  formatProgressJourneyText,
-  type ProgressJourneyModel,
-} from './lib/progressJourney'
+import { createProgressJourneyModel } from './lib/progressJourney'
 import { createConsultingRoadmap } from './lib/roadmap'
 import {
   createExecutiveSummary,
@@ -86,10 +86,14 @@ import {
 } from './lib/reportStory'
 import {
   getClientFacingCategoryLabel,
+  getAudienceNoun,
   getDisplayBusinessName,
   getDisplayCity,
   getMarketLabel,
+  getRecommendationSubject,
 } from './lib/reportDisplay'
+import { reportConfiguration } from './lib/runtimeReportConfig'
+import { validateReportForRender } from './lib/reportValidation'
 import {
   defaultReportOffer,
   formatOfferAndCtaText,
@@ -98,12 +102,27 @@ import { getReportReadiness } from './lib/reportReadiness'
 import {
   createVisualDiagnostics,
   formatEvidenceDiagnosticText,
-  formatMomentumTimelineText,
   formatOpportunityMatrixText,
   formatScoreDiagnosticsText,
   type VisualDiagnostics,
 } from './lib/visualDiagnostics'
-import { emptyScores, getRatingLabel, getTotalScore, normalizeScores, scoreLabels } from './lib/scoring'
+import {
+  createUpgradeOSReportModel,
+  formatAchievementsText,
+  formatImpactLedgerText,
+  formatSnapshotRecordText,
+  formatUpgradeJourneyText,
+  formatUpgradeMissionsText,
+  getSnapshotSequenceNumber,
+} from './lib/upgradeOS'
+import {
+  areScoresDisplayable,
+  emptyScores,
+  getRatingLabel,
+  getTotalScore,
+  normalizeScores,
+  scoreLabels,
+} from './lib/scoring'
 import { deleteSnapshot, isStorageQuotaError, loadSnapshots, saveSnapshot } from './lib/storage'
 import {
   createEmptyBusinessIntake,
@@ -161,6 +180,7 @@ import type {
   WebsiteExtractionObservation,
 } from './types'
 import type { FastLaneSession, FastLaneSource } from './types/fastLane'
+import type { UpgradeOSReportModel } from './types/upgradeOS'
 
 const emptyForm: SnapshotForm = {
   businessName: '',
@@ -188,7 +208,7 @@ const outputLabels: Array<{
   title: string
   icon: typeof FileText
 }> = [
-  { key: 'snapshot', title: 'Business Archetype report', icon: FileText },
+  { key: 'snapshot', title: 'Business Archetype summary', icon: FileText },
   { key: 'text', title: 'Short text message', icon: MessageSquare },
   { key: 'email', title: 'Short cold email', icon: Send },
   { key: 'shareable', title: 'Shareable result', icon: Clipboard },
@@ -227,9 +247,9 @@ function buildReportText({
   reportStory,
   executiveSummary,
   visualDiagnostics,
-  actions,
-  progressJourney,
+  upgradeOS,
   evidenceText,
+  scoreAvailable,
 }: {
   form: SnapshotForm
   branding: BrandingFields
@@ -242,9 +262,9 @@ function buildReportText({
   reportStory: ReportStory
   executiveSummary: ExecutiveSummary
   visualDiagnostics: VisualDiagnostics
-  actions: RecommendedAction[]
-  progressJourney: ProgressJourneyModel
+  upgradeOS: UpgradeOSReportModel
   evidenceText: string
+  scoreAvailable: boolean
 }) {
   const businessName = getDisplayBusinessName(form)
   const city = getDisplayCity(form)
@@ -253,31 +273,28 @@ function buildReportText({
   const brandName = valueOrFallback(branding.brandName, defaultBranding.brandName)
   const contactLine = branding.contactLine.trim()
   const contact = contactLine ? `\n${contactLine}` : ''
-  const categoryScores = scoreKeys.map((key) => `- ${scoreLabels[key]}: ${scores[key]}/20`).join('\n')
+  const categoryScores = scoreKeys.map((key) => scoreAvailable
+    ? `- ${scoreLabels[key]}: ${scores[key]}/20`
+    : `- ${scoreLabels[key]}: Score unavailable`).join('\n')
+  const scoreLine = scoreAvailable
+    ? `${totalScore}/100 — ${reportRating}`
+    : 'Score unavailable — assessment review required'
   const evidenceSection = evidenceText ? '\n\n' + evidenceText : ''
   const preliminarySection = evidenceText ? '' : '\n' + preliminaryEvidenceNote
-  const sprintSummary = visualDiagnostics.sprintPhases.map((phase) =>
-    phase.window + ' [' + phase.status + '] — ' + phase.mainAction
-      + '\nDeliverable: ' + phase.deliverable,
-  ).join('\n\n')
-  const monthSummary = visualDiagnostics.monthWeeks.map((week) =>
-    'Week ' + week.week + ' — ' + week.theme + ' [' + week.status + ']'
-      + '\n' + week.objective
-      + '\nSuccess signal: ' + week.successSignal,
-  ).join('\n\n')
 
   return `Your Business Archetype
 
 ${businessName} — ${city} | ${industry}
 ${horoscope.archetype}
 ${horoscope.archetypeExplanation}
-Biggest Strength: ${horoscope.biggestStrength}
+Top Competitive Asset: ${horoscope.biggestStrength}
 Blind Spot: ${horoscope.blindSpot}
+Next Evolution: ${horoscope.nextEvolution}
 
-Current Score
-${totalScore}/100 — ${reportRating}
+Business Health Score
+${scoreLine}
 
-Biggest Opportunity
+Highest-Leverage Growth Opportunity
 ${reportStory.featuredOpportunity.title}
 ${reportStory.featuredOpportunity.currentSituation}
 Expected Outcome: ${executiveSummary.expectedOutcome}
@@ -285,16 +302,12 @@ Expected Outcome: ${executiveSummary.expectedOutcome}
 Fastest Win
 ${horoscope.fastestWin}
 
-48-Hour Sprint
-${sprintSummary}
-
-One Month Roadmap
-${monthSummary}
+${formatUpgradeJourneyText(upgradeOS.journey)}
 
 Prepared by: ${preparedBy}, ${brandName}${contact}
 Date: ${reportDate}
 
-Executive Score Detail
+Business Health Detail
 ${categoryScores}
 
 ${formatScoreDiagnosticsText(visualDiagnostics.scores)}
@@ -307,16 +320,18 @@ ${formatFeaturedOpportunityText(reportStory.featuredOpportunity)}
 
 ${formatOpportunityMatrixText(visualDiagnostics.opportunityMatrix)}
 
-${formatActionStatusText(actions)}
+${formatUpgradeMissionsText(upgradeOS.missions)}
 
-${formatMomentumTimelineText(visualDiagnostics.momentumTimeline)}
+${formatImpactLedgerText(upgradeOS.impactLedger)}
 
-${formatProgressJourneyText(progressJourney)}
+${formatAchievementsText(upgradeOS.achievements)}
+
+${formatSnapshotRecordText(upgradeOS.snapshotRecord)}
 ${evidenceSection}
 
 ${formatImplementationPathsText()}
 
-${formatOfferAndCtaText(offer)}
+${formatOfferAndCtaText(offer, reportConfiguration)}
 
 ${preliminarySection}
 Snapshot Studio
@@ -387,16 +402,27 @@ function App() {
   const [interactionMessage, setInteractionMessage] = useState('')
 
   const totalScore = useMemo(() => getTotalScore(scores), [scores])
+  const scoreAvailable = useMemo(() => areScoresDisplayable(scores), [scores])
+  const audience = useMemo(() => getAudienceNoun(form), [form])
   const rating = getRatingLabel(totalScore)
   const reportRating = getReportRating(totalScore)
+  const sessionStartedAt = useMemo(() => new Date().toISOString(), [])
+  const snapshotRecordedAt = useMemo(
+    () => savedSnapshots.find((snapshot) => snapshot.id === loadedId)?.createdAt
+      ?? sessionStartedAt,
+    [loadedId, savedSnapshots, sessionStartedAt],
+  )
+  const snapshotNumber = useMemo(
+    () => getSnapshotSequenceNumber(savedSnapshots, loadedId),
+    [loadedId, savedSnapshots],
+  )
   const reportDate = useMemo(
-    () =>
-      new Date().toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      }),
-    [],
+    () => new Date(snapshotRecordedAt).toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }),
+    [snapshotRecordedAt],
   )
   const horoscope = useMemo(
     () => buildBusinessHoroscope(form, scores, totalScore),
@@ -474,8 +500,9 @@ function App() {
       opportunity: reportStory.featuredOpportunity,
       progress: progressJourney,
       roadmap,
+      scoreAvailable,
     }),
-    [form, progressJourney, reportStory.featuredOpportunity, roadmap],
+    [form, progressJourney, reportStory.featuredOpportunity, roadmap, scoreAvailable],
   )
   const visualDiagnostics = useMemo(
     () => createVisualDiagnostics({
@@ -491,6 +518,43 @@ function App() {
       progressJourney,
       roadmap,
       scores,
+    ],
+  )
+  const upgradeOS = useMemo(
+    () => createUpgradeOSReportModel({
+      businessName: getDisplayBusinessName(form),
+      city: getDisplayCity(form),
+      primaryService: getRecommendationSubject(form),
+      actions: growthFoundation.recommendedActions,
+      evidenceItems: reportEvidence,
+      actionStatusHistory: growthFoundation.actionStatusHistory,
+      currentArchetype: horoscope.archetype,
+      currentHealthScore: scoreAvailable ? totalScore : null,
+      currentGrowthStage: growthFoundation.currentArchetype,
+      nextGrowthStage: growthFoundation.nextArchetype,
+      targetScoreLow: growthFoundation.targetScoreLow,
+      targetScoreHigh: growthFoundation.targetScoreHigh,
+      nextEvolution: horoscope.nextEvolution,
+      snapshotDate: snapshotRecordedAt,
+      snapshotNumber,
+      audience,
+    }),
+    [
+      audience,
+      form,
+      growthFoundation.actionStatusHistory,
+      growthFoundation.currentArchetype,
+      growthFoundation.nextArchetype,
+      growthFoundation.recommendedActions,
+      growthFoundation.targetScoreHigh,
+      growthFoundation.targetScoreLow,
+      horoscope.archetype,
+      horoscope.nextEvolution,
+      reportEvidence,
+      snapshotRecordedAt,
+      snapshotNumber,
+      scoreAvailable,
+      totalScore,
     ],
   )
   const evidenceText = useMemo(
@@ -510,9 +574,9 @@ function App() {
       reportStory,
       executiveSummary,
       visualDiagnostics,
-      actions: growthFoundation.recommendedActions,
-      progressJourney,
+      upgradeOS,
       evidenceText,
+      scoreAvailable,
     }),
     [
       branding,
@@ -520,15 +584,48 @@ function App() {
       evidenceText,
       executiveSummary,
       form,
-      growthFoundation.recommendedActions,
       horoscope,
-      progressJourney,
       reportStory,
       reportDate,
       reportRating,
+      scoreAvailable,
       scores,
       totalScore,
+      upgradeOS,
       visualDiagnostics,
+    ],
+  )
+  const reportValidation = useMemo(
+    () => validateReportForRender({
+      form,
+      scores,
+      actions: growthFoundation.recommendedActions,
+      missions: upgradeOS.missions,
+      achievements: upgradeOS.achievements,
+      strategicAssets: reportStory.strategicAssets,
+      executiveSummary,
+      configuration: reportConfiguration,
+      resolvedOutput: {
+        reportText,
+        outputs,
+        horoscope,
+        reportStory,
+        executiveSummary,
+        upgradeOS,
+        evidence: reportEvidence,
+      },
+    }),
+    [
+      executiveSummary,
+      form,
+      growthFoundation.recommendedActions,
+      horoscope,
+      outputs,
+      reportEvidence,
+      reportStory,
+      reportText,
+      scores,
+      upgradeOS,
     ],
   )
   const activeLead = useMemo(
@@ -926,6 +1023,12 @@ function App() {
   }
 
   async function copyText(label: string, text: string) {
+    if (!reportValidation.valid) {
+      setInteractionMessage(
+        'Client output is blocked until every report validation issue is resolved.',
+      )
+      return
+    }
     if (!navigator.clipboard?.writeText) {
       setInteractionMessage('Clipboard access is unavailable in this browser. Select the text and copy it manually.')
       return
@@ -941,6 +1044,12 @@ function App() {
   }
 
   function printReport() {
+    if (!reportValidation.valid) {
+      setInteractionMessage(
+        'PDF export is blocked until every report validation issue is resolved.',
+      )
+      return
+    }
     if (typeof window.print !== 'function') {
       setInteractionMessage('Print / Save PDF is unavailable in this browser. Open the app in a desktop browser with printing enabled.')
       return
@@ -968,7 +1077,7 @@ function App() {
       ...growthFoundation,
       ...reportOffer,
       id: loadedId ?? crypto.randomUUID(),
-      createdAt: now,
+      createdAt: existingSnapshot?.createdAt ?? now,
       scores,
       outputs,
       branding,
@@ -979,7 +1088,7 @@ function App() {
       setLoadedId(snapshot.id)
       setFoundationDraft(growthFoundation)
       setHasUnsavedProgress(false)
-      setStorageMessage('Snapshot saved in this browser.')
+      setStorageMessage('Snapshot recorded in this browser.')
     } catch (error) {
       setStorageMessage(
         isStorageQuotaError(error)
@@ -1025,7 +1134,7 @@ function App() {
         setIntakeStorageMessage('Intake saved and linked to this snapshot.')
       } catch {
         setIntakeStorageMessage(
-          'Snapshot saved, but its intake association could not be stored.',
+          'Snapshot recorded, but its intake association could not be stored.',
         )
       }
     }
@@ -2136,14 +2245,16 @@ function App() {
         <div className="report-toolbar screen-only">
           <div>
             <p className="section-kicker">Client preview</p>
-            <h2>Business Archetype Preview</h2>
+            <h2>Operating Manual Preview</h2>
           </div>
           <ReportReadiness readiness={reportReadiness} />
+          <ReportValidationBanner validation={reportValidation} />
           <div className="report-actions">
             <button
               className="secondary-button"
               type="button"
               onClick={() => void copyText('report', reportText)}
+              disabled={!reportValidation.valid}
             >
               <Copy size={18} aria-hidden="true" />
               {copiedKey === 'report' ? 'Copied report' : 'Copy full report'}
@@ -2152,7 +2263,12 @@ function App() {
               <FilePlus2 size={18} aria-hidden="true" />
               Create proposal
             </button>
-            <button className="primary-button" type="button" onClick={printReport}>
+            <button
+              className="primary-button"
+              type="button"
+              onClick={printReport}
+              disabled={!reportValidation.valid}
+            >
               <Printer size={18} aria-hidden="true" />
               Print / Save PDF
             </button>
@@ -2160,7 +2276,10 @@ function App() {
           {interactionMessage && <p className="interaction-message" role="status">{interactionMessage}</p>}
         </div>
 
-        <article className="report-shell">
+        <article
+          className="report-shell"
+          data-report-valid={reportValidation.valid ? 'true' : 'false'}
+        >
           <section className="report-page share-page report-share-hero report-cover-group" aria-label="Share-ready Business Archetype result">
             <div className="share-page-topline">
               <p className="report-brand">
@@ -2169,37 +2288,20 @@ function App() {
               <span>{reportDate}</span>
             </div>
 
-            <section className="share-card" aria-label="Screenshot-ready share card">
-              <div className="share-card-media">
-                <img src={horoscope.archetypeImagePath} alt={`${horoscope.archetype} archetype`} />
-              </div>
-              <div className="share-card-copy">
-                <p className="share-card-kicker">Business Archetype</p>
-                <div className="share-card-business">
-                  <strong>{getDisplayBusinessName(form)}</strong>
-                  <small>
-                    {getMarketLabel(form)}
-                  </small>
-                </div>
-                <div className="share-card-result">
-                  <div>
-                    <span>Business Archetype</span>
-                    <h3>{horoscope.archetype}</h3>
-                  </div>
-                  <div className="share-card-score" aria-label={`Report score ${totalScore} out of 100`}>
-                    <strong>{totalScore}</strong>
-                    <small>/100</small>
-                  </div>
-                </div>
-                <p className="share-card-diagnosis">{horoscope.shareSummary}</p>
-                <dl className="share-card-archetype-details">
-                  <div><dt>Biggest strength</dt><dd>{horoscope.biggestStrength}</dd></div>
-                  <div><dt>Blind spot</dt><dd>{horoscope.blindSpot}</dd></div>
-                  <div><dt>Fastest win</dt><dd>{horoscope.fastestWin}</dd></div>
-                </dl>
-                <em>{horoscope.shareCta}</em>
-              </div>
-            </section>
+            <BusinessArchetypeCover
+              businessName={getDisplayBusinessName(form)}
+              marketLabel={getMarketLabel(form)}
+              archetype={horoscope.archetype}
+              identityStatement={horoscope.archetypeExplanation}
+              score={scoreAvailable ? totalScore : null}
+              artworkPath={horoscope.archetypeImagePath}
+              biggestStrength={horoscope.biggestStrength}
+              blindSpot={horoscope.blindSpot}
+              fastestWin={horoscope.fastestWin}
+              nextEvolution={horoscope.nextEvolution}
+              brandName={valueOrFallback(branding.brandName, defaultBranding.brandName)}
+              reportDate={reportDate}
+            />
 
             <div className="report-meta">
               <span>
@@ -2241,31 +2343,48 @@ function App() {
             </div>
           </section>
 
+          <div className="report-print-metadata" aria-hidden="true">
+            Snapshot Studio · {getClientFacingCategoryLabel(form)} · {getDisplayCity(form)} · {reportDate}
+          </div>
+
+          <UpgradeJourneyReport journey={upgradeOS.journey} />
           <ExecutiveSummaryReport
             summary={executiveSummary}
             scores={visualDiagnostics.scores}
             evidence={visualDiagnostics.evidence}
           />
-          <StrategicAssetsReport assets={reportStory.strategicAssets} />
+          <StrategicAssetsReport
+            assets={reportStory.strategicAssets}
+            audience={audience}
+          />
           <BiggestOpportunityReport
             opportunity={reportStory.featuredOpportunity}
             matrix={visualDiagnostics.opportunityMatrix}
+            audience={audience}
           />
-
-          <ProgressJourneyReport
-            model={progressJourney}
-            timeline={visualDiagnostics.momentumTimeline}
+          <UpgradeMissionsReport missions={upgradeOS.missions} />
+          <UpgradeAccountabilityReport
+            ledger={upgradeOS.impactLedger}
+            achievements={upgradeOS.achievements}
+            snapshotRecord={upgradeOS.snapshotRecord}
           />
-          <SprintPlan phases={visualDiagnostics.sprintPhases} />
-          <AuthorityRoadmap weeks={visualDiagnostics.monthWeeks} />
           {reportEvidence.length > 0 && (
             <EvidenceReport
               evidenceItems={reportEvidence}
               actions={growthFoundation.recommendedActions}
+              audience={audience}
             />
           )}
-          <ImplementationPathsReport offer={reportOffer} />
-          <PoweredByFooter preliminary={reportEvidence.length === 0} />
+          <div className="report-closing-sheet">
+            <ImplementationPathsReport
+              offer={reportOffer}
+              configuration={reportConfiguration}
+            />
+            <PoweredByFooter
+              preliminary={reportEvidence.length === 0}
+              configuration={reportConfiguration}
+            />
+          </div>
         </article>
       </section>
 
@@ -2283,6 +2402,7 @@ function App() {
                 aria-label={`Copy ${title}`}
                 title={`Copy ${title}`}
                 onClick={() => void copyText(key, outputs[key])}
+                disabled={!reportValidation.valid}
               >
                 <Copy size={17} aria-hidden="true" />
               </button>

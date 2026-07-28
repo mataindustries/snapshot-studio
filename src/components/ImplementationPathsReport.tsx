@@ -5,18 +5,28 @@ import {
   getReportCtaHeadline,
   getReportCtaLabel,
   getInvestmentLine,
-  getSafeBookingUrl,
 } from '../lib/reportOffer'
+import {
+  getRenderableReportConfiguration,
+  type ReportConfiguration,
+} from '../lib/reportConfig'
 import type { ReportOfferFields } from '../types'
 import './ImplementationPathsReport.css'
 
-export function ImplementationPathsReport({ offer }: { offer: ReportOfferFields }) {
+export function ImplementationPathsReport({
+  offer,
+  configuration,
+}: {
+  offer: ReportOfferFields
+  configuration: ReportConfiguration
+}) {
   const investmentLine = getInvestmentLine(offer)
-  const bookingUrl = getSafeBookingUrl(offer.bookingUrl)
+  const configured = getRenderableReportConfiguration(configuration)
+  const bookingUrl = configured.CONSULTATION_URL
   const headline = getReportCtaHeadline(offer.ctaHeadline)
   const body = getReportCtaBody(offer.ctaBody)
   const ctaLabel = getReportCtaLabel(offer.ctaLabel)
-  const contactLine = offer.ctaContactLine.trim()
+  const contactLine = configured.CONTACT_EMAIL
 
   return (
     <section
@@ -74,16 +84,20 @@ export function ImplementationPathsReport({ offer }: { offer: ReportOfferFields 
           <p className="section-kicker">Next step</p>
           <h2 id="final-cta-title">{headline}</h2>
           <p>{body}</p>
-          <div className="final-cta-action-row">
-            {bookingUrl ? (
+          {(bookingUrl || contactLine) && (
+            <div className="final-cta-action-row">
+              {bookingUrl && (
               <a className="final-cta-link" href={bookingUrl} target="_blank" rel="noreferrer">
                 {ctaLabel}
               </a>
-            ) : (
-              <strong className="final-cta-label">{ctaLabel}</strong>
             )}
-            {contactLine && <span className="final-cta-contact">{contactLine}</span>}
-          </div>
+              {contactLine && (
+                <a className="final-cta-contact" href={`mailto:${contactLine}`}>
+                  {contactLine}
+                </a>
+              )}
+            </div>
+          )}
         </div>
       </section>
     </section>

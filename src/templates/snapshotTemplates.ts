@@ -1,13 +1,14 @@
 import type { ScoreKey, Scores, SnapshotForm, SnapshotOutputs, Tone } from '../types'
 import {
   formatSentencePhrase,
+  getAudienceNoun,
   getClientFacingCategoryLabel,
   getDisplayBusinessName,
   getDisplayCity,
   getRecommendationSubject,
-  hasClientFacingValue,
-} from '../lib/reportDisplay'
-import { filterClientFacingStrengths } from '../lib/clientStrengths'
+} from '../lib/reportDisplay.ts'
+import { filterClientFacingStrengths } from '../lib/clientStrengths.ts'
+import { areScoresDisplayable } from '../lib/scoring.ts'
 
 type Archetype =
   | 'Hidden Authority'
@@ -35,6 +36,7 @@ type BusinessHoroscope = {
   biggestStrength: string
   blindSpot: string
   fastestWin: string
+  nextEvolution: string
   archetypeSummary: string
   archetypeImagePath: string
   shareSummary: string
@@ -93,25 +95,13 @@ function formatUrlLabel(url: string) {
   }
 }
 
-function isPatientIndustry(form: SnapshotForm) {
-  const signal = `${form.niche} ${form.mainService}`.toLowerCase()
-  return /dental|dentist|orthodont|periodont|endodont|implant|veneers|teeth|medical|clinic|patient/.test(signal)
-}
-
 function getAudiencePhrase(form: SnapshotForm, style: 'local-first' | 'in-city' = 'in-city') {
   const city = getDisplayCity(form)
-  const industry = getClientFacingCategoryLabel(form)
-  const hasCity = hasClientFacingValue(form.city)
-  const hasCategory = hasClientFacingValue(form.mainService) || hasClientFacingValue(form.niche)
-
-  if (isPatientIndustry(form)) {
-    if (!hasCity) return 'local patients'
-    return style === 'local-first' ? `${city} patients` : `patients in ${city}`
-  }
-
-  if (!hasCategory) return hasCity ? 'buyers in ' + city : 'local buyers'
-  if (!hasCity) return industry.toLowerCase() + ' buyers in the local market'
-  return style === 'local-first' ? `${city} ${industry.toLowerCase()} buyers` : `${industry.toLowerCase()} buyers in ${city}`
+  const audience = getAudienceNoun(form)
+  if (!form.city.trim()) return audience.plural
+  return style === 'local-first'
+    ? `${city} ${audience.plural}`
+    : `${audience.plural} in ${city}`
 }
 
 function getLowestScore(scores: Scores) {
@@ -190,22 +180,37 @@ export function getArchetypeImagePath(archetype: string) {
   return fallbackArchetypeArtworkPath
 }
 
-function buildShareSummary(form: SnapshotForm, archetype: Archetype) {
-  const localAudience = getAudiencePhrase(form, 'local-first')
-  const service = formatSentencePhrase(getRecommendationSubject(form))
-
+function buildShareSummary(archetype: Archetype, form: SnapshotForm) {
+  const audience = getAudienceNoun(form)
+  const audienceLead =
+    audience.plural.charAt(0).toLocaleUpperCase() + audience.plural.slice(1)
   const summaries: Record<Archetype, string> = {
-    'Hidden Authority': `Trusted business substance is already present, but ${localAudience} may not see it soon enough to act.`,
-    'Local Legend': 'A strong local presence is already working; sharper proof and next steps can extend that advantage.',
-    'Sleeping Giant': 'Strong business potential is being held back by friction between customer interest and the first inquiry.',
-    'Invisible Expert': `The expertise is credible; the ${service} story needs to become visible before buyers compare alternatives.`,
-    'Reputation Magnet': 'Credibility is the strongest asset, and bringing it closer to the next step can turn trust into action.',
-    'Category Builder': 'The foundation can support growth once one audience, service, and local promise lead the story.',
-    'Search Signal Builder': 'Service, location, and proof need clearer structure for customers, search engines, and answer systems.',
-    'Market Challenger': 'The business can compete more confidently once its proof, process, and local fit are easier to compare.',
+    'Hidden Authority': `${audienceLead} trust you once they find you. Too few ever do.`,
+    'Local Legend': 'Your name already carries weight. Every interaction should now live up to it.',
+    'Sleeping Giant': 'The foundation exists. Consistent momentum has not arrived yet.',
+    'Invisible Expert': 'You know your craft. The market does not know enough about it.',
+    'Reputation Magnet': 'Trust is already working. Visibility is the next unlock.',
+    'Category Builder': 'Your specialty can become the reason people remember you.',
+    'Search Signal Builder': 'Your value is real. Search engines still need a clearer explanation.',
+    'Market Challenger': 'You are earning attention one improvement at a time.',
   }
 
   return summaries[archetype]
+}
+
+function buildNextEvolution(archetype: Archetype) {
+  const nextEvolution: Record<Archetype, string> = {
+    'Hidden Authority': 'Become the obvious local choice before prospects start comparing.',
+    'Local Legend': 'Turn local recognition into an even easier yes.',
+    'Sleeping Giant': 'Convert a solid foundation into consistent customer momentum.',
+    'Invisible Expert': 'Make your expertise visible wherever prospects are deciding.',
+    'Reputation Magnet': 'Carry your hard-earned trust into greater local visibility.',
+    'Category Builder': 'Own one clear specialty in the minds of local buyers.',
+    'Search Signal Builder': 'Make your services, location, and proof unmistakable online.',
+    'Market Challenger': 'Build a sharper reason to choose you at every decision point.',
+  }
+
+  return nextEvolution[archetype]
 }
 
 function buildArchetypeSummary(form: SnapshotForm, archetype: Archetype, scores: Scores, totalScore: number) {
@@ -218,13 +223,15 @@ function buildArchetypeSummary(form: SnapshotForm, archetype: Archetype, scores:
     'Local Legend': `${businessName} has a strong public-facing foundation. The next move is focused refinement: clearer proof, a more explicit contact path, and a credible reason to choose ${service}.`,
     'Sleeping Giant': `${businessName} has useful business substance, but the handoff from visitor to inquiry creates conversion friction. Clearer next-step language, process detail, and mobile flow can improve decision confidence.`,
     'Invisible Expert': `${businessName} has expertise that is not yet visible enough to ${getAudiencePhrase(form)}. Clearer service pages, local context, and direct answers can turn that knowledge into stronger local authority.`,
-    'Reputation Magnet': `${businessName} has credibility to work with. Place customer proof closer to forms, phone numbers, process cues, and the first step.`,
+    'Reputation Magnet': `${businessName} has credibility to work with. Place ${getAudienceNoun(form).singular} proof closer to forms, phone numbers, process cues, and the first step.`,
     'Category Builder': `${businessName} presents several broad signals without one clear focus. Making the primary audience, service, and local promise explicit will make the offer easier to evaluate.`,
     'Search Signal Builder': `${businessName} may be understandable to someone who already knows the company, but search and answer systems need more explicit facts. Plain-language service, location, FAQ, and proof sections will reduce ambiguity.`,
     'Market Challenger': `${businessName} faces conversion friction in a side-by-side comparison. Nearby alternatives may feel easier to choose when their proof, offer, process, or local fit is more explicit.`,
   }
 
-  return `${profiles[archetype]} Current position: ${totalScore}/100, with the primary improvement pressure in ${scoreNames[getLowestScore(scores)]}.`
+  return areScoresDisplayable(scores)
+    ? `${profiles[archetype]} Current position: ${totalScore}/100, with the primary improvement pressure in ${scoreNames[getLowestScore(scores)]}.`
+    : `${profiles[archetype]} The five-part assessment requires review before a Business Health Score can be presented.`
 }
 
 function scoreRead(score: number) {
@@ -238,16 +245,21 @@ function buildScoreExplanations(form: SnapshotForm, scores: Scores) {
   const city = getDisplayCity(form)
   const industry = getClientFacingCategoryLabel(form)
   const service = formatSentencePhrase(getRecommendationSubject(form))
+  const audience = getAudienceNoun(form)
+  const scoreAvailable = areScoresDisplayable(scores)
 
   const map: Record<ScoreKey, string> = {
     visibility: `Visibility measures whether a ready buyer can quickly connect the site to ${industry}, ${service}, and ${city}.`,
-    trust: `Trust measures whether reviews, credentials, before/after examples, guarantees, financing, awards, or real customer/patient outcomes are close enough to the decision point.`,
+    trust: `Trust measures whether reviews, credentials, before/after examples, guarantees, financing, awards, or real ${audience.singular} outcomes are close enough to the decision point.`,
     conversion: `Conversion measures whether the phone/form/request path tells visitors what to do next and why the first step is low-friction.`,
     aiSearchReadiness: `AI Search Readiness measures whether services, locations, FAQs, and proof are written plainly enough for search and AI summaries.`,
     competitorPosition: `Competitor Position measures whether the site gives a clearer reason to choose this business over nearby alternatives.`,
   }
 
   return (Object.keys(scores) as ScoreKey[]).map((key) => {
+    if (!scoreAvailable) {
+      return `${scoreNames[key]}: Score unavailable — review this assessment dimension.`
+    }
     const read = scoreRead(scores[key])
     return `${scoreNames[key]}: ${scores[key]}/20 (${read}) - ${map[key]}`
   })
@@ -258,16 +270,19 @@ function buildStrengths(form: SnapshotForm, scores: Scores) {
   const city = getDisplayCity(form)
   const industry = getClientFacingCategoryLabel(form)
   const service = formatSentencePhrase(getRecommendationSubject(form))
+  const audience = getAudienceNoun(form)
 
   const strengthMap: Record<ScoreKey, string> = {
-    visibility: `${businessName} already gives buyers a way to connect ${industry}, ${service}, and ${city} without starting from a blank page.`,
-    trust: `Credible proof is available to feature more deliberately: reviews, credentials, before/after examples, guarantees, financing, awards, or real customer/patient outcomes.`,
+    visibility: `${businessName} already gives ${audience.plural} a way to connect ${industry}, ${service}, and ${city} without starting from a blank page.`,
+    trust: `Credible proof is available to feature more deliberately: reviews, credentials, before/after examples, guarantees, financing, awards, or real ${audience.singular} outcomes.`,
     conversion: `The site has an inquiry path to build on; a clearer phone/form ask around ${service} could turn more visits into conversations.`,
     aiSearchReadiness: `The business has enough service and location signal to shape clearer search and answer-system summaries with cleaner page structure.`,
     competitorPosition: `The business has a defensible position; the next win is making its best proof easier to compare at a glance.`,
   }
 
-  const scoredStrengths = getHighestScores(scores).map((key) => strengthMap[key])
+  const scoredStrengths = areScoresDisplayable(scores)
+    ? getHighestScores(scores).map((key) => strengthMap[key])
+    : []
   const note = form.notes.trim()
 
   return filterClientFacingStrengths(note ? [note, ...scoredStrengths] : scoredStrengths)
@@ -278,19 +293,22 @@ function buildWeaknesses(form: SnapshotForm, scores: Scores) {
   const city = getDisplayCity(form)
   const industry = getClientFacingCategoryLabel(form)
   const service = formatSentencePhrase(getRecommendationSubject(form))
+  const audience = getAudienceNoun(form)
 
   const weaknessMap: Record<ScoreKey, string> = {
-    visibility: `The page may not say ${industry}, ${service}, and ${city} quickly enough for a ready buyer scanning on a phone.`,
-    trust: `The proof is not close enough to the decision. Reviews, credentials, before/after examples, guarantees, financing, awards, or real customer/patient outcomes should sit near the CTA, not buried.`,
+    visibility: `The page may not say ${industry}, ${service}, and ${city} quickly enough for a ready ${audience.singular} scanning on a phone.`,
+    trust: `The proof is not close enough to the decision. Reviews, credentials, before/after examples, guarantees, financing, awards, or real ${audience.singular} outcomes should sit near the CTA, not buried.`,
     conversion: `The call/request path needs a cleaner promise: what happens next, how fast they respond, and why reaching out is low-risk.`,
     aiSearchReadiness: `Search and answer-system summaries may miss the business because services, locations, FAQs, and proof are not written as clear answers.`,
     competitorPosition: `Nearby alternatives may feel easier to choose when they explain ${service}, process, proof, pricing cues, or local fit more clearly.`,
   }
 
-  const scoredWeaknesses = (Object.keys(scores) as ScoreKey[])
+  const scoredWeaknesses = areScoresDisplayable(scores)
+    ? (Object.keys(scores) as ScoreKey[])
     .sort((left, right) => scores[left] - scores[right])
     .slice(0, 3)
     .map((key) => weaknessMap[key])
+    : []
   const note = form.weakness.trim()
 
   if (!note) return scoredWeaknesses
@@ -323,12 +341,17 @@ function buildMissedOpportunity(form: SnapshotForm, scores: Scores) {
   const lowest = getLowestScore(scores)
   const service = formatSentencePhrase(getRecommendationSubject(form))
   const city = getDisplayCity(form)
+  const audience = getAudienceNoun(form)
+
+  if (!areScoresDisplayable(scores)) {
+    return 'Review all five assessment dimensions before selecting the highest-leverage growth opportunity.'
+  }
 
   const map: Record<ScoreKey, string> = {
     visibility: `Create or tighten a dedicated ${service} page for ${city} so high-intent visitors and search systems can connect the business to the exact need.`,
-    trust: `Move the best proof near the decision point: reviews, credentials, before/after examples, guarantees, financing, awards, or real customer/patient outcomes.`,
+    trust: `Move the best proof near the decision point: reviews, credentials, before/after examples, guarantees, financing, awards, or real ${audience.singular} outcomes.`,
     conversion: `Turn the primary CTA into a decision helper: what happens after they call, how fast they hear back, and why the first step is easy.`,
-    aiSearchReadiness: 'Add plain-language FAQs and clearly labeled service, location, process, and proof sections that reduce ambiguity for customers, search engines, and answer systems.',
+    aiSearchReadiness: `Add plain-language FAQs and clearly labeled service, location, process, and proof sections that reduce ambiguity for ${audience.plural}, search engines, and answer systems.`,
     competitorPosition: `Spell out why this business is the safer or easier choice versus nearby alternatives, using proof instead of broad claims.`,
   }
 
@@ -357,7 +380,10 @@ export function buildBusinessHoroscope(
   const strengths = buildStrengths(form, scores)
   const weaknesses = buildWeaknesses(form, scores)
   const fixPlan = buildFixPlan(form)
-  const archetypeExplanation = buildShareSummary(form, archetype)
+  const archetypeExplanation = buildShareSummary(archetype, form)
+  const scoreLabel = areScoresDisplayable(scores)
+    ? `${totalScore}/100`
+    : 'Score unavailable'
 
   return {
     archetype,
@@ -365,17 +391,18 @@ export function buildBusinessHoroscope(
     biggestStrength: strengths[0] ?? 'A practical foundation is in place to support the next improvement.',
     blindSpot: weaknesses[0] ?? missedOpportunity,
     fastestWin: fixPlan[0].replace(/^Hours 0–24:\s*/, ''),
+    nextEvolution: buildNextEvolution(archetype),
     archetypeSummary: buildArchetypeSummary(form, archetype, scores, totalScore),
     archetypeImagePath: getArchetypeImagePath(archetype),
     shareSummary: archetypeExplanation,
-    shareCta: 'Want me to send the three fixes I would make first?',
+    shareCta: 'Want me to send the three Upgrade Missions I would start first?',
     scoreExplanations: buildScoreExplanations(form, scores),
     strengths,
     weaknesses,
     competitorSummary,
     missedOpportunity,
     fixPlan,
-    outreachSummary: `${businessName} scored ${totalScore}/100 and matches the ${archetype} archetype. The focus is to help ${getAudiencePhrase(form)} understand the offer faster, use customer proof, compare with confidence, and complete the next step on a phone.`,
+    outreachSummary: `${businessName} has a Business Health Score of ${scoreLabel} and matches the ${archetype} archetype. The focus is to help ${getAudiencePhrase(form)} understand the offer faster, use relevant proof, compare with confidence, and complete the next step on a phone.`,
     cta: 'The next conversation can confirm the first implementation move, the evidence behind it, and who will own the work.',
     premiumUpsell: 'Optional implementation path: a screenshot-backed 48-Hour Visibility Sprint focused on the highest-priority improvements. Scope and investment can be tailored before the report is shared.',
   }
@@ -388,8 +415,13 @@ function buildSnapshot(form: SnapshotForm, scores: Scores, totalScore: number) {
   const city = getDisplayCity(form)
   const industry = getClientFacingCategoryLabel(form)
   const tone = toneLine[normalizeTone(form.tone)]
+  const audience = getAudienceNoun(form)
+  const scoreAvailable = areScoresDisplayable(scores)
+  const scoreLabel = scoreAvailable ? `${totalScore}/100` : 'Score unavailable'
   const categoryScores = (Object.keys(scores) as ScoreKey[])
-    .map((key) => `- ${scoreNames[key]}: ${scores[key]}/20`)
+    .map((key) => scoreAvailable
+      ? `- ${scoreNames[key]}: ${scores[key]}/20`
+      : `- ${scoreNames[key]}: Score unavailable`)
     .join('\n')
 
   return `Business Archetype: ${businessName}${websiteLine}
@@ -401,38 +433,39 @@ ${businessName}
 ${report.archetype}
 Image: ${report.archetypeImagePath}
 ${report.archetypeExplanation}
-Biggest Strength: ${report.biggestStrength}
+Top Competitive Asset: ${report.biggestStrength}
 Blind Spot: ${report.blindSpot}
 Fastest Win: ${report.fastestWin}
+Next Evolution: ${report.nextEvolution}
 
 Business Snapshot
 Business: ${businessName} serves ${getAudiencePhrase(form)} looking for ${formatSentencePhrase(getRecommendationSubject(form))} in ${city}.
-Current Position: ${totalScore}/100 — ${report.archetype}.
+Current Position: ${scoreLabel} — ${report.archetype}.
 Largest Opportunity: ${report.missedOpportunity}
 Fastest Win: ${report.fixPlan[0]}
 Long-term Goal: Become easier to discover, trust, and choose across the local market.
 Estimated Effort: Two focused work windows across 48 hours to establish momentum.
-Expected Outcome: Customers understand the offer, proof, and next step before comparing another option.
+Expected Outcome: ${audience.plural.charAt(0).toLocaleUpperCase() + audience.plural.slice(1)} understand the offer, proof, and next step before comparing another option.
 
-2. Current Position
-${totalScore}/100
+2. Business Health Score
+${scoreLabel}
 
-3. Category scores
+3. Five-Part Business Health Detail
 ${categoryScores}
 
-Score explanations
+Assessment context
 ${formatList(report.scoreExplanations)}
 
-4. What You're Already Winning
+4. Competitive Assets
 ${formatList(report.strengths)}
 
-5. Priority observations
+5. Constraints
 ${formatList(report.weaknesses)}
 
 6. Competitor comparison summary
 ${report.competitorSummary}
 
-7. The Highest-Leverage Improvement
+7. Highest-Leverage Growth Opportunity
 ${report.missedOpportunity}
 
 8. 48-Hour Visibility Sprint
@@ -448,46 +481,60 @@ Share card
 Image: ${report.archetypeImagePath}
 Business Archetype: ${report.archetype}
 Summary: ${report.shareSummary}
-Score: ${totalScore}/100
+Business Health Score: ${scoreLabel}
 CTA: ${report.shareCta}
 
 ${report.premiumUpsell}`
 }
 
-function buildText(form: SnapshotForm, totalScore: number, archetype: Archetype) {
+function buildText(
+  form: SnapshotForm,
+  scores: Scores,
+  totalScore: number,
+  archetype: Archetype,
+) {
   const businessName = getDisplayBusinessName(form)
-  const shareSummary = buildShareSummary(form, archetype)
-  const message = `Hi, I made a quick website snapshot for ${businessName}: ${totalScore}/100, ${archetype}. ${shareSummary} Want me to send the three fixes I’d make first?`
+  const shareSummary = buildShareSummary(archetype, form)
+  const scoreLabel = areScoresDisplayable(scores) ? `${totalScore}/100` : 'Score unavailable'
 
-  return message.length <= 280 ? message : `${message.slice(0, 276).trimEnd()}...`
+  return `Hi, I recorded a Snapshot for ${businessName}: ${scoreLabel}, ${archetype}. ${shareSummary} Want the three Upgrade Missions I’d start first?`
 }
 
-function buildEmail(form: SnapshotForm, totalScore: number, archetype: Archetype) {
+function buildEmail(
+  form: SnapshotForm,
+  scores: Scores,
+  totalScore: number,
+  archetype: Archetype,
+) {
   const businessName = getDisplayBusinessName(form)
   const service = formatSentencePhrase(getRecommendationSubject(form))
-  const shareSummary = buildShareSummary(form, archetype)
+  const shareSummary = buildShareSummary(archetype, form)
+  const scoreLabel = areScoresDisplayable(scores) ? `${totalScore}/100` : 'Score unavailable'
 
   return `Subject: Quick website snapshot for ${businessName}
 
 Hi ${businessName} team,
 
-I prepared a concise Business Archetype snapshot for your website. It scored ${totalScore}/100 and matches the ${archetype} archetype.
+I prepared a concise Business Archetype Snapshot for your website. Its Business Health Score is ${scoreLabel}, and it matches the ${archetype} archetype.
 
 The short version: ${shareSummary}
 
 I looked at whether ${getAudiencePhrase(form)} can quickly understand ${service}, trust the business, compare it with alternatives, and reach out from a phone.
 
-Want me to send the three fixes I’d make first?`
+Want me to send the three Upgrade Missions I’d start first?`
 }
 
 function buildShareable(
   form: SnapshotForm,
+  scores: Scores,
   totalScore: number,
   report: BusinessHoroscope,
 ) {
   const businessName = getDisplayBusinessName(form)
   const service = formatSentencePhrase(getRecommendationSubject(form))
   const city = getDisplayCity(form)
+  const audience = getAudienceNoun(form)
+  const scoreLabel = areScoresDisplayable(scores) ? `${totalScore}/100` : 'Score unavailable'
 
   return `Your Business Archetype
 
@@ -495,21 +542,24 @@ ${businessName}
 ${report.archetype}
 ${report.archetypeExplanation}
 
-Current Score
-${totalScore}/100
+Business Health Score
+${scoreLabel}
 
-Biggest Opportunity
+Highest-Leverage Growth Opportunity
 ${report.missedOpportunity}
 
 Fastest Win
 ${report.fastestWin}
+
+Next Evolution
+${report.nextEvolution}
 
 48-Hour Sprint
 ${report.fixPlan.join('\n')}
 
 One Month Roadmap
 Week 1 — Clarity: Make ${service} and ${city} relevance unmistakable.
-Week 2 — Trust: Place the strongest proof beside the customer decision.
+Week 2 — Trust: Place the strongest proof beside the ${audience.singular} decision.
 Week 3 — Authority: Strengthen the service story with useful local detail.
 Week 4 — AI Readiness: Publish direct answers about service, location, process, and proof.
 
@@ -525,9 +575,9 @@ export function generateOutputs(
 
   return {
     snapshot: buildSnapshot(form, scores, totalScore),
-    email: buildEmail(form, totalScore, report.archetype),
-    text: buildText(form, totalScore, report.archetype),
-    shareable: buildShareable(form, totalScore, report),
+    email: buildEmail(form, scores, totalScore, report.archetype),
+    text: buildText(form, scores, totalScore, report.archetype),
+    shareable: buildShareable(form, scores, totalScore, report),
     upsell: report.premiumUpsell,
   }
 }

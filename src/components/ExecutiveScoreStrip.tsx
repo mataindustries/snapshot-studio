@@ -13,32 +13,50 @@ export function ExecutiveScoreStrip({ scores }: { scores: ScoreDiagnostic[] }) {
           <span>Five-part assessment</span>
           <h3 id="executive-score-strip-title">Where the foundation stands</h3>
         </div>
-        <p>Existing 0–20 scores, normalized for faster comparison.</p>
+        <p>Five reviewed Business Health scores, normalized for faster comparison.</p>
       </header>
 
       <ul className="score-diagnostic-list">
-        {scores.map((score) => (
-          <li key={score.key}>
-            <div className="score-diagnostic-topline">
-              <span>{score.label}</span>
-              <strong>{displayScore(score.score)}/20</strong>
-            </div>
-            <div
-              className="score-diagnostic-meter"
-              role="meter"
-              aria-label={`${score.label}: ${score.percentage}% — ${score.status}`}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={score.percentage}
-            >
-              <span style={{ width: `${score.percentage}%` }} />
-            </div>
-            <div className="score-diagnostic-result">
-              <span>{score.percentage}%</span>
-              <strong>{score.status}</strong>
-            </div>
-          </li>
-        ))}
+        {scores.map((score) => {
+          if (
+            !score.available
+            || score.score === null
+            || score.percentage === null
+            || score.status === null
+          ) {
+            return (
+              <li className="score-unavailable" key={score.key}>
+                <div className="score-diagnostic-topline">
+                  <span>{score.label}</span>
+                </div>
+                <strong>Score unavailable</strong>
+              </li>
+            )
+          }
+
+          return (
+            <li key={score.key}>
+              <div className="score-diagnostic-topline">
+                <span>{score.label}</span>
+                <strong>{displayScore(score.score)}/20</strong>
+              </div>
+              <div
+                className="score-diagnostic-meter"
+                role="meter"
+                aria-label={`${score.label}: ${score.percentage}% — ${score.status}`}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={score.percentage}
+              >
+                <span style={{ width: `${score.percentage}%` }} />
+              </div>
+              <div className="score-diagnostic-result">
+                <span>{score.percentage}%</span>
+                <strong>{score.status}</strong>
+              </div>
+            </li>
+          )
+        })}
       </ul>
 
       <small className="diagnostic-method-note">
@@ -65,7 +83,7 @@ export function EvidenceTrustIndicator({
     )
   }
 
-  const coverageLabel = `${diagnostic.coveredRecommendationCount} of ${diagnostic.eligibleRecommendationCount} recommendations have report-ready evidence`
+  const coverageLabel = `${diagnostic.coveredRecommendationCount} of ${diagnostic.eligibleRecommendationCount} operating actions have report-ready evidence`
 
   return (
     <section className="evidence-trust-indicator documented" aria-labelledby="evidence-trust-title">
@@ -76,7 +94,7 @@ export function EvidenceTrustIndicator({
         </div>
         <strong aria-label={coverageLabel}>
           {diagnostic.coveredRecommendationCount}/{diagnostic.eligibleRecommendationCount}
-          <small> recommendations</small>
+          <small> actions</small>
         </strong>
       </header>
       <dl>
@@ -85,7 +103,7 @@ export function EvidenceTrustIndicator({
           <dd>{diagnostic.documentedObservationCount}</dd>
         </div>
         <div>
-          <dt>Screenshot-backed recommendations</dt>
+          <dt>Screenshot-backed actions</dt>
           <dd>{diagnostic.screenshotBackedRecommendationCount}</dd>
         </div>
         <div>
@@ -93,7 +111,7 @@ export function EvidenceTrustIndicator({
           <dd>{diagnostic.awaitingProofCount}</dd>
         </div>
       </dl>
-      <small>Counts use report-ready evidence and explicit recommendation links only.</small>
+      <small>Counts use report-ready evidence and explicit action links only.</small>
     </section>
   )
 }

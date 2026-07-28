@@ -29,7 +29,7 @@ export function getReportReadiness(input: {
     warnings.push(
       hasClientFacingValue(input.form.niche)
         ? 'Primary service is missing; recommendations will use the niche.'
-        : 'Primary service is missing; recommendations will use Local Business.',
+        : 'Primary service is missing; add a category before client delivery.',
     )
   }
   if (!isLikelyValidWebsiteUrl(input.form.websiteUrl)) warnings.push('Website URL appears malformed.')

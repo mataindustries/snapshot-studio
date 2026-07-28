@@ -7,19 +7,25 @@ import type {
   ScoreKey,
   Scores,
 } from '../types'
-import { isEvidenceReportReady } from './evidence'
+import { isEvidenceReportReady } from './evidence.ts'
 import type { ProgressJourneyModel } from './progressJourney'
 import type { ConsultingRoadmap } from './roadmap'
-import { getNextMilestone } from './actionProgress'
+import { getNextMilestone } from './actionProgress.ts'
+import {
+  areScoresDisplayable,
+  normalizeScoreForDisplay,
+  requiredScoreKeys,
+} from './scoring.ts'
 
 export type ScoreDiagnosticStatus = 'Foundation' | 'Developing' | 'Strong' | 'Leading'
 
 export type ScoreDiagnostic = {
   key: ScoreKey
   label: string
-  score: number
-  percentage: number
-  status: ScoreDiagnosticStatus
+  available: boolean
+  score: number | null
+  percentage: number | null
+  status: ScoreDiagnosticStatus | null
 }
 
 export type OpportunityZoneKey =
@@ -115,14 +121,6 @@ export type VisualDiagnostics = {
   evidence: EvidenceDiagnostic
 }
 
-const scoreOrder: ScoreKey[] = [
-  'visibility',
-  'trust',
-  'conversion',
-  'aiSearchReadiness',
-  'competitorPosition',
-]
-
 const clientScoreLabels: Record<ScoreKey, string> = {
   visibility: 'Visibility',
   trust: 'Trust',
@@ -164,10 +162,6 @@ const zoneDefinitions: Array<Omit<OpportunityZone, 'actions'>> = [
   },
 ]
 
-function clampScore(score: number) {
-  return Math.min(20, Math.max(0, score))
-}
-
 function getScoreStatus(percentage: number): ScoreDiagnosticStatus {
   if (percentage >= 85) return 'Leading'
   if (percentage >= 65) return 'Strong'
@@ -176,23 +170,26 @@ function getScoreStatus(percentage: number): ScoreDiagnosticStatus {
 }
 
 export function createScoreDiagnostics(scores: Scores): ScoreDiagnostic[] {
-  return scoreOrder.map((key) => {
-    const score = Math.round(clampScore(scores[key]) * 10) / 10
-    const percentage = Math.round((score / 20) * 100)
+  const scoresAvailable = areScoresDisplayable(scores)
+  return requiredScoreKeys.map((key) => {
+    const normalized = normalizeScoreForDisplay(scores[key])
+    const available = scoresAvailable && normalized.available
+    const percentage = available ? normalized.percentage : null
 
     return {
       key,
       label: clientScoreLabels[key],
-      score,
+      available,
+      score: available ? normalized.score : null,
       percentage,
-      status: getScoreStatus(percentage),
+      status: percentage === null ? null : getScoreStatus(percentage),
     }
   })
 }
 
 function limitWords(value: string, maximum: number) {
   const words = value.trim().replace(/\s+/g, ' ').split(' ').filter(Boolean)
-  return words.length <= maximum ? words.join(' ') : words.slice(0, maximum).join(' ') + '…'
+  return words.length <= maximum ? words.join(' ') : value.trim().replace(/\s+/g, ' ')
 }
 
 function opportunityZoneFor(action: RecommendedAction): OpportunityZoneKey {
@@ -310,6 +307,7 @@ function createMomentumTimeline(
   progress: ProgressJourneyModel,
   roadmap: ConsultingRoadmap,
   actions: RecommendedAction[],
+  scoresAvailable: boolean,
 ): MomentumStageDiagnostic[] {
   const actionById = new Map(actions.map((action) => [action.id, action]))
   const sprintIds = roadmap.sprint.flatMap((phase) => phase.actionIds)
@@ -317,7 +315,9 @@ function createMomentumTimeline(
   const nextGrowthStage = progress.isMaintainingTopLevel
     ? `${progress.nextGrowthStage} · maintenance focus`
     : progress.nextGrowthStage
-  const planningRange = `${progress.targetScoreLow}–${progress.targetScoreHigh}/100 planning range — not guaranteed`
+  const planningRange = scoresAvailable
+    ? `${progress.targetScoreLow}–${progress.targetScoreHigh}/100 planning range — not guaranteed`
+    : 'Planning range unavailable until the five-part assessment is reviewed.'
 
   return [
     {
@@ -327,7 +327,9 @@ function createMomentumTimeline(
       stateLabel: 'Current assessed position',
       statusLabel: 'Current position',
       growthStage: progress.currentGrowthStage,
-      scoreContext: `${progress.currentScore}/100 recorded assessment`,
+      scoreContext: scoresAvailable
+        ? `${progress.currentScore}/100 recorded assessment`
+        : 'Score unavailable — assessment review required.',
       whatChanges: 'This is the saved baseline; no projected movement is included.',
       verification: 'Confirm the assessment against current public-facing evidence before treating every observation as verified.',
     },
@@ -426,6 +428,7 @@ export function createVisualDiagnostics(input: {
       input.progress,
       input.roadmap,
       input.actions,
+      areScoresDisplayable(input.scores),
     ),
     sprintPhases: createSprintDiagnostics(input.roadmap, input.actions),
     monthWeeks: createMonthDiagnostics(input.roadmap, input.actions),
@@ -438,10 +441,12 @@ function displayScore(score: number) {
 }
 
 export function formatScoreDiagnosticsText(scores: ScoreDiagnostic[]) {
-  return `Executive Score Strip
+  return `Five-Part Business Health Assessment
 
 ${scores.map((score) =>
-    `- ${score.label}: ${displayScore(score.score)}/20 (${score.percentage}%) — ${score.status}`,
+    score.available && score.score !== null && score.percentage !== null && score.status
+      ? `- ${score.label}: ${displayScore(score.score)}/20 (${score.percentage}%) — ${score.status}`
+      : `- ${score.label}: Score unavailable`,
   ).join('\n')}`
 }
 
@@ -477,8 +482,8 @@ export function formatEvidenceDiagnosticText(evidence: EvidenceDiagnostic) {
 
   return `Evidence Coverage
 - Documented observations: ${evidence.documentedObservationCount}
-- Recommendations with evidence: ${evidence.coveredRecommendationCount}/${evidence.eligibleRecommendationCount}
-- Screenshot-backed recommendations: ${evidence.screenshotBackedRecommendationCount}
-- Recommendations awaiting proof: ${evidence.awaitingProofCount}
-Counts use report-ready evidence and explicit recommendation links only.`
+- Operating actions with evidence: ${evidence.coveredRecommendationCount}/${evidence.eligibleRecommendationCount}
+- Screenshot-backed actions: ${evidence.screenshotBackedRecommendationCount}
+- Operating actions awaiting proof: ${evidence.awaitingProofCount}
+Counts use report-ready evidence and explicit action links only.`
 }

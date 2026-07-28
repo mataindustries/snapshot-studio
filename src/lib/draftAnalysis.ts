@@ -72,8 +72,8 @@ function scoreSuggestion(input: {
       maximum: 15,
       explanation: input.label + ' remains a deliberately wide range because the intake does not contain enough relevant observations. Missing intake data is not treated as a verified weakness.',
       basis: [
-        'No directly relevant operator-supplied input was available.',
-        ...missingSignals.slice(0, 3).map((signal) => 'Not supplied: ' + signal.missing + '.'),
+        'No directly relevant operator-entered input was available.',
+        ...missingSignals.slice(0, 3).map((signal) => 'Not recorded: ' + signal.missing + '.'),
       ],
       confidence: 'Low',
     }
@@ -89,10 +89,10 @@ function scoreSuggestion(input: {
   return {
     minimum: Math.min(minimum, boundedMaximum - 2),
     maximum: boundedMaximum,
-    explanation: input.explanation + ' The range stays wider when the supplied inputs are sparse or have not been confirmed with evidence.',
+    explanation: input.explanation + ' The range stays wider when the recorded inputs are sparse or have not been confirmed with evidence.',
     basis: [
-      ...presentSignals.slice(0, 5).map((signal) => 'Supplied: ' + signal.supplied + '.'),
-      ...missingSignals.slice(0, 3).map((signal) => 'Not supplied: ' + signal.missing + '.'),
+      ...presentSignals.slice(0, 5).map((signal) => 'Recorded: ' + signal.supplied + '.'),
+      ...missingSignals.slice(0, 3).map((signal) => 'Not recorded: ' + signal.missing + '.'),
     ],
     confidence,
   }
@@ -160,7 +160,7 @@ function createScoreSuggestions(
       observedInputs: websiteInputs
         + [identity.serviceAreas, profile.categories, profile.hours].filter(hasValue).length,
       contextAvailable: websiteInputs > 0 || hasValue(identity.serviceAreas) || publicInputs > 0,
-      explanation: 'This range weighs whether the supplied text connects the primary service to its market and whether service coverage is stated plainly.',
+      explanation: 'This range weighs whether the reviewed text connects the primary service to its market and whether service coverage is stated plainly.',
       signals: [
         {
           present: serviceMention,
@@ -258,7 +258,7 @@ function createScoreSuggestions(
           profile.emergencyAvailability,
         ].filter(hasValue).length,
       contextAvailable: websiteInputs > 0 || hasContactDetails,
-      explanation: 'This range weighs the calls to action and contact routes supplied in the intake; it does not test the live path.',
+      explanation: 'This range weighs the calls to action and contact routes recorded in the intake; it does not test the live path.',
       signals: [
         {
           present: hasValue(website.primaryCta) || extraction.callsToAction.length > 0,
@@ -309,7 +309,7 @@ function createScoreSuggestions(
       observedInputs: websiteInputs
         + [identity.serviceAreas, profile.categories].filter(hasValue).length,
       contextAvailable: websiteInputs > 0,
-      explanation: 'This range weighs explicit service, location, question-and-answer, and contact information in the supplied text.',
+      explanation: 'This range weighs explicit service, location, question-and-answer, and contact information in the reviewed text.',
       signals: [
         {
           present: hasValue(website.homepageTitle),
@@ -412,19 +412,19 @@ function recommendationFor(key: ScoreKey, intake: BusinessIntakePayload) {
   const city = intake.identity.city.trim() || 'the service area'
   const recommendations: Record<ScoreKey, { missed: string; primary: string }> = {
     visibility: {
-      missed: 'The supplied content does not yet make the connection between ' + service + ' and ' + city + ' consistently clear.',
+      missed: 'The reviewed content does not yet make the connection between ' + service + ' and ' + city + ' consistently clear.',
       primary: 'Make ' + service + ', ' + city + ', and the most important service-area language explicit in the homepage title, hero, and service navigation.',
     },
     trust: {
-      missed: 'The intake contains limited decision-stage proof, or the supplied proof is not clearly connected to the primary call to action.',
-      primary: 'Place the strongest supplied review, credential, guarantee, or customer-outcome proof beside the primary contact decision.',
+      missed: 'The intake contains limited decision-stage proof, or the recorded proof is not clearly connected to the primary call to action.',
+      primary: 'Place the strongest recorded review, credential, guarantee, or customer-outcome proof beside the primary contact decision.',
     },
     conversion: {
-      missed: 'The supplied calls to action and contact details do not yet explain one consistent, low-friction next step.',
+      missed: 'The recorded calls to action and contact details do not yet explain one consistent, low-friction next step.',
       primary: 'Standardize one contact promise across the hero, phone, form, booking path, and footer, including what happens after the inquiry.',
     },
     aiSearchReadiness: {
-      missed: 'The supplied material leaves service, location, proof, or common-question facts too implicit for reliable summaries.',
+      missed: 'The reviewed source material leaves service, location, proof, or common-question facts too implicit for reliable summaries.',
       primary: 'Publish short, direct answers that name ' + service + ', ' + city + ', service areas, proof, and common pre-contact questions.',
     },
     competitorPosition: {
@@ -453,7 +453,7 @@ function buildStrengthNotes(
     notes.push('The manually entered public-profile details include ' + detail + '; confirm the current figures before presenting them as evidence.')
   }
   if (extraction.trustPhrases.length > 0 || hasValue(intake.website.trustReviewCopy)) {
-    notes.push('The operator-supplied website text includes trust or review language that can be reviewed for stronger placement near the next step.')
+    notes.push('The operator-entered website text includes trust or review language that can be reviewed for stronger placement near the next step.')
   }
   if (
     hasValue(profile.credentials)
@@ -468,7 +468,7 @@ function buildStrengthNotes(
     || hasValue(identity.contactFormUrl)
     || hasValue(identity.bookingUrl)
   ) {
-    notes.push('The supplied information includes a customer next step or contact route that can be clarified and standardized.')
+    notes.push('The recorded information includes a customer next step or contact route that can be clarified and standardized.')
   }
   if (hasValue(identity.differentiators)) {
     notes.push('A differentiator was entered for review: ' + identity.differentiators.trim())
@@ -515,7 +515,7 @@ function buildStrategicAssets(
   if (extraction.trustPhrases.length > 0 || hasValue(intake.website.trustReviewCopy)) {
     add(
       'Trust language to build on',
-      'The operator-supplied website text contains trust or review phrases.',
+      'The operator-entered website text contains trust or review phrases.',
     )
   }
   if (hasValue(identity.differentiators)) {
@@ -527,7 +527,7 @@ function buildStrategicAssets(
   if (hasValue(intake.website.primaryCta) || extraction.callsToAction.length > 0) {
     add(
       'Existing next-step language',
-      'The supplied website content includes at least one call to action.',
+      'The reviewed website content includes at least one call to action.',
     )
   }
 
@@ -562,7 +562,7 @@ function buildEvidenceCaptions(
 
   return sorted.slice(0, 3).map((observation) => ({
     observationId: observation.id,
-    caption: 'Operator-supplied ' + observation.kind.toLocaleLowerCase()
+    caption: 'Operator-entered ' + observation.kind.toLocaleLowerCase()
       + ' for review: “' + observation.text + '”',
     basis: 'Extracted locally from pasted page text. Confirm it against the public page before using it as evidence.',
   }))
@@ -615,7 +615,7 @@ function buildMissingInformation(
 ) {
   const missing: string[] = []
   if (!hasValue(intake.website.pageText)) {
-    missing.push('No large page-text paste was supplied; structured fields are carrying the website analysis.')
+    missing.push('No large page-text paste was recorded; structured fields are carrying the website analysis.')
   }
   if (countPublicProfileInputs(intake) === 0) {
     missing.push('No public-profile observations were entered.')
@@ -637,7 +637,7 @@ function buildMissingInformation(
     && !hasValue(intake.identity.contactFormUrl)
     && !hasValue(intake.identity.bookingUrl)
   ) {
-    missing.push('No phone, email, contact-form URL, or booking URL was supplied.')
+    missing.push('No phone, email, contact-form URL, or booking URL was recorded.')
   }
   return missing
 }
@@ -691,7 +691,7 @@ export function createDeterministicDraft(
     || 'primary service'
   const city = intake.identity.city.trim() || 'the local market'
   const warnings = [
-    'Draft only: this deterministic assistant used operator-supplied fields and pasted text. It did not visit or verify a website or public profile.',
+    'Draft only: this deterministic assistant used operator-entered fields and pasted text. It did not visit or verify a website or public profile.',
   ]
   if (missingInformation.length > 0) {
     warnings.push('Missing information widens score ranges and may change the recommended opportunity after review.')
@@ -707,7 +707,7 @@ export function createDeterministicDraft(
     engine: 'deterministic-v1',
     generatedAt: new Date().toISOString(),
     inputSignature: getDraftInputSignature(intake, extraction),
-    disclosure: 'Editable deterministic draft — based only on supplied inputs; no website or profile was visited or verified.',
+    disclosure: 'Editable deterministic draft — based only on recorded inputs; no website or profile was visited or verified.',
     suggestedStrengthNotes: buildStrengthNotes(intake, extraction),
     suggestedMissedOpportunity: recommendation.missed,
     scoreSuggestions,
@@ -718,7 +718,7 @@ export function createDeterministicDraft(
     suggestedEvidenceCaptions: buildEvidenceCaptions(extraction),
     suggestedOutreachAngle: 'Lead with a useful ' + service + ' clarity observation for '
       + city
-      + ', explain that it came from an operator-supplied review draft, and offer the three highest-priority fixes after the details are confirmed.',
+      + ', explain that it came from an operator-entered review draft, and offer the three highest-priority fixes after the details are confirmed.',
     confidence,
     warnings,
     missingInformation,

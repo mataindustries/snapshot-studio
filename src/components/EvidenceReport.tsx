@@ -4,15 +4,18 @@ import {
   getEvidenceSummary,
 } from '../lib/evidence'
 import type { EvidenceItem, RecommendedAction } from '../types'
+import type { AudienceNoun } from '../lib/reportDisplay'
 import './EvidenceReport.css'
 import './EvidenceReportPolish.css'
 
 export function EvidenceReport({
   evidenceItems,
   actions,
+  audience,
 }: {
   evidenceItems: EvidenceItem[]
   actions: RecommendedAction[]
+  audience: AudienceNoun
 }) {
   if (evidenceItems.length === 0) return null
 
@@ -26,11 +29,11 @@ export function EvidenceReport({
       aria-labelledby="evidence-report-title"
     >
       <div className="report-page-heading evidence-report-heading">
-        <p className="section-kicker">Documented rationale</p>
+        <p className="section-kicker">Constraints and evidence</p>
         <h2 id="evidence-report-title">The Proof Behind the Plan</h2>
         <p>
-          Each observation explains the customer friction behind a recommendation. This is
-          a focused public-facing review, not an exhaustive technical audit.
+          Each observation explains the {audience.singular} friction behind an operating action. This
+          is a focused public-facing review, not an exhaustive technical assessment.
         </p>
       </div>
 
@@ -38,7 +41,7 @@ export function EvidenceReport({
         <EvidenceStat label="Evidence items reviewed" value={summary.itemCount.toString()} />
         <EvidenceStat label="Screenshots included" value={summary.screenshotCount.toString()} />
         <EvidenceStat
-          label="Recommendations linked"
+          label="Operating actions linked"
           value={summary.supportedActionCount.toString()}
         />
         <EvidenceStat label="Sources sampled" value={categoryText || 'Public-facing review'} wide />
@@ -56,6 +59,7 @@ export function EvidenceReport({
             item={item}
             number={index + 1}
             actions={actions}
+            audience={audience}
           />
         ))}
       </div>
@@ -67,10 +71,12 @@ function ClientEvidenceCard({
   item,
   number,
   actions,
+  audience,
 }: {
   item: EvidenceItem
   number: number
   actions: RecommendedAction[]
+  audience: AudienceNoun
 }) {
   const linkedActions = getActionsForEvidence(item, actions)
   const showComparison = Boolean(item.beforeCaption && item.proposedAfterCaption)
@@ -112,7 +118,10 @@ function ClientEvidenceCard({
 
       <div className="client-evidence-findings">
         <EvidenceFinding label="What we observed" text={item.observation} />
-        <EvidenceFinding label="Customer impact" text={item.whyItMatters} />
+        <EvidenceFinding
+          label={`${audience.singular.charAt(0).toLocaleUpperCase() + audience.singular.slice(1)} impact`}
+          text={item.whyItMatters}
+        />
         <EvidenceFinding label="Recommended move" text={item.recommendedChange} accent />
         {item.expectedOutcome && (
           <EvidenceFinding label="Expected gain" text={item.expectedOutcome} />

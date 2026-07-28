@@ -1,5 +1,9 @@
 import type { OfferMode, ReportOfferFields } from '../types'
 import { isLikelyValidBookingUrl } from './reportDisplay'
+import {
+  getRenderableReportConfiguration,
+  type ReportConfiguration,
+} from './reportConfig'
 
 export const defaultReportOffer: ReportOfferFields = {
   offerMode: 'Conversation',
@@ -87,19 +91,31 @@ export function getSafeBookingUrl(value: string) {
   return /^https?:\/\//i.test(trimmed) ? trimmed : 'https://' + trimmed
 }
 
-export function formatOfferAndCtaText(offer: ReportOfferFields) {
+export function formatOfferAndCtaText(
+  offer: ReportOfferFields,
+  configuration?: ReportConfiguration,
+) {
   const investment = getInvestmentLine(offer)
-  const contact = offer.ctaContactLine.trim()
-  const bookingUrl = getSafeBookingUrl(offer.bookingUrl)
+  const configured = configuration
+    ? getRenderableReportConfiguration(configuration)
+    : null
+  const contact = configured
+    ? configured.CONTACT_EMAIL
+    : offer.ctaContactLine.trim()
+  const bookingUrl = configured
+    ? configured.CONSULTATION_URL
+    : getSafeBookingUrl(offer.bookingUrl)
   const lines = [
     'Next Step',
     '',
     getReportCtaHeadline(offer.ctaHeadline),
     getReportCtaBody(offer.ctaBody),
-    'Action: ' + getReportCtaLabel(offer.ctaLabel),
   ]
   if (contact) lines.push('Contact: ' + contact)
-  if (bookingUrl) lines.push('Booking: ' + bookingUrl)
+  if (bookingUrl) {
+    lines.push('Action: ' + getReportCtaLabel(offer.ctaLabel))
+    lines.push('Consultation: ' + bookingUrl)
+  }
   if (investment) lines.push(investment)
   return lines.join('\n')
 }

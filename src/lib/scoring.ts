@@ -1,4 +1,4 @@
-import type { RatingLabel, Scores } from '../types'
+import type { RatingLabel, ScoreKey, Scores } from '../types'
 
 export const scoreLabels = {
   visibility: 'Visibility',
@@ -16,8 +16,62 @@ export const emptyScores: Scores = {
   competitorPosition: 10,
 }
 
+export const requiredScoreKeys: readonly ScoreKey[] = [
+  'visibility',
+  'trust',
+  'conversion',
+  'aiSearchReadiness',
+  'competitorPosition',
+]
+
+export type NormalizedScoreDisplay = {
+  available: boolean
+  score: number | null
+  percentage: number | null
+}
+
+export function normalizeScoreForDisplay(
+  value: unknown,
+  maximum = 20,
+): NormalizedScoreDisplay {
+  if (
+    typeof value !== 'number'
+    || !Number.isFinite(value)
+    || value < 0
+    || value > maximum
+  ) {
+    return {
+      available: false,
+      score: null,
+      percentage: null,
+    }
+  }
+
+  const score = Math.round(value * 10) / 10
+  return {
+    available: true,
+    score,
+    percentage: Math.round((score / maximum) * 100),
+  }
+}
+
+export function isKnownDefaultScoreFailure(
+  scores: Partial<Record<ScoreKey, unknown>>,
+) {
+  return requiredScoreKeys.every((key) => scores[key] === emptyScores[key])
+}
+
+export function areScoresDisplayable(
+  scores: Partial<Record<ScoreKey, unknown>>,
+) {
+  return !isKnownDefaultScoreFailure(scores)
+    && requiredScoreKeys.every((key) =>
+      normalizeScoreForDisplay(scores[key]).available,
+    )
+}
+
 export function normalizeScores(scores: Partial<Scores> | undefined): Scores {
-  return (Object.keys(emptyScores) as Array<keyof Scores>).reduce(
+  return requiredScoreKeys.reduce(
     (normalized, key) => {
       const value = scores?.[key]
       normalized[key] = typeof value === 'number' && Number.isFinite(value)

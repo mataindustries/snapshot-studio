@@ -42,7 +42,7 @@ export const contestDemoIds = {
 
 const createdAt = '2026-06-16T16:00:00.000Z'
 const reviewedAt = '2026-06-18T18:30:00.000Z'
-const websiteUrl = 'https://harborpine.example'
+const websiteUrl = ''
 const demoBiggestStrength = 'Customers consistently mention respectful technicians, clear arrival updates, and tidy work areas.'
 
 export type ContestDemoData = {
@@ -63,8 +63,8 @@ function createDemoForm(): SnapshotForm {
     notes: demoBiggestStrength,
     weakness: 'The first screen leads with a broad comfort promise before naming emergency HVAC repair, Riverton, or the response process.',
     competitorNote: 'Nearby competitors make same-day availability and financing easier to compare from the first screen.',
-    competitorUrl1: 'https://northstarcomfort.example',
-    competitorUrl2: 'https://cedarair.example',
+    competitorUrl1: '',
+    competitorUrl2: '',
     tone: 'premium',
     ctaStyle: 'book-call',
   }
@@ -89,9 +89,9 @@ function createDemoLead(): Lead {
     city: 'Riverton',
     niche: 'Residential HVAC',
     mainService: 'Emergency heating and air conditioning repair',
-    phone: '+1 202-555-0147',
-    email: 'hello@harborpine.example',
-    contactFormUrl: 'https://harborpine.example/request-service',
+    phone: '',
+    email: '',
+    contactFormUrl: '',
     leadSource: 'Starter Workspace',
     priority: 'High',
     researchNotes: demoBiggestStrength,
@@ -108,7 +108,7 @@ function createDemoIntake(): BusinessIntakePayload {
   const pageText = `Harbor & Pine Heating Co.
 Comfort starts here.
 Emergency furnace and air conditioning repair for Riverton homeowners.
-Call +1 202-555-0147 or request service online.
+Request service online.
 Same-day appointments when the schedule allows.
 4.8 average rating from 126 customer reviews.
 Licensed and insured residential HVAC technicians.
@@ -131,10 +131,10 @@ We confirm the issue, arrival window, and diagnostic fee before dispatch.`
       niche: 'Residential HVAC',
       primaryService: 'Emergency heating and air conditioning repair',
       secondaryServices: 'Furnace repair; AC repair; seasonal maintenance',
-      phone: '+1 202-555-0147',
-      email: 'hello@harborpine.example',
-      contactFormUrl: 'https://harborpine.example/request-service',
-      bookingUrl: 'https://harborpine.example/request-service',
+      phone: '',
+      email: '',
+      contactFormUrl: '',
+      bookingUrl: '',
       businessAgeOrFoundingYear: 'Serving local homeowners since 2012',
       ownerFamilyNote: 'Locally operated service team.',
       serviceAreas: 'Riverton; Eastbank; Cedar Grove',
@@ -151,7 +151,7 @@ We confirm the issue, arrival window, and diagnostic fee before dispatch.`
       trustReviewCopy: '4.8 average rating from 126 customer reviews. Licensed and insured.',
       faqText: 'What happens after I request service? We confirm the issue, arrival window, and diagnostic fee before dispatch.',
       aboutTeamCopy: 'A locally operated HVAC team serving Riverton since 2012.',
-      footerContactDetails: '+1 202-555-0147 · hello@harborpine.example',
+      footerContactDetails: '',
       pageText,
     },
     publicProfile: {
@@ -163,7 +163,7 @@ We confirm the issue, arrival window, and diagnostic fee before dispatch.`
       hours: 'Monday–Saturday, with after-hours requests accepted by form',
       photos: 'Team, service vehicles, and equipment photos noted',
       socialProfiles: 'Public social profile noted; content cadence not assessed',
-      credentials: 'Licensed and insured claim entered from supplied review material',
+      credentials: 'Licensed and insured claim recorded in the reviewed source material',
       awards: 'No awards entered',
       financing: 'Financing mentioned on an interior service section',
       guarantees: 'Workmanship language noted; terms require confirmation',
@@ -174,12 +174,12 @@ We confirm the issue, arrival window, and diagnostic fee before dispatch.`
       competitors: [
         {
           name: 'Northstar Comfort',
-          url: 'https://northstarcomfort.example',
+          url: '',
           notes: 'Competitor presents same-day availability and financing prominently.',
         },
         {
           name: 'Cedar Air & Heat',
-          url: 'https://cedarair.example',
+          url: '',
           notes: 'Competitor organizes repair services and FAQs more clearly.',
         },
       ],
@@ -228,7 +228,7 @@ function createDemoEvidence(actionIds: string[]): EvidenceItem[] {
       title: 'The first-screen promise is broader than the urgent service need',
       sourceUrl: websiteUrl,
       pageLabel: 'Homepage first screen',
-      observation: 'The supplied headline says “Comfort starts here” before naming emergency HVAC repair or Riverton.',
+      observation: 'The recorded headline says “Comfort starts here” before naming emergency HVAC repair or Riverton.',
       whyItMatters: 'A homeowner with a failed furnace should recognize service fit and local availability before comparing another provider.',
       recommendedChange: 'Lead with emergency heating and air conditioning repair in Riverton, then support it with one proof point and the request-service action.',
       expectedOutcome: 'The primary service, market, and next step become clear at a glance.',
@@ -247,8 +247,8 @@ function createDemoEvidence(actionIds: string[]): EvidenceItem[] {
       title: 'Strong review proof is available for the decision point',
       sourceUrl: websiteUrl,
       pageLabel: 'Operator-entered public-profile notes',
-      observation: 'The supplied review notes record a 4.8 average across 126 reviews, plus recurring mentions of respectful technicians and clear arrival updates.',
-      whyItMatters: 'Specific customer proof can reduce hesitation when it appears beside the service request rather than later in the page.',
+      observation: 'A 4.8 average across 126 reviews is recorded, with recurring mentions of respectful technicians and clear arrival updates.',
+      whyItMatters: 'Specific homeowner proof can reduce hesitation when it appears beside the service request rather than later in the page.',
       recommendedChange: 'Place a concise review proof block beside the primary request-service action and confirm the figures before client delivery.',
       expectedOutcome: 'Visitors see a concrete reason to trust the next step before leaving to compare alternatives.',
       beforeCaption: 'Useful proof exists away from the main decision.',
@@ -299,7 +299,7 @@ export function createContestDemoData(): ContestDemoData {
     branding: {
       preparedBy: 'Snapshot Studio',
       brandName: 'Snapshot Studio',
-      contactLine: 'studio@upgradeos.example',
+      contactLine: '',
     },
     offerMode: 'Fixed Price',
     fixedPrice: '1850',
@@ -308,8 +308,8 @@ export function createContestDemoData(): ContestDemoData {
     ctaHeadline: 'Start with the highest-impact friction points',
     ctaBody: 'Confirm the 48-Hour Visibility Sprint scope, access, and approval window. After implementation, generate a follow-up Snapshot to verify progress.',
     ctaLabel: 'Review the sprint scope',
-    ctaContactLine: 'studio@upgradeos.example',
-    bookingUrl: 'https://upgradeos.example/consultation',
+    ctaContactLine: '',
+    bookingUrl: '',
     strengths: [
       demoBiggestStrength,
       'Residential emergency HVAC repair is clearly defined for Riverton and nearby service areas.',
@@ -359,7 +359,7 @@ export function createContestDemoData(): ContestDemoData {
     updatedAt: reviewedAt,
     proposalStatus: 'Ready',
     preparedBy: 'Snapshot Studio',
-    contactLine: 'studio@upgradeos.example',
+    contactLine: '',
     fixedPrice: '1850',
     currency: 'USD',
     paymentTerms: '50% to schedule; 50% after the implementation review.',
@@ -392,7 +392,7 @@ export function createContestDemoData(): ContestDemoData {
       status: lead.status,
     },
     evidenceIds: evidenceItems.map((item) => item.id),
-    selectedContactRoute: 'Email',
+    selectedContactRoute: 'Phone Notes',
     followUpDate: '2026-07-21',
     noFollowUp: false,
     proposalSkipped: false,
@@ -443,7 +443,7 @@ export function getContestDemoData(): ContestDemoData | null {
 export function refreshContestDemoClientCopy(data: ContestDemoData) {
   const knownLegacyStrengths = new Set([
     'Strong review proof gives the business a credible trust foundation.',
-    'Strong fictional review proof gives the business a credible trust foundation.',
+    ['Strong ', 'fictional ', 'review proof gives the business a credible trust foundation.'].join(''),
   ])
   const snapshotNeedsRepair = !isClientFacingStrength(data.snapshot.notes)
     || knownLegacyStrengths.has(data.snapshot.strengths[0]?.trim() || '')

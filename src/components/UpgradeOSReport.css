@@ -1,0 +1,1327 @@
+.upgrade-journey-page,
+.upgrade-mission-details-page,
+.upgrade-accountability-page {
+  gap: 22px;
+}
+
+.upgrade-journey-page {
+  border-color: rgba(16, 35, 60, 0.34);
+  background:
+    linear-gradient(180deg, rgba(255, 253, 248, 0.98), rgba(248, 242, 231, 0.96)),
+    #fffaf0;
+}
+
+.upgrade-journey-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(188, 143, 68, 0.28);
+}
+
+.upgrade-journey-heading > div {
+  display: grid;
+  gap: 7px;
+  max-width: 700px;
+}
+
+.upgrade-journey-heading h2 {
+  margin: 0;
+  color: #10233c;
+  font-family: 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  font-size: clamp(2rem, 5vw, 3.45rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 0.98;
+}
+
+.upgrade-journey-heading p:not(.section-kicker) {
+  margin: 0;
+  color: #5f5549;
+  font-size: 0.92rem;
+  line-height: 1.48;
+}
+
+.upgrade-journey-post-label {
+  padding: 7px 10px;
+  border: 1px solid #bca36f;
+  border-radius: 999px;
+  color: #745321;
+  font-size: 0.64rem;
+  font-weight: 900;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.upgrade-position-flow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  align-items: stretch;
+}
+
+.upgrade-position-card {
+  display: grid;
+  align-content: start;
+  gap: 11px;
+  padding: 20px;
+  border: 1px solid #d9cfbf;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.upgrade-position-card.next {
+  border-color: #aab7c4;
+  background: #10233c;
+}
+
+.upgrade-position-card > span,
+.upgrade-report-section-heading > span,
+.upgrade-operating-focus span,
+.upgrade-print-utility span,
+.upgrade-mission-preview-card small,
+.upgrade-mission-card header > div > span,
+.upgrade-mission-detail h4,
+.upgrade-mission-objective span,
+.impact-ledger-entry dt,
+.snapshot-record article > small {
+  color: #8b6425;
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.upgrade-position-card h3 {
+  margin: 0;
+  color: #10233c;
+  font-family: 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  font-size: 1.55rem;
+  line-height: 1.05;
+}
+
+.upgrade-position-card dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.upgrade-position-card dl > div {
+  display: grid;
+  gap: 3px;
+  padding-top: 8px;
+  border-top: 1px solid #e5ded3;
+}
+
+.upgrade-position-card dt {
+  color: #776b5e;
+  font-size: 0.64rem;
+  font-weight: 800;
+}
+
+.upgrade-position-card dd {
+  margin: 0;
+  color: #24384d;
+  font-size: 0.82rem;
+  font-weight: 850;
+  line-height: 1.3;
+}
+
+.upgrade-position-card.next > span,
+.upgrade-position-card.next > strong,
+.upgrade-position-card.next > small {
+  color: #f0c778;
+}
+
+.upgrade-position-card.next h3 {
+  color: #fffaf0;
+}
+
+.upgrade-position-card.next > strong {
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.upgrade-position-card.next p {
+  margin: 0;
+  color: #e3e9ee;
+  font-size: 0.84rem;
+  line-height: 1.48;
+}
+
+.upgrade-position-card.next > small {
+  padding-top: 9px;
+  border-top: 1px solid rgba(255, 255, 255, 0.17);
+  font-size: 0.68rem;
+  font-weight: 850;
+}
+
+.upgrade-position-arrow {
+  display: grid;
+  place-items: center;
+  color: #9b6b23;
+}
+
+.upgrade-position-arrow .wide-arrow {
+  display: none;
+}
+
+.upgrade-mission-preview,
+.achievement-path,
+.snapshot-record {
+  display: grid;
+  gap: 13px;
+}
+
+.upgrade-report-section-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 7px 14px;
+}
+
+.upgrade-report-section-heading > span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.upgrade-report-section-heading h3 {
+  width: 100%;
+  margin: 0;
+  color: #10233c;
+  font-family: 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  font-size: 1.35rem;
+  line-height: 1.08;
+}
+
+.upgrade-mission-preview > ol,
+.upgrade-mission-detail-list,
+.snapshot-record > ol {
+  display: grid;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.upgrade-mission-preview-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px 13px;
+  align-items: start;
+  padding: 14px;
+  border: 1px solid #dcd2c3;
+  border-left: 3px solid #9b6b23;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.journey-mission-checkbox {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  border: 1.5px solid #7f6e57;
+  border-radius: 3px;
+  background: #fff;
+}
+
+.journey-mission-checkbox.completed {
+  border-color: #426f5b;
+  background: #e8f1eb;
+  color: #2f5c48;
+}
+
+
+.journey-mission-title,
+.upgrade-mission-preview-card > div {
+  display: grid;
+  gap: 4px;
+}
+
+.journey-mission-title h4 {
+  margin: 0;
+  color: #10233c;
+  font-size: 0.97rem;
+  line-height: 1.25;
+}
+
+.upgrade-mission-preview-card p {
+  margin: 0;
+  color: #4b433a;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.upgrade-mission-preview-card dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  grid-column: 2;
+  margin: 0;
+}
+
+.upgrade-mission-preview-card dl > div {
+  display: grid;
+  gap: 2px;
+  padding: 7px;
+  border-radius: 6px;
+  background: #f3ede2;
+}
+
+.upgrade-mission-preview-card dt {
+  color: #796b5c;
+  font-size: 0.59rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.upgrade-mission-preview-card dd {
+  margin: 0;
+  color: #10233c;
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.journey-primary-outcome,
+.journey-success-signal {
+  grid-column: 2;
+}
+
+.upgrade-operating-focus {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  margin: 0;
+  padding: 16px 18px;
+  border-left: 4px solid #9b6b23;
+  background: #10233c;
+  color: #fffaf0;
+}
+
+.upgrade-operating-focus > svg {
+  color: #f0c778;
+}
+
+.upgrade-operating-focus > div {
+  display: grid;
+  gap: 5px;
+}
+
+.upgrade-operating-focus span {
+  color: #f0c778;
+}
+
+.upgrade-operating-focus p {
+  margin: 0;
+  color: #f3f5f7;
+  font-family: 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  font-size: 1rem;
+  line-height: 1.42;
+}
+
+.upgrade-print-utility {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid #d6cbb9;
+}
+
+.upgrade-print-utility > div {
+  display: grid;
+  gap: 6px;
+}
+
+.upgrade-print-utility strong {
+  color: #26384d;
+  font-size: 0.78rem;
+}
+
+.upgrade-notes-field {
+  grid-column: 1 / -1;
+}
+
+.upgrade-notes-field i {
+  display: block;
+  height: 14px;
+  border-bottom: 1px solid #bcb2a3;
+}
+
+.upgrade-empty-state {
+  margin: 0;
+  padding: 16px;
+  border: 1px dashed #c8bda9;
+  border-radius: 8px;
+  background: #fbf8f1;
+  color: #665c50;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.upgrade-mission-detail-list {
+  gap: 16px;
+}
+
+.upgrade-mission-card {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid rgba(16, 35, 60, 0.24);
+  border-top: 4px solid #9b6b23;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 14px 34px rgba(75, 52, 24, 0.07);
+}
+
+.upgrade-mission-card > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.upgrade-mission-card > header > div {
+  display: grid;
+  gap: 5px;
+}
+
+.upgrade-mission-card h3 {
+  margin: 0;
+  color: #10233c;
+  font-family: 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  font-size: 1.52rem;
+  line-height: 1.06;
+}
+
+.upgrade-mission-card header small {
+  color: #776a5d;
+  font-size: 0.7rem;
+  font-weight: 750;
+}
+
+.upgrade-mission-status,
+.impact-ledger-entry header > strong {
+  flex-shrink: 0;
+  padding: 5px 8px;
+  border: 1px solid #c4b8a5;
+  border-radius: 999px;
+  background: #f4efe6;
+  color: #5b5145;
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.upgrade-mission-status.in-progress,
+.upgrade-mission-status.scheduled,
+.impact-ledger-entry header > strong.in-progress {
+  border-color: #b6a16d;
+  background: #fff4d8;
+  color: #6c5117;
+}
+
+.upgrade-mission-objective,
+.upgrade-verification-method,
+.upgrade-dependency-note {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 12px 13px;
+}
+
+.upgrade-mission-objective {
+  border: 1px solid #d6c8ad;
+  background: #fff8e9;
+}
+
+.upgrade-mission-objective > svg,
+.upgrade-verification-method > svg {
+  margin-top: 2px;
+  color: #8b6425;
+}
+
+.upgrade-mission-objective > div,
+.upgrade-verification-method > span,
+.upgrade-dependency-note > div {
+  display: grid;
+  gap: 4px;
+}
+
+.upgrade-mission-objective p,
+.upgrade-verification-method p,
+.upgrade-dependency-note p {
+  margin: 0;
+  color: #3f382f;
+  font-size: 0.8rem;
+  line-height: 1.42;
+}
+
+.upgrade-dependency-note {
+  border-left: 3px solid #9a6b25;
+  background: #f8f0de;
+  color: #634a20;
+}
+
+.upgrade-dependency-note strong {
+  color: #5f4416;
+  font-size: 0.72rem;
+}
+
+.upgrade-mission-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.upgrade-mission-detail {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 13px;
+  border: 1px solid #ded5c8;
+  border-radius: 7px;
+  background: #fbf9f4;
+}
+
+.upgrade-mission-detail h4 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+}
+
+.upgrade-mission-detail > p,
+.upgrade-mission-detail li,
+.upgrade-mission-detail > ol p {
+  margin: 0;
+  color: #4b433a;
+  font-size: 0.76rem;
+  line-height: 1.42;
+}
+
+.upgrade-mission-detail > small {
+  color: #776a5d;
+  font-size: 0.66rem;
+  font-weight: 750;
+}
+
+.upgrade-mission-detail ul,
+.upgrade-mission-detail ol {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding-left: 17px;
+}
+
+.upgrade-mission-detail ol {
+  padding: 0;
+  list-style: none;
+}
+
+.upgrade-mission-detail ol li {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 7px;
+}
+
+.upgrade-mission-detail ol li > span {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #10233c;
+  color: #fff;
+  font-size: 0.64rem;
+  font-weight: 900;
+}
+
+.upgrade-success-list {
+  padding: 0 !important;
+  list-style: none;
+}
+
+.upgrade-success-list li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 7px;
+}
+
+.upgrade-success-list svg {
+  margin-top: 2px;
+  color: #42705c;
+}
+
+.upgrade-preliminary-evidence {
+  color: #706456 !important;
+  font-style: italic;
+}
+
+.upgrade-verification-method {
+  border-left: 3px solid #10233c;
+  background: #edf1f4;
+}
+
+.upgrade-verification-method strong {
+  color: #10233c;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.impact-ledger-list {
+  display: grid;
+  gap: 10px;
+}
+
+.impact-ledger-entry {
+  display: grid;
+  gap: 10px;
+  padding: 15px;
+  border: 1px solid #d9d0c3;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.impact-ledger-entry header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.impact-ledger-entry header > span {
+  color: #9b6b23;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.impact-ledger-entry h3 {
+  margin: 0;
+  color: #10233c;
+  font-family: 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  font-size: 1.04rem;
+  line-height: 1.18;
+}
+
+.impact-ledger-entry dl {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  margin: 0;
+}
+
+.impact-ledger-entry dl > div {
+  display: grid;
+  gap: 4px;
+  padding: 9px;
+  border-radius: 6px;
+  background: #f5f1e9;
+}
+
+.impact-ledger-entry dd {
+  margin: 0;
+  color: #4b433a;
+  font-size: 0.72rem;
+  line-height: 1.38;
+}
+
+.impact-action-taken {
+  margin: 0;
+  padding-top: 8px;
+  border-top: 1px solid #e0d8cc;
+  color: #544a3f;
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+
+.achievement-path,
+.snapshot-record {
+  padding-top: 16px;
+  border-top: 1px solid #d8ccba;
+}
+
+.achievement-card-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 9px;
+}
+
+.achievement-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 11px;
+  padding: 13px;
+  border: 1px solid #d8d0c4;
+  border-radius: 8px;
+  background: #fbf9f4;
+}
+
+.achievement-seal {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid #c2b6a5;
+  border-radius: 50%;
+  background: #f1ece3;
+  color: #776a5b;
+}
+
+.achievement-card.in-progress .achievement-seal {
+  border-color: #af8c4f;
+  background: #fff0d2;
+  color: #7a571d;
+}
+
+.achievement-card > div {
+  display: grid;
+  gap: 4px;
+}
+
+.achievement-card small {
+  color: #8b6425;
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.achievement-card h4 {
+  margin: 0;
+  color: #10233c;
+  font-size: 0.9rem;
+  line-height: 1.2;
+}
+
+.achievement-card p,
+.achievement-card strong {
+  margin: 0;
+  color: #554c42;
+  font-size: 0.7rem;
+  line-height: 1.38;
+}
+
+.achievement-card strong {
+  color: #6d5227;
+}
+
+.snapshot-record > ol {
+  position: relative;
+}
+
+.snapshot-record > ol::before {
+  position: absolute;
+  top: 18px;
+  bottom: 18px;
+  left: 18px;
+  width: 1px;
+  background: #c8bba7;
+  content: '';
+}
+
+.snapshot-record > ol > li {
+  position: relative;
+}
+
+.snapshot-record article {
+  display: grid;
+  gap: 5px;
+  margin-left: 38px;
+  padding: 12px;
+  border: 1px solid #d9d1c5;
+  border-radius: 8px;
+  background: #faf8f3;
+}
+
+.snapshot-record article.recorded {
+  border-color: #af915d;
+  background: #fff8e8;
+}
+
+.snapshot-record-marker {
+  position: absolute;
+  top: 11px;
+  left: 9px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fffaf0;
+  color: #88704c;
+}
+
+.snapshot-record article.recorded + .snapshot-record-marker,
+.snapshot-record article.recorded .snapshot-record-marker {
+  color: #8b6425;
+}
+
+.snapshot-record h4 {
+  margin: 0;
+  color: #10233c;
+  font-size: 0.88rem;
+}
+
+.snapshot-record article > p {
+  margin: 0;
+  color: #73685c;
+  font-size: 0.68rem;
+}
+
+.snapshot-record article dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin: 3px 0 0;
+}
+
+.snapshot-record article dl > div {
+  display: grid;
+  gap: 2px;
+}
+
+.snapshot-record dt {
+  color: #7a6d5e;
+  font-size: 0.58rem;
+  font-weight: 800;
+}
+
+.snapshot-record dd {
+  margin: 0;
+  color: #34465a;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.snapshot-record-note {
+  margin: 0;
+  padding: 10px 12px;
+  border-left: 3px solid #10233c;
+  background: #edf1f4;
+  color: #465565;
+  font-size: 0.74rem;
+  line-height: 1.4;
+}
+
+@media (min-width: 760px) {
+  .upgrade-position-flow {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+  }
+
+  .upgrade-position-arrow .wide-arrow {
+    display: block;
+  }
+
+  .upgrade-position-arrow .narrow-arrow {
+    display: none;
+  }
+
+  .upgrade-mission-preview-card {
+    grid-template-columns: auto minmax(150px, 0.85fr) minmax(180px, 1fr) minmax(120px, 0.7fr);
+    align-items: center;
+  }
+
+  .journey-primary-outcome,
+  .upgrade-mission-preview-card dl {
+    grid-column: auto;
+  }
+
+  .journey-success-signal {
+    grid-column: 2 / -1;
+  }
+
+  .upgrade-print-utility {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .upgrade-mission-body {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .impact-ledger-entry dl {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .achievement-card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .snapshot-record > ol {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .snapshot-record > ol::before {
+    top: 18px;
+    right: 12%;
+    bottom: auto;
+    left: 12%;
+    width: auto;
+    height: 1px;
+  }
+
+  .snapshot-record article {
+    height: 100%;
+    margin: 30px 0 0;
+  }
+
+  .snapshot-record-marker {
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+@media print {
+  .upgrade-journey-page,
+  .upgrade-mission-details-page,
+  .upgrade-accountability-page {
+    display: block !important;
+    padding: 0.16in !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .upgrade-journey-page {
+    break-after: page;
+    page-break-after: always;
+  }
+
+  .upgrade-journey-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.1in;
+    margin-bottom: 0.14in;
+    padding-bottom: 0.1in;
+  }
+
+  .upgrade-journey-heading > div {
+    gap: 0.035in;
+  }
+
+  .upgrade-journey-heading h2 {
+    font-size: 25pt;
+  }
+
+  .upgrade-journey-heading p:not(.section-kicker) {
+    font-size: 8.3pt;
+    line-height: 1.3;
+  }
+
+  .upgrade-journey-post-label {
+    align-self: start;
+    padding: 0.04in 0.07in;
+    font-size: 6.5pt;
+  }
+
+  .upgrade-position-flow {
+    grid-template-columns: minmax(0, 1fr) 0.28in minmax(0, 1fr);
+    gap: 0.07in;
+    margin-bottom: 0.14in;
+  }
+
+  .upgrade-position-arrow .wide-arrow {
+    display: block;
+  }
+
+  .upgrade-position-arrow .narrow-arrow {
+    display: none;
+  }
+
+  .upgrade-position-card {
+    gap: 0.055in;
+    padding: 0.12in;
+    border-radius: 4px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .upgrade-position-card.next {
+    border: 1.5px solid #10233c !important;
+    background: #fff !important;
+  }
+
+  .upgrade-position-card.next > span,
+  .upgrade-position-card.next > strong,
+  .upgrade-position-card.next > small {
+    color: #60491f !important;
+  }
+
+  .upgrade-position-card.next h3,
+  .upgrade-position-card.next p {
+    color: #10233c !important;
+  }
+
+  .upgrade-position-card.next > small {
+    border-top-color: #bcb5aa !important;
+  }
+
+  .upgrade-position-card h3 {
+    font-size: 14pt;
+  }
+
+  .upgrade-position-card dl {
+    gap: 0.04in;
+  }
+
+  .upgrade-position-card dl > div {
+    gap: 0.015in;
+    padding-top: 0.04in;
+  }
+
+  .upgrade-position-card dt,
+  .upgrade-position-card > span,
+  .upgrade-position-card > strong,
+  .upgrade-position-card > small {
+    font-size: 6.5pt;
+  }
+
+  .upgrade-position-card dd,
+  .upgrade-position-card.next p {
+    font-size: 8pt;
+    line-height: 1.28;
+  }
+
+  .upgrade-mission-preview {
+    gap: 0.07in;
+    margin-bottom: 0.12in;
+  }
+
+  .upgrade-report-section-heading {
+    gap: 0.03in;
+    margin-bottom: 0.07in;
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .upgrade-report-section-heading h3 {
+    font-size: 12pt;
+  }
+
+  .upgrade-mission-preview > ol {
+    gap: 0.055in;
+  }
+
+  .upgrade-mission-preview-card {
+    grid-template-columns: 0.2in 1.48in minmax(1.2in, 1fr) 1.18in minmax(1.35in, 1fr);
+    gap: 0.06in;
+    align-items: center;
+    padding: 0.08in;
+    border-radius: 4px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .journey-mission-checkbox {
+    width: 0.15in;
+    height: 0.15in;
+  }
+
+  .journey-mission-title h4 {
+    font-size: 9pt;
+    line-height: 1.2;
+  }
+
+  .upgrade-mission-preview-card small,
+  .upgrade-mission-preview-card dt {
+    font-size: 6.8pt;
+  }
+
+  .upgrade-mission-preview-card p,
+  .upgrade-mission-preview-card dd {
+    font-size: 7.8pt;
+    line-height: 1.25;
+  }
+
+  .journey-primary-outcome,
+  .upgrade-mission-preview-card dl,
+  .journey-success-signal {
+    grid-column: auto;
+  }
+
+  .upgrade-mission-preview-card dl > div {
+    padding: 0.035in;
+  }
+
+  .upgrade-operating-focus {
+    border: 1px solid #10233c !important;
+    border-left: 0.04in solid #10233c !important;
+    background: #fff !important;
+    color: #10233c !important;
+    gap: 0.08in;
+    margin-bottom: 0.11in;
+    padding: 0.1in 0.12in;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .upgrade-operating-focus svg {
+    width: 0.17in;
+    height: 0.17in;
+    color: #10233c !important;
+  }
+
+  .upgrade-operating-focus span {
+    color: #60491f !important;
+    font-size: 6.5pt;
+  }
+
+  .upgrade-operating-focus p {
+    color: #10233c !important;
+    font-size: 9pt;
+    line-height: 1.3;
+  }
+
+  .upgrade-print-utility {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.06in 0.14in;
+    padding-top: 0.08in;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .upgrade-print-utility span,
+  .upgrade-print-utility strong {
+    font-size: 7pt;
+  }
+
+  .upgrade-notes-field {
+    grid-column: 1 / -1;
+  }
+
+  .upgrade-notes-field i {
+    height: 0.1in;
+  }
+
+  .upgrade-mission-details-page > .report-page-heading,
+  .upgrade-accountability-page > .report-page-heading {
+    margin-bottom: 0.14in;
+  }
+
+  .report-shell .opportunity-page + .upgrade-mission-details-page {
+    margin-top: 0 !important;
+    padding-top: 0.08in !important;
+  }
+
+  .report-shell .upgrade-mission-details-page > .report-page-heading {
+    margin-bottom: 0.08in;
+  }
+
+  .upgrade-mission-detail-list {
+    display: block;
+  }
+
+  .upgrade-mission-detail-list > li {
+    margin-bottom: 0.14in;
+  }
+
+  .upgrade-mission-card {
+    gap: 16px;
+    padding: 0.13in;
+    border-radius: 4px;
+    box-shadow: none !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .upgrade-mission-card h3 {
+    font-size: 14pt;
+  }
+
+  .upgrade-mission-card header small,
+  .upgrade-mission-status {
+    font-size: 6.8pt;
+  }
+
+  .upgrade-mission-objective,
+  .upgrade-verification-method,
+  .upgrade-dependency-note {
+    gap: 0.06in;
+    padding: 0.07in 0.08in;
+  }
+
+  .upgrade-mission-objective p,
+  .upgrade-verification-method p,
+  .upgrade-dependency-note p {
+    font-size: 8pt;
+    line-height: 1.28;
+  }
+
+  .upgrade-mission-body {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .upgrade-mission-detail {
+    gap: 0.045in;
+    padding: 0.075in;
+    border-radius: 3px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .upgrade-mission-detail h4,
+  .upgrade-mission-objective span,
+  .upgrade-verification-method strong {
+    font-size: 6.8pt;
+  }
+
+  .upgrade-mission-detail > p,
+  .upgrade-mission-detail li,
+  .upgrade-mission-detail > ol p {
+    font-size: 8pt;
+    line-height: 1.26;
+  }
+
+  .upgrade-mission-detail > small {
+    font-size: 6.8pt;
+  }
+
+  .upgrade-accountability-page {
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  .impact-ledger-list {
+    gap: 0.07in;
+    margin-bottom: 0.14in;
+  }
+
+  .impact-ledger-entry {
+    gap: 0.06in;
+    padding: 0.09in;
+    border-radius: 4px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .impact-ledger-entry h3 {
+    font-size: 9pt;
+  }
+
+  .impact-ledger-entry header > strong,
+  .impact-ledger-entry dt {
+    font-size: 6.8pt;
+  }
+
+  .impact-ledger-entry dl {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.05in;
+  }
+
+  .impact-ledger-entry dl > div {
+    gap: 0.02in;
+    padding: 0.055in;
+  }
+
+  .impact-ledger-entry dd,
+  .impact-action-taken {
+    font-size: 7.6pt;
+    line-height: 1.25;
+  }
+
+  .achievement-path,
+  .snapshot-record {
+    gap: 0.07in;
+    margin-top: 0.13in;
+    padding-top: 0.1in;
+  }
+
+  .achievement-card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.06in;
+  }
+
+  .achievement-card {
+    gap: 0.06in;
+    padding: 0.07in;
+    border-radius: 4px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .achievement-seal {
+    width: 0.27in;
+    height: 0.27in;
+  }
+
+  .achievement-card small {
+    font-size: 6.8pt;
+  }
+
+  .achievement-card h4 {
+    font-size: 8pt;
+  }
+
+  .achievement-card p,
+  .achievement-card strong {
+    font-size: 7.5pt;
+    line-height: 1.24;
+  }
+
+  .snapshot-record > ol {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.05in;
+  }
+
+  .snapshot-record > ol::before {
+    top: 0.13in;
+    right: 12%;
+    bottom: auto;
+    left: 12%;
+    width: auto;
+    height: 1px;
+  }
+
+  .snapshot-record article {
+    gap: 0.025in;
+    height: 100%;
+    margin: 0.24in 0 0;
+    padding: 0.065in;
+    border-radius: 4px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .snapshot-record-marker {
+    top: 0.05in;
+    left: 50%;
+    width: 0.16in;
+    height: 0.16in;
+    transform: translateX(-50%);
+  }
+
+  .snapshot-record article > small,
+  .snapshot-record dt {
+    font-size: 6.7pt;
+  }
+
+  .snapshot-record h4 {
+    font-size: 7.6pt;
+  }
+
+  .snapshot-record article > p,
+  .snapshot-record dd {
+    font-size: 7.4pt;
+  }
+
+  .snapshot-record-note {
+    padding: 0.06in 0.08in;
+    font-size: 7.1pt;
+    line-height: 1.25;
+  }
+}
