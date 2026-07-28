@@ -12,6 +12,13 @@ dist
 dist-ssr
 *.local
 
+# Reproducible developer-generated sample manuals
+artifacts/sample-manuals/*.pdf
+artifacts/sample-manuals/*.txt
+artifacts/sample-manuals/generation-summary.json
+artifacts/sample-manuals/generation-summary.md
+artifacts/sample-manuals/previews/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
