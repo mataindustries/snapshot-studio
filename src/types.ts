@@ -215,6 +215,10 @@ export type LeadStatus =
   | 'Sent'
   | 'Replied'
   | 'Call booked'
+  | 'Proposal sent'
+  | 'Won'
+  | 'Lost'
+  | 'Not now'
   | 'Paid'
   | 'Not interested'
 
@@ -222,12 +226,23 @@ export type LeadContactRoute = 'Email' | 'Contact Form' | 'Text' | 'Phone Notes'
 
 export type LeadActivityEntry = {
   id: string
-  type: 'Outreach sent' | 'Follow-up scheduled'
+  type:
+    | 'Outreach sent'
+    | 'Follow-up scheduled'
+    | 'Reply recorded'
+    | 'Call booked'
+    | 'Proposal sent'
+    | 'Won'
+    | 'Lost'
+    | 'Not now'
+    | 'Status changed'
   occurredAt: string
   contactRoute?: LeadContactRoute
   followUpDate?: string
   includedSnapshot?: boolean
   includedProposal?: boolean
+  previousStatus?: LeadStatus
+  newStatus?: LeadStatus
 }
 
 export type Lead = {

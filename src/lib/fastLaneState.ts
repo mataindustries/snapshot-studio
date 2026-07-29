@@ -8,6 +8,7 @@ import type {
 } from '../types/fastLane'
 import { leadToFastLaneDraft } from '../types/fastLane'
 import type { Lead } from '../types'
+import { leadStatuses } from './leads'
 import { getDefaultFollowUpDate } from './sendKit'
 
 const fastLaneStorageKey = 'snapshot-studio:fast-lane:v1'
@@ -158,10 +159,7 @@ export function migrateFastLaneSession(value: unknown): FastLaneSession | null {
       priority: ['High', 'Medium', 'Low'].includes(String(leadDraft.priority))
         ? leadDraft.priority as FastLaneSession['leadDraft']['priority']
         : 'Medium',
-      status: [
-        'Not reviewed', 'Snapshot made', 'Sent', 'Replied', 'Call booked', 'Paid',
-        'Not interested',
-      ].includes(String(leadDraft.status))
+      status: leadStatuses.includes(leadDraft.status as FastLaneSession['leadDraft']['status'])
         ? leadDraft.status as FastLaneSession['leadDraft']['status']
         : 'Not reviewed',
     },

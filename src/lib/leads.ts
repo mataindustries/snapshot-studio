@@ -16,6 +16,10 @@ export const leadStatuses: LeadStatus[] = [
   'Sent',
   'Replied',
   'Call booked',
+  'Proposal sent',
+  'Won',
+  'Lost',
+  'Not now',
   'Paid',
   'Not interested',
 ]
@@ -50,14 +54,25 @@ export const emptyLeadInput: LeadInput = {
 }
 
 const contactRoutes: LeadContactRoute[] = ['Email', 'Contact Form', 'Text', 'Phone Notes']
+const activityTypes: LeadActivityEntry['type'][] = [
+  'Outreach sent',
+  'Follow-up scheduled',
+  'Reply recorded',
+  'Call booked',
+  'Proposal sent',
+  'Won',
+  'Lost',
+  'Not now',
+  'Status changed',
+]
 
 function normalizeLeadActivity(value: unknown): LeadActivityEntry[] {
   if (!Array.isArray(value)) return []
   return value.flatMap((entry) => {
     if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return []
     const record = entry as Record<string, unknown>
-    const type = record.type === 'Outreach sent' || record.type === 'Follow-up scheduled'
-      ? record.type
+    const type = activityTypes.includes(record.type as LeadActivityEntry['type'])
+      ? record.type as LeadActivityEntry['type']
       : null
     if (!type) return []
     const route = contactRoutes.includes(record.contactRoute as LeadContactRoute)
@@ -78,6 +93,12 @@ function normalizeLeadActivity(value: unknown): LeadActivityEntry[] {
         : undefined,
       includedProposal: typeof record.includedProposal === 'boolean'
         ? record.includedProposal
+        : undefined,
+      previousStatus: leadStatuses.includes(record.previousStatus as LeadStatus)
+        ? record.previousStatus as LeadStatus
+        : undefined,
+      newStatus: leadStatuses.includes(record.newStatus as LeadStatus)
+        ? record.newStatus as LeadStatus
         : undefined,
     }
     return [normalized]

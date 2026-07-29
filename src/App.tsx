@@ -21,6 +21,9 @@ import {
 } from 'lucide-react'
 import './App.css'
 import { ActionControlCenter } from './components/ActionControlCenter'
+import { ProspectActionPack } from './components/ProspectActionPack'
+import { TodaysRevenueMission } from './components/TodaysRevenueMission'
+import './components/RevenueWorkflow.css'
 import { DemoTour } from './components/DemoTour'
 import { OperatorHeader } from './components/OperatorHeader'
 import './components/ContestPreparation.css'
@@ -158,6 +161,14 @@ import {
   type LeadInput,
   type ParsedLead,
 } from './lib/leads'
+import { createProspectActionPack } from './lib/prospectActionPack'
+import {
+  applyLeadProgressUpdate,
+  buildTodaysRevenueActions,
+  createRevenueFunnelSnapshot,
+} from './lib/revenueWorkflow'
+import { recordRevenueEvent } from './lib/revenueEvents'
+import { loadProposals, saveProposal } from './lib/proposalStorage'
 import { buildBusinessHoroscope, generateOutputs } from './templates/snapshotTemplates'
 import type {
   ActionStatusChange,
@@ -166,6 +177,7 @@ import type {
   EvidenceItem,
   EvidenceSentiment,
   Lead,
+  LeadContactRoute,
   LeadPriority,
   LeadStatus,
   OfferMode,
@@ -392,6 +404,7 @@ function App() {
   const [nicheFilter, setNicheFilter] = useState('All')
   const [leadSearch, setLeadSearch] = useState('')
   const [activeLeadId, setActiveLeadId] = useState<string | null>(null)
+  const [activeRevenueLeadId, setActiveRevenueLeadId] = useState<string | null>(null)
   const [loadedId, setLoadedId] = useState<string | null>(null)
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
   const [storageMessage, setStorageMessage] = useState('')
@@ -684,11 +697,52 @@ function App() {
   const leadStats = useMemo(
     () => ({
       total: leads.length,
-      sent: leads.filter((lead) => lead.status === 'Sent').length,
+      contacted: leads.filter((lead) => [
+        'Sent', 'Replied', 'Call booked', 'Proposal sent', 'Won', 'Lost', 'Not now',
+        'Paid', 'Not interested',
+      ].includes(lead.status)).length,
       replies: leads.filter((lead) => lead.status === 'Replied' || lead.status === 'Call booked').length,
-      paid: leads.filter((lead) => lead.status === 'Paid').length,
+      won: leads.filter((lead) => lead.status === 'Won' || lead.status === 'Paid').length,
     }),
     [leads],
+  )
+  const revenueProposals = loadProposals()
+  const revenueActions = useMemo(
+    () => buildTodaysRevenueActions({ leads, proposals: revenueProposals }),
+    [leads, revenueProposals],
+  )
+  const revenueFunnel = useMemo(
+    () => createRevenueFunnelSnapshot(leads, revenueProposals),
+    [leads, revenueProposals],
+  )
+  const activeRevenueLead = useMemo(
+    () => leads.find((lead) => lead.id === activeRevenueLeadId),
+    [activeRevenueLeadId, leads],
+  )
+  const activeRevenueSnapshot = useMemo(
+    () => proposalSnapshots.find((snapshot) =>
+      snapshot.id === activeRevenueLead?.linkedSnapshotId,
+    ),
+    [activeRevenueLead, proposalSnapshots],
+  )
+  const activeRevenueProposal = useMemo(
+    () => revenueProposals
+      .filter((proposal) =>
+        proposal.leadId === activeRevenueLead?.id
+        || proposal.snapshotId === activeRevenueSnapshot?.id,
+      )
+      .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))[0],
+    [activeRevenueLead, activeRevenueSnapshot, revenueProposals],
+  )
+  const activeActionPack = useMemo(
+    () => activeRevenueLead
+      ? createProspectActionPack({
+          lead: activeRevenueLead,
+          snapshot: activeRevenueSnapshot,
+          proposal: activeRevenueProposal,
+        })
+      : undefined,
+    [activeRevenueLead, activeRevenueProposal, activeRevenueSnapshot],
   )
 
   function updateField<K extends keyof SnapshotForm>(field: K, value: SnapshotForm[K]) {
@@ -1251,6 +1305,7 @@ function App() {
       updateLeadList(leads.map((lead) => (lead.id === editingLeadId ? nextLead : lead)))
     } else {
       setLeads(saveLead(nextLead))
+      recordRevenueEvent({ type: 'Lead submitted' })
     }
 
     setLeadDraft(emptyLeadInput)
@@ -1304,23 +1359,85 @@ function App() {
       weakness: lead.suggestedAngle,
     }))
     setActiveLeadId(lead.id)
+    recordRevenueEvent({ type: 'Intake started' })
     window.setTimeout(() => {
       document.getElementById('operator-workspace')?.scrollIntoView({ behavior: 'smooth' })
     }, 0)
   }
 
   function handleLeadStatus(leadId: string, status: LeadStatus) {
-    updateLeadList(leads.map((lead) => (lead.id === leadId ? { ...lead, status } : lead)))
+    const current = leads.find((lead) => lead.id === leadId)
+    if (!current || current.status === status) return
+    const updated = applyLeadProgressUpdate(current, { status })
+    updateLeadList([
+      updated,
+      ...leads.filter((lead) => lead.id !== leadId),
+    ])
+    if (status === 'Replied') recordRevenueEvent({ type: 'Reply recorded' })
+    if (status === 'Call booked') recordRevenueEvent({ type: 'Call booked' })
+    if (status === 'Proposal sent') recordRevenueEvent({ type: 'Proposal sent' })
+    if (status === 'Won' || status === 'Paid') recordRevenueEvent({ type: 'Won' })
   }
 
-  function handleMarkSent(leadId: string) {
-    updateLeadList(
-      leads.map((lead) =>
-        lead.id === leadId
-          ? { ...lead, status: 'Sent', lastContactedAt: new Date().toISOString() }
-          : lead,
-      ),
-    )
+  function handleRevenueMarkContacted(
+    leadId: string,
+    route: LeadContactRoute,
+    followUpDate: string,
+  ) {
+    const lead = leads.find((item) => item.id === leadId)
+    if (!lead) return
+    const approved = window.confirm(`Mark outreach to ${lead.businessName || 'this prospect'} as sent via ${route}?\nNext action: ${followUpDate || 'Not scheduled'}`)
+    if (!approved) return
+    const occurredAt = new Date().toISOString()
+    const updated = applyLeadProgressUpdate(lead, {
+      status: 'Sent',
+      occurredAt,
+      nextFollowUpDate: followUpDate,
+      contactRoute: route,
+      includedSnapshot: Boolean(lead.linkedSnapshotId),
+      includedProposal: false,
+    })
+    updateLeadList([updated, ...leads.filter((item) => item.id !== leadId)])
+    recordRevenueEvent({ type: 'Outreach marked sent' })
+    setInteractionMessage('Outreach recorded and the next action date was saved.')
+  }
+
+  async function copyRevenueText(text: string, label: string) {
+    try {
+      await navigator.clipboard.writeText(text)
+      setInteractionMessage(`${label} copied. No outreach status was changed.`)
+    } catch {
+      setInteractionMessage('Clipboard access is unavailable. Select and copy the text from the Action Pack.')
+    }
+  }
+
+  function handleRevenueOutcome(leadId: string, status: LeadStatus, followUpDate: string) {
+    const lead = leads.find((item) => item.id === leadId)
+    if (!lead) return
+    const proposal = loadProposals()
+      .filter((item) =>
+        item.leadId === lead.id
+        || item.snapshotId === lead.linkedSnapshotId,
+      )
+      .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))[0]
+    if (status === 'Proposal sent' && !proposal) {
+      setInteractionMessage('Save a proposal before recording Proposal sent.')
+      return
+    }
+    if (['Won', 'Lost'].includes(status) && !window.confirm(`Record ${lead.businessName || 'this prospect'} as ${status}?`)) return
+    if (status === 'Proposal sent' && proposal) {
+      saveProposal({ ...proposal, proposalStatus: 'Sent' })
+    }
+    const updated = applyLeadProgressUpdate(lead, {
+      status,
+      nextFollowUpDate: followUpDate,
+    })
+    updateLeadList([updated, ...leads.filter((item) => item.id !== leadId)])
+    if (status === 'Replied') recordRevenueEvent({ type: 'Reply recorded' })
+    if (status === 'Call booked') recordRevenueEvent({ type: 'Call booked' })
+    if (status === 'Proposal sent') recordRevenueEvent({ type: 'Proposal sent' })
+    if (status === 'Won' || status === 'Paid') recordRevenueEvent({ type: 'Won' })
+    setInteractionMessage(`${status} recorded for ${lead.businessName || 'the prospect'}.`)
   }
 
   function leadIntake(leadId: string) {
@@ -1510,7 +1627,7 @@ function App() {
       ...input.leadDraft,
       id: existing?.id,
       createdAt: existing?.createdAt,
-      status: 'Sent',
+      status: input.proposalIncluded ? 'Proposal sent' : 'Sent',
       lastContactedAt: input.contactedAt,
       lastContactRoute: input.route,
       nextFollowUpDate: input.followUpDate || '',
@@ -1523,6 +1640,8 @@ function App() {
     })
     updateLeadList([nextLead, ...leads.filter((lead) => lead.id !== nextLead.id)])
     setActiveLeadId(nextLead.id)
+    recordRevenueEvent({ type: 'Outreach marked sent' })
+    if (input.proposalIncluded) recordRevenueEvent({ type: 'Proposal sent' })
     return nextLead
   }
 
@@ -1707,6 +1826,27 @@ function App() {
         onPrintReport={printReport}
       />
 
+      {activeRevenueLead && activeActionPack && (
+        <ProspectActionPack
+          lead={activeRevenueLead}
+          model={activeActionPack}
+          hasProposal={Boolean(activeRevenueProposal)}
+          onClose={() => setActiveRevenueLeadId(null)}
+          onCopy={(text, label) => void copyRevenueText(text, label)}
+          onMarkContacted={(route, followUpDate) => handleRevenueMarkContacted(activeRevenueLead.id, route, followUpDate)}
+          onRecordOutcome={(status, followUpDate) => handleRevenueOutcome(activeRevenueLead.id, status, followUpDate)}
+          onOpenSendKit={() => {
+            setActiveRevenueLeadId(null)
+            setFastLaneLaunchRequest({ nonce: Date.now(), leadId: activeRevenueLead.id, step: 6 })
+          }}
+          onOpenProposal={() => {
+            if (!activeRevenueProposal) return
+            setActiveRevenueLeadId(null)
+            setProposalFocusRequest({ nonce: Date.now(), proposalId: activeRevenueProposal.id })
+          }}
+        />
+      )}
+
       <section className="lead-cockpit screen-only" id="lead-queue" aria-label="Lead queue">
         <div className="lead-hero panel">
           <div>
@@ -1719,11 +1859,17 @@ function App() {
           </div>
           <div className="lead-metrics" aria-label="Lead metrics">
             <Metric label="Leads" value={leadStats.total} />
-            <Metric label="Sent" value={leadStats.sent} />
+            <Metric label="Contacted" value={leadStats.contacted} />
             <Metric label="Replies" value={leadStats.replies} />
-            <Metric label="Paid" value={leadStats.paid} />
+            <Metric label="Won" value={leadStats.won} />
           </div>
         </div>
+
+        <TodaysRevenueMission
+          actions={revenueActions}
+          funnel={revenueFunnel}
+          onOpenActionPack={setActiveRevenueLeadId}
+        />
 
         <div className="lead-tools-grid">
           <section className="panel lead-form-panel">
@@ -1930,6 +2076,7 @@ function App() {
                         <span>Not contacted yet</span>
                       )}
                       {lead.linkedSnapshotId && <span>Snapshot linked</span>}
+                      {lead.nextFollowUpDate && <span>Next action {lead.nextFollowUpDate}</span>}
                     </div>
                     <div className="lead-actions">
                       <button
@@ -1947,11 +2094,11 @@ function App() {
                         Fast Lane
                       </button>
                       <button
-                        className="secondary-button"
+                        className="primary-button"
                         type="button"
-                        onClick={() => handleMarkSent(lead.id)}
+                        onClick={() => setActiveRevenueLeadId(lead.id)}
                       >
-                        Mark sent today
+                        Action Pack
                       </button>
                       <button
                         className="icon-button"

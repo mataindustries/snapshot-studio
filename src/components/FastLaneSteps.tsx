@@ -40,13 +40,10 @@ import type { SendKitBlock } from '../lib/sendKit'
 import { actionStatusClass, getBlockingActions } from '../lib/actionProgress'
 import { normalizeWebsiteUrl } from '../lib/intakeParser'
 import { isEvidenceReportReady } from '../lib/evidence'
+import { leadStatuses } from '../lib/leads'
 import { scoreLabels } from '../lib/scoring'
 
 const scoreKeys = Object.keys(scoreLabels) as ScoreKey[]
-const leadStatuses: LeadStatus[] = [
-  'Not reviewed', 'Snapshot made', 'Sent', 'Replied', 'Call booked', 'Paid',
-  'Not interested',
-]
 const proposalTypes: ProposalType[] = [
   '48-Hour Visibility Sprint',
   'Custom Implementation',

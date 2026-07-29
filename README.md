@@ -91,7 +91,7 @@ For a subdirectory deployment, set the Vite base and update public artwork paths
 
 ## Demo
 
-The Starter Workspace uses fictional example data, reserved `.example` contact details, and stable IDs. Loading resumes the same linked records without duplication; resetting restores only Starter Workspace data and leaves user-created records unchanged.
+The Starter Workspace uses fictional example data, omits public source/contact URLs, and uses stable IDs. Loading resumes the same linked records without duplication; resetting restores only Starter Workspace data and leaves user-created records unchanged.
 
 1. Launch the app.
 2. Select **Load Starter Workspace**.
@@ -104,6 +104,12 @@ The Starter Workspace uses fictional example data, reserved `.example` contact d
 9. Select **Reset Starter Workspace** to restore the example workflow.
 
 Continue with the [3-minute demo script](docs/DEMO_SCRIPT.md), [judge quickstart](docs/JUDGE_QUICKSTART.md), [submission copy](docs/SUBMISSION_COPY.md), or [Build Week phase summary](docs/BUILD_WEEK.md).
+
+## Distribution workflow
+
+The existing Lead Queue now opens a phone-friendly **Today’s Revenue Mission** and a verified-data **Prospect Action Pack**. The public `/pilot/` page explains the separate $297 founding-client assessment pilot and can emphasize a relevant fictional sample with allowlisted `campaign` and `industry` parameters. Larger implementation proposals retain their own scope and pricing.
+
+Use [docs/DISTRIBUTION_RUNBOOK.md](docs/DISTRIBUTION_RUNBOOK.md) for the 15-minute morning routine, evidence guardrails, follow-up timing, outcome definitions, funnel measures, and public-link format.
 
 ## Project structure
 
