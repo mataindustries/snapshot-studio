@@ -9,10 +9,11 @@ import type {
 import {
   normalizeEvidenceItem,
   synchronizeEvidenceLinks,
-} from './evidence'
-import { normalizeRecommendedAction } from './actionPlanner'
-import { normalizeActionStatusHistory } from './actionProgress'
-import { getTotalScore } from './scoring'
+} from './evidence.ts'
+import { normalizeRecommendedAction } from './actionPlanner.ts'
+import { normalizeActionStatusHistory } from './actionProgress.ts'
+import { reconcileActionVerification } from './implementationVerification.ts'
+import { getTotalScore } from './scoring.ts'
 
 type GrowthStageBand = {
   name: GrowthStage
@@ -184,7 +185,7 @@ export function normalizeGrowthFoundation(
       ? value.operatorDraftAppliedAt
       : undefined,
     recommendedActions: linkedItems.actions.map((action) => ({
-      ...action,
+      ...reconcileActionVerification(action, linkedItems.evidenceItems),
       linkedEvidence: action.linkedEvidenceIds,
     })),
     actionStatusHistory: normalizeActionStatusHistory(value.actionStatusHistory),

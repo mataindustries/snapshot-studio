@@ -114,17 +114,18 @@ The existing Starter Workspace in `src/lib/contestDemo.ts` is the representative
 
 Stable Starter Workspace IDs and reset behavior are unchanged. The UpgradeOS report model is derived at render time and is not copied into local storage.
 
-## Future Snapshot comparisons
+## Follow-Up Snapshot and proof extension
 
-A later comparison sprint can add an explicit relationship between Snapshot records and evaluate the same five reviewed score categories over time. The current foundation already provides:
+The focused Proof Loop extension now adds an explicit relationship between a distinct Follow-Up Snapshot and its saved baseline. It reuses:
 
 - stable source action and mission IDs
-- baseline evidence
+- canonical action status and implementation notes
+- baseline/after evidence links
+- accepted proposal scope
 - success criteria
-- required verification evidence
-- unscored future checkpoints
+- the existing five score categories and report validation
 
-Future work should add comparison calculations only after a new assessment has been reviewed. It should never infer improvement from action completion alone.
+Carried-forward scores remain visibly unreviewed until the operator confirms every current value. Verification is independent from completion and requires a recorded method plus relevant after-state support. The short Proof Report states unsupported outcomes as `Not yet verified` and does not infer rankings, leads, bookings, conversion, customer behavior, revenue, or score improvement.
 
 ## Intentionally deferred
 
@@ -137,7 +138,7 @@ V1 does not add:
 - editable online plans
 - a full achievement catalog or tier system
 - speculative ROI calculations
-- historical score comparison calculations
+- automated multi-period trend or attribution calculations
 - additional archetype coin artwork
 
 ## Validation and preview

@@ -1,6 +1,7 @@
 import { ExternalLink, Link2 } from 'lucide-react'
 import {
   getActionsForEvidence,
+  getEvidenceTiming,
   getEvidenceSummary,
 } from '../lib/evidence'
 import type { EvidenceItem, RecommendedAction } from '../types'
@@ -39,6 +40,8 @@ export function EvidenceReport({
 
       <div className="evidence-summary-strip" aria-label="Evidence review summary">
         <EvidenceStat label="Evidence items reviewed" value={summary.itemCount.toString()} />
+        <EvidenceStat label="Baseline evidence" value={summary.baselineCount.toString()} />
+        <EvidenceStat label="After evidence" value={summary.afterCount.toString()} />
         <EvidenceStat label="Screenshots included" value={summary.screenshotCount.toString()} />
         <EvidenceStat
           label="Operating actions linked"
@@ -79,12 +82,17 @@ function ClientEvidenceCard({
   audience: AudienceNoun
 }) {
   const linkedActions = getActionsForEvidence(item, actions)
-  const showComparison = Boolean(item.beforeCaption && item.proposedAfterCaption)
+  const evidenceTiming = getEvidenceTiming(item)
+  const showComparison = evidenceTiming === 'Baseline'
+    && Boolean(item.beforeCaption && item.proposedAfterCaption)
 
   return (
-    <article className="client-evidence-card" id={`evidence-${item.id}`}>
+    <article
+      className={`client-evidence-card evidence-${evidenceTiming.toLocaleLowerCase()}`}
+      id={`evidence-${item.id}`}
+    >
       <header className="client-evidence-header">
-        <span>Evidence {number}</span>
+        <span>{evidenceTiming} evidence {number}</span>
         <div>
           <h3>{item.title || 'Primary observation'}</h3>
           <small>{item.evidenceType}</small>
@@ -117,14 +125,28 @@ function ClientEvidenceCard({
       )}
 
       <div className="client-evidence-findings">
-        <EvidenceFinding label="What we observed" text={item.observation} />
         <EvidenceFinding
-          label={`${audience.singular.charAt(0).toLocaleUpperCase() + audience.singular.slice(1)} impact`}
+          label={evidenceTiming === 'After'
+            ? 'Observable after implementation'
+            : 'Observed before implementation'}
+          text={item.observation}
+        />
+        <EvidenceFinding
+          label={evidenceTiming === 'After'
+            ? 'Verification relevance'
+            : `${audience.singular.charAt(0).toLocaleUpperCase() + audience.singular.slice(1)} impact`}
           text={item.whyItMatters}
         />
-        <EvidenceFinding label="Recommended move" text={item.recommendedChange} accent />
+        <EvidenceFinding
+          label={evidenceTiming === 'After' ? 'Implemented change observed' : 'Recommended move'}
+          text={item.recommendedChange}
+          accent
+        />
         {item.expectedOutcome && (
-          <EvidenceFinding label="Expected gain" text={item.expectedOutcome} />
+          <EvidenceFinding
+            label={evidenceTiming === 'After' ? 'Conservative outcome note' : 'Expected gain'}
+            text={item.expectedOutcome}
+          />
         )}
       </div>
 

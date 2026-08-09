@@ -1,10 +1,18 @@
-import type { SavedSnapshot } from '../types'
-import { createStableId } from './evidence'
-import { normalizeGrowthFoundation } from './growthPlanning'
-import { defaultReportOffer, normalizeOfferMode } from './reportOffer'
-import { normalizeScores } from './scoring'
+import type { SavedSnapshot, ScoreKey, SnapshotKind } from '../types'
+import { createStableId } from './evidence.ts'
+import { normalizeGrowthFoundation } from './growthPlanning.ts'
+import { defaultReportOffer, normalizeOfferMode } from './reportOffer.ts'
+import { normalizeScores } from './scoring.ts'
 
 const storageKey = 'snapshot-studio:snapshots'
+const storageVersion = 2
+const scoreKeys: readonly ScoreKey[] = [
+  'visibility',
+  'trust',
+  'conversion',
+  'aiSearchReadiness',
+  'competitorPosition',
+] as const
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -12,6 +20,19 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function stringValue(value: unknown, fallback = '') {
   return typeof value === 'string' ? value : fallback
+}
+
+function optionalString(value: unknown) {
+  const result = stringValue(value).trim()
+  return result || undefined
+}
+
+function normalizeReviewedScoreKeys(value: unknown) {
+  return Array.isArray(value)
+    ? Array.from(new Set(value.filter(
+        (key): key is ScoreKey => scoreKeys.includes(key as ScoreKey),
+      )))
+    : []
 }
 
 function normalizeOutputs(value: unknown): SavedSnapshot['outputs'] {
@@ -84,6 +105,12 @@ export function migrateSnapshot(value: unknown, index = 0): SavedSnapshot | null
     : 'ask-permission'
   const branding = normalizeBranding(value.branding)
   const reportOffer = normalizeReportOffer(value, branding)
+  const requestedBaselineSnapshotId = optionalString(value.baselineSnapshotId)
+  const snapshotKind: SnapshotKind = value.snapshotKind === 'Follow-up'
+    && requestedBaselineSnapshotId
+    && requestedBaselineSnapshotId !== snapshotId
+    ? 'Follow-up'
+    : 'Baseline'
 
   return {
     ...value,
@@ -104,6 +131,14 @@ export function migrateSnapshot(value: unknown, index = 0): SavedSnapshot | null
     scores,
     outputs: normalizeOutputs(value.outputs),
     branding,
+    snapshotKind,
+    baselineSnapshotId: snapshotKind === 'Follow-up'
+      ? requestedBaselineSnapshotId
+      : undefined,
+    engagementProposalId: optionalString(value.engagementProposalId),
+    reviewedScoreKeys: snapshotKind === 'Follow-up'
+      ? normalizeReviewedScoreKeys(value.reviewedScoreKeys)
+      : undefined,
     ...reportOffer,
     ...growthFoundation,
   }
@@ -114,14 +149,25 @@ function safelyParseSnapshots(value: string | null): SavedSnapshot[] {
 
   try {
     const parsed = JSON.parse(value)
-    return Array.isArray(parsed)
+    const snapshots = Array.isArray(parsed)
       ? parsed
-          .map((snapshot, index) => migrateSnapshot(snapshot, index))
-          .filter((snapshot): snapshot is SavedSnapshot => snapshot !== null)
-      : []
+      : isRecord(parsed) && Array.isArray(parsed.snapshots)
+        ? parsed.snapshots
+        : []
+    return snapshots
+      .map((snapshot, index) => migrateSnapshot(snapshot, index))
+      .filter((snapshot): snapshot is SavedSnapshot => snapshot !== null)
   } catch {
     return []
   }
+}
+
+function persistSnapshots(snapshots: SavedSnapshot[]) {
+  localStorage.setItem(storageKey, JSON.stringify({
+    version: storageVersion,
+    snapshots,
+  }))
+  return snapshots
 }
 
 export function loadSnapshots(): SavedSnapshot[] {
@@ -150,12 +196,10 @@ export function saveSnapshot(snapshot: SavedSnapshot): SavedSnapshot[] {
     ...snapshots.filter((saved) => saved.id !== normalizedSnapshot.id),
   ]
 
-  localStorage.setItem(storageKey, JSON.stringify(nextSnapshots))
-  return nextSnapshots
+  return persistSnapshots(nextSnapshots)
 }
 
 export function deleteSnapshot(snapshotId: string): SavedSnapshot[] {
   const nextSnapshots = loadSnapshots().filter((snapshot) => snapshot.id !== snapshotId)
-  localStorage.setItem(storageKey, JSON.stringify(nextSnapshots))
-  return nextSnapshots
+  return persistSnapshots(nextSnapshots)
 }

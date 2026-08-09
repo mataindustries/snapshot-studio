@@ -327,6 +327,8 @@ export function UpgradeAccountabilityReport({
   achievements: BusinessAchievement[]
   snapshotRecord: SnapshotRecordCheckpoint[]
 }) {
+  const hasVerifiedEntry = ledger.some((entry) => entry.status === 'Verified')
+
   return (
     <section
       className="report-page upgrade-accountability-page"
@@ -336,8 +338,9 @@ export function UpgradeAccountabilityReport({
         <p className="section-kicker">Evidence before claims</p>
         <h2 id="impact-ledger-title">Impact Ledger</h2>
         <p>
-          Every mission begins with a baseline, ends with new proof, and remains
-          unverified until a future Snapshot reviews the result.
+          {hasVerifiedEntry
+            ? 'Every mission begins with a baseline. Verification appears only where a recorded method and linked after-state support the observable result.'
+            : 'Every mission begins with a baseline, ends with new proof, and remains unverified until a future Snapshot reviews the result.'}
         </p>
       </div>
 
@@ -357,6 +360,24 @@ export function UpgradeAccountabilityReport({
                 <dt>Baseline</dt>
                 <dd>{entry.baselineEvidence[0] ?? upgradeOSEmptyStateText.evidence}</dd>
               </div>
+              {entry.completionDate && (
+                <div>
+                  <dt>Completion date</dt>
+                  <dd>{entry.completionDate}</dd>
+                </div>
+              )}
+              {entry.verificationEvidence && entry.verificationEvidence.length > 0 && (
+                <div>
+                  <dt>After evidence</dt>
+                  <dd>{entry.verificationEvidence[0]}</dd>
+                </div>
+              )}
+              {entry.verificationMethod && (
+                <div>
+                  <dt>Recorded verification method</dt>
+                  <dd>{entry.verificationMethod}</dd>
+                </div>
+              )}
               <div>
                 <dt>Next proof required</dt>
                 <dd>{entry.nextProofRequired}</dd>
@@ -369,6 +390,11 @@ export function UpgradeAccountabilityReport({
             {entry.actionTaken && (
               <p className="impact-action-taken">
                 <strong>Progress note:</strong> {entry.actionTaken}
+              </p>
+            )}
+            {entry.businessImpact && (
+              <p className="impact-action-taken">
+                <strong>Conservative outcome note:</strong> {entry.businessImpact}
               </p>
             )}
           </article>

@@ -3,6 +3,7 @@ import {
   CheckCircle2,
   Copy,
   FilePlus2,
+  ListChecks,
   Mail,
   Pencil,
   Printer,
@@ -50,10 +51,16 @@ async function copyToClipboard(text: string) {
   }
 }
 
-export function ProposalWorkspace({ snapshots, creationRequest, focusRequest }: {
+export function ProposalWorkspace({
+  snapshots,
+  creationRequest,
+  focusRequest,
+  onOpenImplementation,
+}: {
   snapshots: SavedSnapshot[]
   creationRequest?: ProposalCreationRequest
   focusRequest?: ProposalFocusRequest
+  onOpenImplementation?: (proposal: Proposal) => void
 }) {
   const [proposals, setProposals] = useState<Proposal[]>(() => loadProposals())
   const [activeProposal, setActiveProposal] = useState<Proposal | null>(null)
@@ -273,6 +280,16 @@ export function ProposalWorkspace({ snapshots, creationRequest, focusRequest }: 
                   <button className="secondary-button" type="button" onClick={() => setActiveProposal(duplicateProposal(activeProposal))}><Copy size={16} /> Duplicate</button>
                   <button className="secondary-button" type="button" onClick={() => setStatus(activeProposal, 'Sent')}><Send size={16} /> Mark Sent</button>
                   <button className="secondary-button" type="button" onClick={() => setStatus(activeProposal, 'Accepted')}><CheckCircle2 size={16} /> Mark Accepted</button>
+                  {activeProposal.proposalStatus === 'Accepted' && snapshot && onOpenImplementation && (
+                    <button
+                      className="primary-button"
+                      type="button"
+                      onClick={() => onOpenImplementation(activeProposal)}
+                    >
+                      <ListChecks size={16} />
+                      Open implementation
+                    </button>
+                  )}
                   <button className="ghost-button" type="button" onClick={() => setStatus(activeProposal, 'Declined')}>Mark Declined</button>
                 </div>
               </div>

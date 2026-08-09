@@ -1,6 +1,7 @@
 import type {
   ActionCategory,
   RecommendedActionStatus,
+  VerificationStatus,
 } from '../types'
 
 export type UpgradeMissionEffort = 'Low' | 'Medium' | 'High'
@@ -9,6 +10,7 @@ export type UpgradeMission = {
   id: string
   sourceActionId: string
   sourceStatus: RecommendedActionStatus
+  sourceVerificationStatus?: VerificationStatus
   title: string
   objective: string
   category: ActionCategory
@@ -40,6 +42,7 @@ export type ImpactLedgerEntry = {
   actionTaken?: string
   completionDate?: string
   verificationEvidence?: string[]
+  verificationMethod?: string
   businessImpact?: string
   nextProofRequired: string
   verificationTiming: string

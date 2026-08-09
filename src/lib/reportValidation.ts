@@ -3,6 +3,7 @@ import type {
   RecommendedAction,
   ReportMode,
   ScoreKey,
+  SnapshotKind,
   SnapshotForm,
 } from '../types'
 import type {
@@ -51,6 +52,9 @@ export type ReportValidationResult = {
 export type ReportValidationInput = {
   reportMode: ReportMode
   snapshotId: string | null
+  snapshotKind?: SnapshotKind
+  baselineSnapshotId?: string
+  reviewedScoreKeys?: ScoreKey[]
   archetype: string
   form: SnapshotForm
   scores: Partial<Record<ScoreKey, unknown>>
@@ -259,6 +263,24 @@ export function validateReportForRender(
       section: 'Scores',
       message: 'All five dimensions are still at the known default 10/20 state. Review the assessment before export.',
     })
+  }
+
+  if (input.snapshotKind === 'Follow-up') {
+    if (!input.baselineSnapshotId || input.baselineSnapshotId === input.snapshotId) {
+      addIssue(issues, {
+        code: 'follow-up-baseline-link',
+        section: 'Personalization',
+        message: 'The Follow-Up Snapshot must retain a distinct baseline Snapshot link.',
+      })
+    }
+    const reviewedScoreKeys = new Set(input.reviewedScoreKeys ?? [])
+    if (requiredScoreKeys.some((key) => !reviewedScoreKeys.has(key))) {
+      addIssue(issues, {
+        code: 'follow-up-scores-unreviewed',
+        section: 'Scores',
+        message: 'Review all five current scores before exporting a Follow-Up Snapshot.',
+      })
+    }
   }
 
   const eligibleMissionCount = getEligibleUpgradeMissionCount(input.actions)

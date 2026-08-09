@@ -7,6 +7,7 @@ import type {
   RecommendedActionEffort,
   RecommendedActionImpact,
   RecommendedActionStatus,
+  VerificationStatus,
 } from '../types'
 import type {
   AchievementStatus,
@@ -19,7 +20,15 @@ import type {
   UpgradeMissionEffort,
   UpgradeOSReportModel,
 } from '../types/upgradeOS'
-import { isEvidenceReportReady } from './evidence.ts'
+import {
+  getEvidenceTiming,
+  isEvidenceReportReady,
+} from './evidence.ts'
+import {
+  getLinkedAfterEvidence,
+  isRelevantAfterEvidence,
+  normalizeVerificationStatus,
+} from './implementationVerification.ts'
 import {
   firstCompleteSentence,
   formatSentencePhrase,
@@ -261,6 +270,7 @@ function evidenceForAction(action: RecommendedAction, evidenceItems: EvidenceIte
   return evidenceItems.filter(
     (item) =>
       isEvidenceReportReady(item)
+      && getEvidenceTiming(item) === 'Baseline'
       && (action.linkedEvidenceIds.includes(item.id)
         || item.linkedActionIds.includes(action.id)),
   )
@@ -486,6 +496,7 @@ function createMission(
     id: `upgrade-mission-${action.id}`,
     sourceActionId: action.id,
     sourceStatus: action.status,
+    sourceVerificationStatus: normalizeVerificationStatus(action.verificationStatus),
     title: limitWords(title, 14),
     objective: ensureSentence(limitWords(objective, 28)),
     category: action.category,
@@ -563,7 +574,11 @@ export function getEligibleUpgradeMissionCount(actions: RecommendedAction[]) {
   return deduplicateActions(actions).filter((action) => action.status !== 'Deferred').length
 }
 
-function ledgerStatus(status: RecommendedActionStatus): ImpactLedgerStatus {
+function ledgerStatus(
+  status: RecommendedActionStatus,
+  verificationStatus?: VerificationStatus,
+): ImpactLedgerStatus {
+  if (normalizeVerificationStatus(verificationStatus) === 'Verified') return 'Verified'
   if (status === 'Completed') return 'Completed'
   if (
     status === 'Scheduled'
@@ -576,13 +591,14 @@ function ledgerStatus(status: RecommendedActionStatus): ImpactLedgerStatus {
 }
 
 function completedDate(
-  mission: UpgradeMission,
+  action: RecommendedAction,
   history: ActionStatusChange[],
 ) {
+  if (action.completionDate?.trim()) return formatDate(action.completionDate)
   const latest = history
     .filter(
       (entry) =>
-        entry.actionId === mission.sourceActionId
+        entry.actionId === action.id
         && entry.newStatus === 'Completed',
     )
     .sort((left, right) => right.changedAt.localeCompare(left.changedAt))[0]
@@ -592,30 +608,64 @@ function completedDate(
 function createImpactLedger(
   missions: UpgradeMission[],
   history: ActionStatusChange[],
+  actions: RecommendedAction[],
+  evidenceItems: EvidenceItem[],
 ) {
+  const actionById = new Map(actions.map((action) => [action.id, action]))
   return missions.map((mission): ImpactLedgerEntry => {
+    const action = actionById.get(mission.sourceActionId)
     const firstCriterion = withoutFinalPunctuation(mission.successCriteria[0] ?? '')
+    if (!action) {
+      return {
+        missionId: mission.id,
+        missionTitle: mission.title,
+        status: ledgerStatus(
+          mission.sourceStatus,
+          mission.sourceVerificationStatus,
+        ),
+        baselineEvidence: mission.evidence,
+        nextProofRequired: firstCriterion
+          ? `Dated evidence that ${lowerFirst(firstCriterion)}.`
+          : 'Dated before-and-after evidence tied to the mission objective.',
+        verificationTiming: 'During the next Snapshot after implementation; completion alone is not verification.',
+      }
+    }
+    const verificationStatus = normalizeVerificationStatus(action.verificationStatus)
+    const afterEvidence = getLinkedAfterEvidence(action, evidenceItems)
+      .filter(isRelevantAfterEvidence)
+      .map(formatBaselineEvidence)
+      .filter(Boolean)
     return {
       missionId: mission.id,
       missionTitle: mission.title,
-      status: ledgerStatus(mission.sourceStatus),
+      status: ledgerStatus(action.status, action.verificationStatus),
       baselineEvidence: mission.evidence,
-      actionTaken: undefined,
-      completionDate: mission.sourceStatus === 'Completed'
-        ? completedDate(mission, history)
+      actionTaken: action.status === 'Completed'
+        ? action.implementationNote
         : undefined,
-      verificationEvidence: [],
-      businessImpact: undefined,
-      nextProofRequired: firstCriterion
+      completionDate: action.status === 'Completed'
+        ? completedDate(action, history)
+        : undefined,
+      verificationEvidence: afterEvidence,
+      verificationMethod: action.verificationMethod,
+      businessImpact: verificationStatus === 'Verified'
+        ? action.outcomeNote
+        : undefined,
+      nextProofRequired: verificationStatus === 'Verified'
+        ? 'Continue monitoring; no business impact is implied without separately supplied evidence.'
+        : firstCriterion
         ? `Dated evidence that ${lowerFirst(firstCriterion)}.`
         : 'Dated before-and-after evidence tied to the mission objective.',
-      verificationTiming: 'During the next Snapshot after implementation; completion alone is not verification.',
+      verificationTiming: verificationStatus === 'Verified'
+        ? 'Verified from the recorded method and linked after-state support.'
+        : 'During the next Snapshot after implementation; completion alone is not verification.',
     }
   })
 }
 
-function achievementStatus(status: RecommendedActionStatus): AchievementStatus {
-  return status === 'Not Started' || status === 'Deferred'
+function achievementStatus(mission: UpgradeMission): AchievementStatus {
+  if (mission.sourceVerificationStatus === 'Verified') return 'Earned'
+  return mission.sourceStatus === 'Not Started' || mission.sourceStatus === 'Deferred'
     ? 'Locked'
     : 'In Progress'
 }
@@ -648,7 +698,7 @@ function createAchievements(
         `For “${mission.title}”: ${mission.successCriteria[0]}`,
         `Dated evidence for “${mission.title}” reviewed during a follow-up Snapshot.`,
       ],
-      status: achievementStatus(mission.sourceStatus),
+      status: achievementStatus(mission),
     }
   })
 }
@@ -757,6 +807,8 @@ export function createUpgradeOSReportModel(
     impactLedger: createImpactLedger(
       missions,
       input.actionStatusHistory,
+      input.actions,
+      input.evidenceItems,
     ),
     achievements: createAchievements(missions, audience),
     snapshotRecord: createSnapshotRecord(input),
@@ -833,6 +885,11 @@ export function formatImpactLedgerText(entries: ImpactLedgerEntry[]) {
 
 ${entries.map((entry) => `${entry.missionTitle} — ${entry.status}
 - Baseline: ${entry.baselineEvidence[0] ?? upgradeOSEmptyStateText.evidence}
+- Implementation note: ${entry.actionTaken ?? 'Not recorded'}
+- Completion date: ${entry.completionDate ?? 'Not recorded'}
+- After evidence: ${entry.verificationEvidence?.[0] ?? 'Not yet verified'}
+- Verification method: ${entry.verificationMethod ?? 'Not recorded'}
+- Conservative outcome: ${entry.businessImpact ?? 'Not yet verified'}
 - Next proof required: ${entry.nextProofRequired}
 - Verification timing: ${entry.verificationTiming}`).join('\n\n')}`
 }

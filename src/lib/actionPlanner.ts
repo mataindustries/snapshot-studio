@@ -6,8 +6,12 @@ import type {
   Scores,
   SnapshotForm,
 } from '../types'
-import { normalizeActionStatus } from './actionProgress'
-import { createStableId } from './evidence'
+import { normalizeActionStatus } from './actionProgress.ts'
+import { createStableId } from './evidence.ts'
+import {
+  normalizeCompletionDate,
+  normalizeVerificationStatus,
+} from './implementationVerification.ts'
 import {
   capitalizeFirst,
   formatSentencePhrase,
@@ -16,9 +20,9 @@ import {
   getDisplayCity,
   getRecommendationSubject,
   withIndefiniteArticle,
-} from './reportDisplay'
-import { scoreAction } from './prioritization'
-import { emptyScores } from './scoring'
+} from './reportDisplay.ts'
+import { scoreAction } from './prioritization.ts'
+import { emptyScores } from './scoring.ts'
 
 type ActionProfile = {
   objective: string
@@ -261,6 +265,10 @@ export function normalizeRecommendedAction(
     linkedEvidenceIds: linkedEvidence,
     evidenceReference: stringValue(value.evidenceReference) || undefined,
     implementationNote: stringValue(value.implementationNote) || undefined,
+    completionDate: normalizeCompletionDate(value.completionDate),
+    verificationMethod: stringValue(value.verificationMethod) || undefined,
+    verificationStatus: normalizeVerificationStatus(value.verificationStatus),
+    outcomeNote: stringValue(value.outcomeNote ?? value.conservativeOutcomeNote) || undefined,
   }
 }
 

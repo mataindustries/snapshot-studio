@@ -1,0 +1,580 @@
+.proof-report-workspace {
+  display: grid;
+  gap: 14px;
+  margin: 28px 0;
+}
+
+.proof-report-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px;
+}
+
+.proof-report-controls h2 {
+  margin: 0;
+}
+
+.proof-report-controls p:last-child {
+  max-width: 70ch;
+  margin: 6px 0 0;
+  color: var(--muted);
+}
+
+.proof-report-controls .primary-button {
+  flex: 0 0 auto;
+}
+
+.proof-report-validation {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  padding: 13px 15px;
+  border: 1px solid #d4a151;
+  border-radius: 8px;
+  background: #fff8e8;
+  color: #714b12;
+}
+
+.proof-report-validation ul {
+  display: grid;
+  gap: 3px;
+  margin: 6px 0 0;
+  padding-left: 19px;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.proof-report-document {
+  --proof-ink: #172638;
+  --proof-muted: #625e57;
+  --proof-gold: #b2863d;
+  --proof-teal: #1f6f7b;
+  display: grid;
+  gap: 20px;
+  width: min(100%, 920px);
+  margin: 0 auto;
+  padding: clamp(24px, 5vw, 54px);
+  border: 1px solid #d8cdbb;
+  border-radius: 10px;
+  background: #fffdf8;
+  box-shadow: 0 20px 46px rgba(23, 32, 42, 0.12);
+  color: var(--proof-ink);
+}
+
+.proof-report-coverline,
+.proof-report-document > footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.proof-report-coverline {
+  padding-bottom: 11px;
+  border-bottom: 2px solid var(--proof-gold);
+}
+
+.proof-report-coverline > div {
+  display: grid;
+  gap: 1px;
+}
+
+.proof-report-coverline span,
+.proof-report-coverline > strong,
+.proof-report-document > footer span {
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.proof-report-coverline small {
+  color: var(--proof-muted);
+  font-size: 0.68rem;
+}
+
+.proof-report-intro {
+  display: grid;
+  gap: 7px;
+  padding: 22px;
+  border-radius: 9px;
+  background: linear-gradient(140deg, #f4ead8, #fffdf8 58%, #eaf5f5);
+}
+
+.proof-report-kicker,
+.proof-report-section header small,
+.proof-next-action small {
+  margin: 0;
+  color: #855f25;
+  font-size: 0.69rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.proof-report-intro h1 {
+  margin: 0;
+  color: var(--proof-ink);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(2.25rem, 7vw, 4.25rem);
+  line-height: 0.98;
+}
+
+.proof-report-intro > p:not(.proof-report-kicker) {
+  margin: 0;
+  color: var(--proof-muted);
+  font-weight: 750;
+}
+
+.proof-report-intro > dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0 0;
+}
+
+.proof-report-intro > dl > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding: 9px;
+  border: 1px solid rgba(155, 120, 62, 0.26);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.proof-report-document dt {
+  color: var(--proof-muted);
+  font-size: 0.64rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.proof-report-document dd {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 750;
+  line-height: 1.4;
+}
+
+.proof-report-section {
+  display: grid;
+  gap: 12px;
+}
+
+.proof-report-section > header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #ddd1bd;
+}
+
+.proof-report-section > header > span {
+  display: inline-grid;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: var(--proof-ink);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 900;
+  place-items: center;
+}
+
+.proof-report-section h2,
+.proof-next-action h2 {
+  margin: 2px 0 0;
+  color: var(--proof-ink);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.45rem;
+  line-height: 1.08;
+}
+
+.proof-scope-section > ul,
+.proof-open-section > ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 20px;
+  color: #443b31;
+  font-size: 0.83rem;
+  line-height: 1.4;
+}
+
+.proof-action-list {
+  display: grid;
+  gap: 12px;
+}
+
+.proof-action-card {
+  display: grid;
+  gap: 11px;
+  padding: 14px;
+  border: 1px solid #d7c7ad;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.proof-action-card > header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.proof-action-card > header > div {
+  display: grid;
+  gap: 3px;
+}
+
+.proof-action-card h3 {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.proof-action-card > header small {
+  color: #855f25;
+  font-size: 0.65rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.proof-action-card > header > span {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 7px;
+  border-radius: 999px;
+  background: #fff1d8;
+  color: #7a5217;
+  font-size: 0.64rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.proof-action-card > header > span.verified {
+  background: #e7f4ed;
+  color: #176142;
+}
+
+.proof-action-card > header > span.could-not-verify {
+  background: #f7e9e6;
+  color: #813f35;
+}
+
+.proof-implementation-details,
+.proof-verification-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.proof-implementation-details > div,
+.proof-verification-details > div {
+  display: grid;
+  gap: 3px;
+  padding: 9px;
+  border-radius: 6px;
+  background: #f6f3ed;
+}
+
+.proof-evidence-comparison {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.proof-evidence-column {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid #cdbb9e;
+  border-left: 4px solid #8f7040;
+  border-radius: 7px;
+  background: #fffaf1;
+}
+
+.proof-evidence-column.after {
+  border-color: #a8cbd0;
+  border-left-color: var(--proof-teal);
+  background: #f0fafb;
+}
+
+.proof-evidence-column h4 {
+  margin: 0;
+  color: var(--proof-ink);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.proof-evidence-column > article {
+  display: grid;
+  gap: 4px;
+  padding-top: 7px;
+  border-top: 1px solid rgba(99, 78, 46, 0.18);
+}
+
+.proof-evidence-column img {
+  width: 100%;
+  max-height: 130px;
+  border: 1px solid #d5cab9;
+  border-radius: 5px;
+  object-fit: contain;
+}
+
+.proof-evidence-column strong {
+  font-size: 0.78rem;
+}
+
+.proof-evidence-column p {
+  margin: 0;
+  color: #4c4339;
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
+.proof-evidence-column small {
+  overflow-wrap: anywhere;
+  color: var(--proof-muted);
+  font-size: 0.65rem;
+  line-height: 1.35;
+}
+
+.proof-empty-state,
+.proof-open-section > p,
+.proof-scope-section > p {
+  margin: 0;
+  color: var(--proof-muted);
+}
+
+.proof-next-action {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  padding: 17px;
+  border: 1px solid #b9d2d6;
+  border-left: 5px solid var(--proof-teal);
+  border-radius: 8px;
+  background: #eff8f9;
+}
+
+.proof-next-action svg {
+  color: var(--proof-teal);
+}
+
+.proof-next-action p {
+  margin: 8px 0 0;
+  color: var(--proof-muted);
+}
+
+.proof-claim-note {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 9px;
+  padding: 11px 13px;
+  border: 1px solid #d8cdbb;
+  border-radius: 7px;
+  color: var(--proof-muted);
+}
+
+.proof-claim-note p {
+  margin: 0;
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.proof-report-document > footer {
+  padding-top: 10px;
+  border-top: 2px solid var(--proof-gold);
+}
+
+@media (max-width: 640px) {
+  .proof-report-controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .proof-report-controls .primary-button {
+    width: 100%;
+  }
+
+  .proof-report-document {
+    gap: 16px;
+    padding: 18px 14px;
+  }
+
+  .proof-report-intro > dl,
+  .proof-implementation-details,
+  .proof-verification-details,
+  .proof-evidence-comparison {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .proof-action-card > header,
+  .proof-report-document > footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media print {
+  body.printing-proof-report {
+    background: #fff !important;
+  }
+
+  body.printing-proof-report .app-shell > * {
+    display: none !important;
+  }
+
+  body.printing-proof-report .proof-report-workspace,
+  body.printing-proof-report .proof-report-document {
+    display: grid !important;
+  }
+
+  body.printing-proof-report .proof-report-workspace {
+    gap: 0;
+    margin: 0 !important;
+  }
+
+  body.printing-proof-report .proof-report-controls,
+  body.printing-proof-report .proof-report-validation {
+    display: none !important;
+  }
+
+  body.printing-proof-report .proof-report-document {
+    gap: 0.12in;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0.18in 0.2in;
+    border: 0;
+    border-radius: 0;
+    background: #fff !important;
+    box-shadow: none;
+    color: #172638 !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  body.printing-proof-report .proof-report-intro {
+    gap: 0.03in;
+    padding: 0.13in;
+    background: #fff !important;
+  }
+
+  body.printing-proof-report .proof-report-intro h1 {
+    font-size: 26pt;
+  }
+
+  body.printing-proof-report .proof-report-intro > dl {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.05in;
+    margin-top: 0.06in;
+  }
+
+  body.printing-proof-report .proof-report-intro > dl > div,
+  body.printing-proof-report .proof-implementation-details > div,
+  body.printing-proof-report .proof-verification-details > div {
+    padding: 0.06in;
+    background: #fff !important;
+  }
+
+  body.printing-proof-report .proof-report-section {
+    gap: 0.07in;
+  }
+
+  body.printing-proof-report .proof-report-section > header {
+    gap: 0.06in;
+    padding-bottom: 0.04in;
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  body.printing-proof-report .proof-report-section > header > span {
+    width: 0.25in;
+    height: 0.25in;
+    border: 1px solid #172638;
+    background: #fff !important;
+    color: #172638 !important;
+    font-size: 6.5pt;
+  }
+
+  body.printing-proof-report .proof-report-section h2,
+  body.printing-proof-report .proof-next-action h2 {
+    font-size: 13pt;
+  }
+
+  body.printing-proof-report .proof-scope-section > ul,
+  body.printing-proof-report .proof-open-section > ul,
+  body.printing-proof-report .proof-report-section > p {
+    font-size: 7.5pt;
+    line-height: 1.3;
+  }
+
+  body.printing-proof-report .proof-action-list {
+    gap: 0.08in;
+  }
+
+  body.printing-proof-report .proof-action-card {
+    gap: 0.06in;
+    padding: 0.09in;
+    background: #fff !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  body.printing-proof-report .proof-action-card h3 {
+    font-size: 9pt;
+  }
+
+  body.printing-proof-report .proof-action-card > header > span,
+  body.printing-proof-report .proof-action-card > header small,
+  body.printing-proof-report dt,
+  body.printing-proof-report .proof-evidence-column h4,
+  body.printing-proof-report .proof-evidence-column small,
+  body.printing-proof-report .proof-report-kicker,
+  body.printing-proof-report .proof-report-section header small,
+  body.printing-proof-report .proof-next-action small {
+    font-size: 6.2pt;
+  }
+
+  body.printing-proof-report dd,
+  body.printing-proof-report .proof-evidence-column p,
+  body.printing-proof-report .proof-evidence-column strong,
+  body.printing-proof-report .proof-next-action p {
+    font-size: 7.2pt;
+    line-height: 1.28;
+  }
+
+  body.printing-proof-report .proof-evidence-column {
+    gap: 0.04in;
+    padding: 0.06in;
+    background: #fff !important;
+  }
+
+  body.printing-proof-report .proof-evidence-column img {
+    max-height: 0.72in;
+  }
+
+  body.printing-proof-report .proof-next-action,
+  body.printing-proof-report .proof-claim-note {
+    padding: 0.08in;
+    background: #fff !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  body.printing-proof-report .proof-claim-note p,
+  body.printing-proof-report .proof-report-document > footer {
+    font-size: 6.5pt;
+  }
+}

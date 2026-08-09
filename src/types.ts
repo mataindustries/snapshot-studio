@@ -71,6 +71,12 @@ export type RecommendedActionStatus =
   | 'Needs Review'
   | 'Deferred'
 
+export type VerificationStatus =
+  | 'Not verified'
+  | 'Ready for review'
+  | 'Verified'
+  | 'Could not verify'
+
 export type ActionStatusChange = {
   actionId: string
   previousStatus: RecommendedActionStatus
@@ -102,6 +108,10 @@ export type RecommendedAction = {
   linkedEvidenceIds: string[]
   evidenceReference?: string
   implementationNote?: string
+  completionDate?: string
+  verificationMethod?: string
+  verificationStatus?: VerificationStatus
+  outcomeNote?: string
 }
 
 export type EvidenceType =
@@ -116,10 +126,13 @@ export type EvidenceType =
 
 export type EvidenceSentiment = 'Strength' | 'Opportunity' | 'Neutral'
 
+export type EvidenceTiming = 'Baseline' | 'After'
+
 export type EvidenceItem = {
   id: string
   evidenceType: EvidenceType
   sentiment: EvidenceSentiment
+  evidenceTiming?: EvidenceTiming
   title: string
   sourceUrl: string
   pageLabel: string
@@ -199,12 +212,18 @@ export type ReportOfferFields = {
   bookingUrl: string
 }
 
+export type SnapshotKind = 'Baseline' | 'Follow-up'
+
 export type SavedSnapshot = SnapshotForm & SnapshotGrowthFoundation & ReportOfferFields & {
   id: string
   createdAt: string
   scores: Scores
   outputs: SnapshotOutputs
   branding?: BrandingFields
+  snapshotKind?: SnapshotKind
+  baselineSnapshotId?: string
+  engagementProposalId?: string
+  reviewedScoreKeys?: ScoreKey[]
 }
 
 export type LeadPriority = 'High' | 'Medium' | 'Low'

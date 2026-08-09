@@ -28,6 +28,7 @@
 
 `src/lib/storage.ts`
 - Saves, loads, migrates, and deletes snapshots in LocalStorage.
+- Writes a versioned `{ version: 2, snapshots }` envelope while continuing to read legacy raw arrays.
 - Preserves unknown legacy snapshot fields during normalization.
 - Uses deterministic fallback IDs for legacy snapshots that did not include IDs.
 - Treats malformed stored JSON as an empty snapshot collection and exposes quota-error detection.
@@ -40,6 +41,19 @@
 
 `src/components/EvidenceReport.tsx`
 - Renders the client-facing evidence summary, screenshot/text cards, source details, recommendation links, and observed/proposed direction comparison.
+
+`src/lib/implementationVerification.ts`
+- Keeps completion and verification as separate action concerns.
+- Requires a completed canonical action, a recorded method, and relevant linked after-state support before `Verified` is accepted.
+- Downgrades unsupported legacy `Verified` values during normalization.
+
+`src/lib/proofLoop.ts`
+- Creates a distinct Follow-Up Snapshot without mutating its baseline.
+- Derives and validates the short Proof Report from the baseline, accepted proposal scope, canonical actions, and evidence.
+- Produces claim-safe text without internal IDs or screenshot Data URLs.
+
+`src/components/FollowUpSnapshotPanel.tsx` and `src/components/ProofReport.tsx`
+- Provide the operator score-review workflow and the isolated one-to-two-page client Proof Report print view.
 
 `src/components/ProgressJourneyReport.tsx`
 - Renders the current/next archetype journey, milestones, action progress, and future-state preview.
@@ -60,6 +74,7 @@ The growth foundation includes:
 - recommended actions
 - expected outcomes
 - evidence items
+- baseline/follow-up kind, stable baseline ID, accepted-proposal ID, and reviewed score keys when the record is a follow-up
 - the `includeIncompleteEvidence` report preference
 - methodology and planning-estimate language
 
@@ -71,6 +86,7 @@ Each evidence item includes:
 
 - stable `id`
 - title and evidence type
+- `Baseline` or `After` timing; legacy or missing timing normalizes to `Baseline`
 - source URL and page/location label
 - observation
 - why it matters
@@ -121,6 +137,9 @@ Generated recommendation actions use deterministic IDs based on action copy and 
 - Starting a new snapshot creates a fresh growth foundation and does not reuse prior evidence IDs or images.
 - Loading a lead updates business inputs without clearing evidence in an already active snapshot.
 - Deleting one snapshot does not mutate any other snapshot's evidence collection.
+- Creating a Follow-Up Snapshot deep-copies the current canonical action/evidence collections into a new stable Snapshot ID and retains the original saved Snapshot as the baseline record.
+- Carried-forward scores begin unreviewed. All five current values require explicit operator review before follow-up report export.
+- Baseline deletion is blocked in the UI while a linked Follow-Up Snapshot exists.
 
 ## Print and text export
 
@@ -135,6 +154,8 @@ The report renders evidence as a separate premium section near the front of the 
 - preserve the progress journey and final footer
 
 “Copy full report” uses a text-only evidence formatter. It includes source, observed state, why it matters, recommended move, optional expected outcome, and supported action titles. It never includes Data URLs or internal IDs.
+
+The Proof Report uses a dedicated body print state. It hides navigation, operator controls, and the long Business Operating Manual; keeps proof action cards together where practical; and prints only accepted scope, completed work, baseline/after support, verification, open items, and the next review step.
 
 ## Future backend upgrade path
 

@@ -439,23 +439,33 @@ export function refreshContestDemoClientCopy(data: ContestDemoData) {
           ...action,
           status: current.status,
           implementationNote: current.implementationNote,
+          completionDate: current.completionDate,
+          verificationMethod: current.verificationMethod,
+          verificationStatus: current.verificationStatus,
+          outcomeNote: current.outcomeNote,
         }
       : action
   })
   const currentEvidence = new Map(
     data.snapshot.evidenceItems.map((item) => [item.id, item]),
   )
+  const canonicalEvidenceIds = new Set(
+    canonical.snapshot.evidenceItems.map((item) => item.id),
+  )
   const evidenceItems = canonical.snapshot.evidenceItems.map((item) => {
     const current = currentEvidence.get(item.id)
     return current?.screenshotDataUrl
       ? {
           ...item,
+          evidenceTiming: current.evidenceTiming,
           screenshotDataUrl: current.screenshotDataUrl,
           screenshotFileName: current.screenshotFileName,
           screenshotAltText: current.screenshotAltText,
         }
       : item
-  })
+  }).concat(
+    data.snapshot.evidenceItems.filter((item) => !canonicalEvidenceIds.has(item.id)),
+  )
 
   const lead: Lead = {
     ...canonical.lead,
@@ -507,6 +517,7 @@ export function resetContestDemo() {
   const allIntakes = loadIntakeDrafts()
   const allSessions = loadFastLaneSessions()
   const allProposals = loadProposals()
+  const allSnapshots = loadSnapshots()
   const intakeIds = new Set([
     contestDemoIds.intake,
     ...allIntakes
@@ -541,6 +552,11 @@ export function resetContestDemo() {
       || proposal.leadId === contestDemoIds.lead,
     )
     .forEach((proposal) => snapshotIds.add(proposal.snapshotId))
+  allSnapshots
+    .filter((snapshot) =>
+      Boolean(snapshot.baselineSnapshotId && snapshotIds.has(snapshot.baselineSnapshotId)),
+    )
+    .forEach((snapshot) => snapshotIds.add(snapshot.id))
   const demoProposals = allProposals.filter((proposal) =>
     proposal.id === contestDemoIds.proposal
     || proposal.leadId === contestDemoIds.lead

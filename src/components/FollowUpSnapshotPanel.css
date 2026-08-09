@@ -1,0 +1,223 @@
+.follow-up-review {
+  display: grid;
+  gap: 16px;
+  margin: 24px 0;
+  padding: clamp(18px, 3vw, 28px);
+  border-left: 6px solid #1f7888;
+  background: linear-gradient(145deg, #fff 0%, #f0f9fa 100%);
+}
+
+.follow-up-review > header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.follow-up-review h2 {
+  margin: 0;
+}
+
+.follow-up-review header p:last-child {
+  max-width: 70ch;
+  margin: 7px 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.follow-up-review > header > span {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 9px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.follow-up-review > header > span.pending {
+  background: #fff1d8;
+  color: #7a5217;
+}
+
+.follow-up-review > header > span.reviewed {
+  background: #e7f4ed;
+  color: #176142;
+}
+
+.follow-up-identity-grid,
+.follow-up-score-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.follow-up-identity-grid {
+  margin: 0;
+}
+
+.follow-up-identity-grid > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid #c8dcdf;
+  border-radius: 7px;
+  background: #fff;
+}
+
+.follow-up-identity-grid dt,
+.follow-up-score-list dt {
+  color: var(--muted);
+  font-size: 0.65rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.follow-up-identity-grid dd,
+.follow-up-score-list dd {
+  overflow-wrap: anywhere;
+  margin: 0;
+  font-weight: 800;
+}
+
+.follow-up-score-list article {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 13px;
+  border: 1px solid #d9c69e;
+  border-left: 4px solid #b88632;
+  border-radius: 8px;
+  background: #fffaf1;
+}
+
+.follow-up-score-list article.reviewed {
+  border-color: #aed0c0;
+  border-left-color: #277356;
+  background: #f3faf6;
+}
+
+.follow-up-score-list article > div:first-child {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.follow-up-score-list article > div:first-child span {
+  color: #7a5217;
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.follow-up-score-list article.reviewed > div:first-child span {
+  color: #176142;
+}
+
+.follow-up-score-list article dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  margin: 0;
+}
+
+.follow-up-score-list article dl > div {
+  display: grid;
+  gap: 2px;
+  padding: 8px;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.follow-up-score-list article > label {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.8rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.follow-up-score-list input[type='checkbox'] {
+  width: 22px;
+  min-height: 22px;
+  accent-color: #1f7888;
+}
+
+.follow-up-review-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 10px;
+  padding-top: 3px;
+}
+
+.follow-up-review-footer > label {
+  display: grid;
+  flex: 1 1 220px;
+  gap: 5px;
+}
+
+.follow-up-review-footer > label > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.follow-up-review-footer input {
+  min-height: 46px;
+  padding: 9px 10px;
+  border: 1px solid #8ca0a7;
+  border-radius: 7px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+}
+
+.follow-up-review-footer .primary-button {
+  min-height: 46px;
+}
+
+.follow-up-review-footer > strong {
+  flex: 1 0 100%;
+  font-size: 0.76rem;
+}
+
+.follow-up-review-footer > strong.unsaved {
+  color: #8a5a08;
+}
+
+.follow-up-review-footer > strong.saved {
+  color: #176142;
+}
+
+@media (max-width: 640px) {
+  .follow-up-review > header {
+    flex-direction: column;
+  }
+
+  .follow-up-identity-grid,
+  .follow-up-score-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .follow-up-review-footer,
+  .follow-up-review-footer > label,
+  .follow-up-review-footer .primary-button {
+    width: 100%;
+  }
+}
+
+@media print {
+  .follow-up-review {
+    display: none !important;
+  }
+}

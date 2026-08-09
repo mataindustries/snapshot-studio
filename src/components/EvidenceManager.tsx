@@ -3,12 +3,13 @@ import { FileCheck2, Plus, Trash2 } from 'lucide-react'
 import {
   createEvidenceItem,
   getEvidenceForAction,
+  getEvidenceForActionByTiming,
   removeActionAndLinks,
   removeDanglingEvidenceLinks,
   removeEvidenceAndLinks,
   setEvidenceActionLink,
 } from '../lib/evidence'
-import type { EvidenceItem, RecommendedAction } from '../types'
+import type { EvidenceItem, EvidenceTiming, RecommendedAction } from '../types'
 import { EvidenceCard } from './EvidenceCard'
 import './EvidenceManager.css'
 
@@ -19,6 +20,7 @@ type EvidenceManagerProps = {
   onChange: (evidenceItems: EvidenceItem[], actions: RecommendedAction[]) => void
   onIncludeIncompleteChange: (include: boolean) => void
   onViewActionEvidence: (actionId: string) => void
+  defaultEvidenceTiming?: EvidenceTiming
 }
 
 export function EvidenceManager({
@@ -28,13 +30,14 @@ export function EvidenceManager({
   onChange,
   onIncludeIncompleteChange,
   onViewActionEvidence,
+  defaultEvidenceTiming = 'Baseline',
 }: EvidenceManagerProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [clearPending, setClearPending] = useState(false)
   const [actionDeletePending, setActionDeletePending] = useState<string | null>(null)
 
-  function addEvidence() {
-    const item = createEvidenceItem()
+  function addEvidence(evidenceTiming: EvidenceTiming = defaultEvidenceTiming) {
+    const item = createEvidenceItem(evidenceTiming)
     onChange([...evidenceItems, item], actions)
     setExpandedId(item.id)
   }
@@ -94,15 +97,32 @@ export function EvidenceManager({
             to the recommendation it supports.
           </p>
         </div>
-        <button className="primary-button" type="button" onClick={addEvidence}>
-          <Plus size={18} aria-hidden="true" />
-          Add evidence
-        </button>
+        <div className="evidence-add-actions">
+          <button
+            className={defaultEvidenceTiming === 'Baseline' ? 'primary-button' : 'secondary-button'}
+            type="button"
+            onClick={() => addEvidence('Baseline')}
+          >
+            <Plus size={18} aria-hidden="true" />
+            Add baseline evidence
+          </button>
+          <button
+            className={defaultEvidenceTiming === 'After' ? 'primary-button' : 'secondary-button'}
+            type="button"
+            onClick={() => addEvidence('After')}
+          >
+            <Plus size={18} aria-hidden="true" />
+            Add after evidence
+          </button>
+        </div>
       </div>
 
       <div className="evidence-storage-note">
         <strong>Browser-local evidence</strong>
-        <span>Screenshots are stored only in this browser for now.</span>
+        <span>
+          Baseline records the original observed state; After records only what is observable
+          after implementation. Screenshots remain in this browser.
+        </span>
       </div>
 
       <section className="recommendation-link-panel" aria-labelledby="recommendation-plan-title">
@@ -113,6 +133,16 @@ export function EvidenceManager({
         <div className="recommendation-action-list">
           {actions.map((action) => {
             const evidenceCount = getEvidenceForAction(action.id, evidenceItems).length
+            const baselineCount = getEvidenceForActionByTiming(
+              action.id,
+              evidenceItems,
+              'Baseline',
+            ).length
+            const afterCount = getEvidenceForActionByTiming(
+              action.id,
+              evidenceItems,
+              'After',
+            ).length
             const deletePending = actionDeletePending === action.id
 
             return (
@@ -120,7 +150,7 @@ export function EvidenceManager({
                 <div>
                   <strong>{action.title}</strong>
                   <span>
-                    {evidenceCount} evidence item{evidenceCount === 1 ? '' : 's'} linked
+                    {evidenceCount} linked · {baselineCount} baseline · {afterCount} after
                   </span>
                 </div>
                 <div className="recommendation-row-actions">
@@ -187,9 +217,13 @@ export function EvidenceManager({
             No evidence yet. Start with one public-facing observation and connect it to the
             action it supports; add a screenshot when one is available.
           </p>
-          <button className="primary-button" type="button" onClick={addEvidence}>
+          <button
+            className="primary-button"
+            type="button"
+            onClick={() => addEvidence(defaultEvidenceTiming)}
+          >
             <Plus size={18} aria-hidden="true" />
-            Add first evidence item
+            Add first {defaultEvidenceTiming.toLocaleLowerCase()} evidence item
           </button>
         </div>
       ) : (

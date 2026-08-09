@@ -50,6 +50,10 @@ function action(
     linkedEvidenceIds: overrides.linkedEvidenceIds ?? [],
     evidenceReference: overrides.evidenceReference,
     implementationNote: overrides.implementationNote,
+    completionDate: overrides.completionDate,
+    verificationMethod: overrides.verificationMethod,
+    verificationStatus: overrides.verificationStatus,
+    outcomeNote: overrides.outcomeNote,
   }
 }
 
@@ -169,6 +173,32 @@ test('completed missions remain in the stable plan and await verification', () =
   assert.equal(model.missions[0].sourceStatus, 'Completed')
   assert.equal(model.impactLedger[0].status, 'Completed')
   assert.equal(model.achievements[0].status, 'In Progress')
+})
+
+test('verified canonical actions populate the existing Impact Ledger without inferred impact', () => {
+  const completed = action(0, {
+    status: 'Completed',
+    implementationNote: 'Published the approved first-screen service message.',
+    completionDate: '2026-06-20',
+    verificationMethod: 'Reviewed the live page on phone and desktop.',
+    verificationStatus: 'Verified',
+    outcomeNote: 'The service, city, and request action are now visible on the first screen.',
+    linkedEvidence: ['evidence-after'],
+    linkedEvidenceIds: ['evidence-after'],
+  })
+  const afterEvidence = {
+    ...evidence('evidence-after', completed.id),
+    evidenceTiming: 'After' as const,
+    title: 'Published first-screen state',
+    observation: 'The live first screen names the service, city, and request action.',
+  }
+  const model = createUpgradeOSReportModel(modelInput([completed], [afterEvidence]))
+
+  assert.equal(model.impactLedger[0].status, 'Verified')
+  assert.equal(model.impactLedger[0].verificationMethod, completed.verificationMethod)
+  assert.equal(model.impactLedger[0].businessImpact, completed.outcomeNote)
+  assert.equal(model.impactLedger[0].verificationEvidence?.length, 1)
+  assert.equal(model.achievements[0].status, 'Earned')
 })
 
 test('baseline evidence comes only from explicit evidence links', () => {

@@ -3,11 +3,19 @@ import { ChevronDown, ChevronUp, ImagePlus, Trash2 } from 'lucide-react'
 import {
   EvidenceImageError,
   evidenceSentiments,
+  evidenceTimings,
   evidenceTypes,
+  getEvidenceTiming,
   isEvidenceReportReady,
   optimizeScreenshot,
 } from '../lib/evidence'
-import type { EvidenceItem, EvidenceSentiment, EvidenceType, RecommendedAction } from '../types'
+import type {
+  EvidenceItem,
+  EvidenceSentiment,
+  EvidenceTiming,
+  EvidenceType,
+  RecommendedAction,
+} from '../types'
 
 type EvidenceCardProps = {
   item: EvidenceItem
@@ -39,6 +47,7 @@ export function EvidenceCard({
   const [imageMessage, setImageMessage] = useState('')
   const [processingImage, setProcessingImage] = useState(false)
   const reportReady = isEvidenceReportReady(item)
+  const evidenceTiming = getEvidenceTiming(item)
   const linkedActions = actions.filter((action) => item.linkedActionIds.includes(action.id))
 
   function updateField<K extends keyof EvidenceItem>(field: K, value: EvidenceItem[K]) {
@@ -98,7 +107,10 @@ export function EvidenceCard({
   }
 
   return (
-    <article className="evidence-editor-card" id={`evidence-manager-item-${item.id}`}>
+    <article
+      className={`evidence-editor-card evidence-${evidenceTiming.toLocaleLowerCase()}`}
+      id={`evidence-manager-item-${item.id}`}
+    >
       <div className="evidence-card-summary">
         <button
           className="evidence-expand-button"
@@ -109,7 +121,7 @@ export function EvidenceCard({
           <span className="evidence-number">Evidence {index + 1}</span>
           <span>
             <strong>{item.title.trim() || 'Untitled observation'}</strong>
-            <small>{item.evidenceType}</small>
+            <small>{item.evidenceType} · {evidenceTiming}</small>
           </span>
           {expanded ? <ChevronUp size={20} aria-hidden="true" /> : <ChevronDown size={20} aria-hidden="true" />}
         </button>
@@ -127,6 +139,11 @@ export function EvidenceCard({
       {expanded && (
         <div className="evidence-editor-body">
           <div className="evidence-editor-grid">
+            <EvidenceTimingSelect
+              label="Evidence state"
+              value={evidenceTiming}
+              onChange={(value) => updateField('evidenceTiming', value)}
+            />
             <EvidenceInput
               label="Short title"
               value={item.title}
@@ -158,22 +175,30 @@ export function EvidenceCard({
 
           <div className="evidence-editor-grid">
             <EvidenceTextArea
-              label="What was observed"
+              label={evidenceTiming === 'After'
+                ? 'What is observable after implementation'
+                : 'What was observed before implementation'}
               value={item.observation}
               onChange={(value) => updateField('observation', value)}
             />
             <EvidenceTextArea
-              label="Why it matters"
+              label={evidenceTiming === 'After'
+                ? 'Why this supports verification'
+                : 'Why it matters'}
               value={item.whyItMatters}
               onChange={(value) => updateField('whyItMatters', value)}
             />
             <EvidenceTextArea
-              label="Recommended change"
+              label={evidenceTiming === 'After'
+                ? 'Implemented change observed'
+                : 'Recommended change'}
               value={item.recommendedChange}
               onChange={(value) => updateField('recommendedChange', value)}
             />
             <EvidenceTextArea
-              label="Expected outcome (optional)"
+              label={evidenceTiming === 'After'
+                ? 'Conservative outcome note (optional)'
+                : 'Expected outcome (optional)'}
               value={item.expectedOutcome}
               onChange={(value) => updateField('expectedOutcome', value)}
             />
@@ -182,7 +207,7 @@ export function EvidenceCard({
           <section className="screenshot-editor" aria-label="Evidence screenshot">
             <div className="screenshot-editor-heading">
               <div>
-                <strong>Screenshot proof</strong>
+                <strong>{evidenceTiming === 'After' ? 'After-state screenshot proof' : 'Baseline screenshot proof'}</strong>
                 <p>Screenshots are stored only in this browser for now.</p>
               </div>
               <label className="file-button">
@@ -262,17 +287,23 @@ export function EvidenceCard({
               onChange={(value) => updateField('annotationLabel', value || undefined)}
             />
             <EvidenceInput
-              label="Before caption (optional)"
+              label={evidenceTiming === 'After'
+                ? 'After-state caption (optional)'
+                : 'Before caption (optional)'}
               value={item.beforeCaption || ''}
-              placeholder="What is visible now"
+              placeholder={evidenceTiming === 'After'
+                ? 'What is visibly present after implementation'
+                : 'What is visible now'}
               onChange={(value) => updateField('beforeCaption', value || undefined)}
             />
-            <EvidenceTextArea
-              label="Proposed-after caption (optional)"
-              value={item.proposedAfterCaption || ''}
-              placeholder="Describe the recommended direction; do not imply it is already complete"
-              onChange={(value) => updateField('proposedAfterCaption', value || undefined)}
-            />
+            {evidenceTiming === 'Baseline' && (
+              <EvidenceTextArea
+                label="Proposed-after caption (optional)"
+                value={item.proposedAfterCaption || ''}
+                placeholder="Describe the recommended direction; do not imply it is already complete"
+                onChange={(value) => updateField('proposedAfterCaption', value || undefined)}
+              />
+            )}
           </div>
 
           <fieldset className="action-link-fieldset">
@@ -404,6 +435,30 @@ function EvidenceSentimentSelect({
       <select value={value} onChange={(event) => onChange(event.target.value as EvidenceSentiment)}>
         {evidenceSentiments.map((option) => <option key={option}>{option}</option>)}
       </select>
+    </label>
+  )
+}
+
+function EvidenceTimingSelect({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: EvidenceTiming
+  onChange: (value: EvidenceTiming) => void
+}) {
+  return (
+    <label className="field evidence-timing-field">
+      <span>{label}</span>
+      <select value={value} onChange={(event) => onChange(event.target.value as EvidenceTiming)}>
+        {evidenceTimings.map((option) => <option key={option}>{option}</option>)}
+      </select>
+      <small>
+        {value === 'Baseline'
+          ? 'Original observed state.'
+          : 'Observable state after implementation.'}
+      </small>
     </label>
   )
 }

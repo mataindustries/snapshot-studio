@@ -1,9 +1,9 @@
 import type { OfferMode, ReportOfferFields } from '../types'
-import { isLikelyValidBookingUrl } from './reportDisplay'
+import { isLikelyValidBookingUrl } from './reportDisplay.ts'
 import {
   getRenderableReportConfiguration,
   type ReportConfiguration,
-} from './reportConfig'
+} from './reportConfig.ts'
 
 export const defaultReportOffer: ReportOfferFields = {
   offerMode: 'Conversation',

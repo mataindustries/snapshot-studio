@@ -1,4 +1,10 @@
-import type { EvidenceItem, EvidenceSentiment, EvidenceType, RecommendedAction } from '../types'
+import type {
+  EvidenceItem,
+  EvidenceSentiment,
+  EvidenceTiming,
+  EvidenceType,
+  RecommendedAction,
+} from '../types'
 
 export const evidenceTypes: readonly EvidenceType[] = [
   'Website',
@@ -12,6 +18,7 @@ export const evidenceTypes: readonly EvidenceType[] = [
 ] as const
 
 export const evidenceSentiments: readonly EvidenceSentiment[] = ['Strength', 'Opportunity', 'Neutral'] as const
+export const evidenceTimings: readonly EvidenceTiming[] = ['Baseline', 'After'] as const
 
 export const maximumScreenshotFileBytes = 12 * 1024 * 1024
 export const maximumStoredScreenshotLength = 1_800_000
@@ -91,6 +98,16 @@ export function normalizeEvidenceSentiment(value: unknown): EvidenceSentiment {
     : 'Neutral'
 }
 
+export function normalizeEvidenceTiming(value: unknown): EvidenceTiming {
+  return typeof value === 'string' && evidenceTimings.includes(value as EvidenceTiming)
+    ? value as EvidenceTiming
+    : 'Baseline'
+}
+
+export function getEvidenceTiming(item: EvidenceItem): EvidenceTiming {
+  return normalizeEvidenceTiming(item.evidenceTiming)
+}
+
 export function isSafeScreenshotDataUrl(value: unknown): value is string {
   if (
     typeof value !== 'string'
@@ -127,6 +144,7 @@ export function normalizeEvidenceItem(value: unknown, index = 0): EvidenceItem |
     title,
     evidenceType: normalizeEvidenceType(value.evidenceType),
     sentiment: normalizeEvidenceSentiment(value.sentiment),
+    evidenceTiming: normalizeEvidenceTiming(value.evidenceTiming),
     sourceUrl,
     intakeDraftId: optionalString(value.intakeDraftId),
     intakeObservationId: optionalString(value.intakeObservationId),
@@ -148,7 +166,7 @@ export function normalizeEvidenceItem(value: unknown, index = 0): EvidenceItem |
   }
 }
 
-export function createEvidenceItem(): EvidenceItem {
+export function createEvidenceItem(evidenceTiming: EvidenceTiming = 'Baseline'): EvidenceItem {
   const now = new Date().toISOString()
 
   return {
@@ -156,6 +174,7 @@ export function createEvidenceItem(): EvidenceItem {
     title: '',
     evidenceType: 'Website',
     sentiment: 'Neutral',
+    evidenceTiming,
     sourceUrl: '',
     pageLabel: '',
     observation: '',
@@ -179,6 +198,16 @@ export function isEvidenceReportReady(item: EvidenceItem) {
 
 export function getEvidenceForAction(actionId: string, evidenceItems: EvidenceItem[]) {
   return evidenceItems.filter((item) => item.linkedActionIds.includes(actionId))
+}
+
+export function getEvidenceForActionByTiming(
+  actionId: string,
+  evidenceItems: EvidenceItem[],
+  evidenceTiming: EvidenceTiming,
+) {
+  return getEvidenceForAction(actionId, evidenceItems).filter(
+    (item) => getEvidenceTiming(item) === evidenceTiming,
+  )
 }
 
 export function getActionsForEvidence(item: EvidenceItem, actions: RecommendedAction[]) {
@@ -319,6 +348,8 @@ export function getEvidenceSummary(items: EvidenceItem[], actions: RecommendedAc
 
   return {
     itemCount: items.length,
+    baselineCount: items.filter((item) => getEvidenceTiming(item) === 'Baseline').length,
+    afterCount: items.filter((item) => getEvidenceTiming(item) === 'After').length,
     screenshotCount: items.filter((item) => Boolean(item.screenshotDataUrl)).length,
     supportedActionCount,
     categories,
@@ -343,7 +374,7 @@ export function formatEvidenceReportText(
     const supports = linkedActions.map((action) => action.title).filter(Boolean).join('; ')
       || 'No operating action linked'
 
-    return `Evidence ${index + 1} — ${item.title || 'Untitled evidence'}
+    return `Evidence ${index + 1} — ${getEvidenceTiming(item)} — ${item.title || 'Untitled evidence'}
 Source: ${source}
 Observed: ${item.observation}
 Why it matters: ${item.whyItMatters}

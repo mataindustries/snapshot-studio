@@ -2,13 +2,16 @@ import {
   AlertTriangle,
   CheckCheck,
   CheckCircle2,
+  FilePlus2,
   History,
+  ImagePlus,
   Play,
   RotateCcw,
 } from 'lucide-react'
 import type {
   ActionStatusChange,
   EvidenceItem,
+  EvidenceTiming,
   RecommendedAction,
   RecommendedActionStatus,
 } from '../types'
@@ -20,7 +23,16 @@ import {
   getNextMilestone,
   orderActionsByRecommendation,
 } from '../lib/actionProgress'
-import { getEvidenceForAction } from '../lib/evidence'
+import {
+  getEvidenceForAction,
+  getEvidenceForActionByTiming,
+} from '../lib/evidence'
+import {
+  getVerificationReadiness,
+  normalizeVerificationStatus,
+  verificationStatusOptions,
+  type ActionVerificationPatch,
+} from '../lib/implementationVerification'
 import './ActionControlCenter.css'
 
 function formatChangedAt(value: string) {
@@ -34,22 +46,34 @@ export function ActionControlCenter({
   history,
   sprint,
   hasUnsavedProgress,
+  message,
   onStatusChange,
+  onVerificationChange,
+  onAddAfterEvidence,
+  onViewActionEvidence,
   onStartNext,
   onCompleteNext,
   onResetAll,
   onCompleteSprintPhase,
+  onCreateFollowUp,
+  followUpDisabledReason,
 }: {
   actions: RecommendedAction[]
   evidenceItems: EvidenceItem[]
   history: ActionStatusChange[]
   sprint: ConsultingRoadmap['sprint']
   hasUnsavedProgress: boolean
+  message?: string
   onStatusChange: (actionId: string, status: RecommendedActionStatus) => void
+  onVerificationChange: (actionId: string, patch: ActionVerificationPatch) => void
+  onAddAfterEvidence: (actionId: string) => void
+  onViewActionEvidence: (actionId: string, timing?: EvidenceTiming) => void
   onStartNext: () => void
   onCompleteNext: () => void
   onResetAll: () => void
   onCompleteSprintPhase: (phaseNumber: 1 | 2) => void
+  onCreateFollowUp?: () => void
+  followUpDisabledReason?: string
 }) {
   const orderedActions = orderActionsByRecommendation(actions)
   const actionById = new Map(actions.map((action) => [action.id, action]))
@@ -78,8 +102,9 @@ export function ActionControlCenter({
           <p className="section-kicker">Operator progress controls</p>
           <h2 id="action-control-center-title">Action Control Center</h2>
           <p>
-            Update the canonical plan here. The client preview responds immediately;
-            Save Snapshot keeps progress and activity after refresh.
+            {onCreateFollowUp
+              ? 'Update the canonical plan here. Create a Follow-Up Snapshot to preserve the loaded Snapshot as the baseline and store implementation progress separately.'
+              : 'Update the canonical plan here. The client preview responds immediately; Save Snapshot keeps progress and activity after refresh.'}
           </p>
         </div>
         <div className="action-progress-summary" aria-live="polite">
@@ -92,6 +117,8 @@ export function ActionControlCenter({
           )}
         </div>
       </header>
+
+      {message && <p className="action-control-message" role="status">{message}</p>}
 
       <section className="quick-status-panel" aria-labelledby="quick-status-title">
         <div>
@@ -136,6 +163,17 @@ export function ActionControlCenter({
             <RotateCcw size={18} aria-hidden="true" />
             Reset all statuses
           </button>
+          {onCreateFollowUp && (
+            <button
+              type="button"
+              onClick={onCreateFollowUp}
+              disabled={Boolean(followUpDisabledReason)}
+              title={followUpDisabledReason}
+            >
+              <FilePlus2 size={18} aria-hidden="true" />
+              Create Follow-Up Snapshot
+            </button>
+          )}
         </div>
         <small>
           Sprint shortcuts update only the actions assigned to that displayed step.
@@ -153,6 +191,20 @@ export function ActionControlCenter({
           {orderedActions.map((action) => {
             const blockers = getBlockingActions(action, actions)
             const evidenceCount = getEvidenceForAction(action.id, evidenceItems).length
+            const baselineEvidenceCount = getEvidenceForActionByTiming(
+              action.id,
+              evidenceItems,
+              'Baseline',
+            ).length
+            const afterEvidenceCount = getEvidenceForActionByTiming(
+              action.id,
+              evidenceItems,
+              'After',
+            ).length
+            const verificationStatus = normalizeVerificationStatus(
+              action.verificationStatus,
+            )
+            const verificationReadiness = getVerificationReadiness(action, evidenceItems)
             return (
               <article className="action-control-card" key={action.id}>
                 <div className="action-control-card-heading">
@@ -171,7 +223,9 @@ export function ActionControlCenter({
                   <div><dt>Effort</dt><dd>{action.estimatedEffort}</dd></div>
                   <div>
                     <dt>Linked evidence</dt>
-                    <dd>{evidenceCount}</dd>
+                    <dd>
+                      {evidenceCount} · {baselineEvidenceCount} baseline · {afterEvidenceCount} after
+                    </dd>
                   </div>
                 </dl>
 
@@ -203,6 +257,127 @@ export function ActionControlCenter({
                     ))}
                   </select>
                 </label>
+
+                <details
+                  className="action-verification-panel"
+                  open={action.status === 'Completed' ? true : undefined}
+                >
+                  <summary>
+                    <span>Completion & verification</span>
+                    <em className={verificationStatus.toLocaleLowerCase().replaceAll(' ', '-')}>
+                      {verificationStatus}
+                    </em>
+                  </summary>
+                  <div className="action-verification-body">
+                    <label>
+                      <span>Implementation note</span>
+                      <textarea
+                        rows={3}
+                        value={action.implementationNote || ''}
+                        placeholder="Record only the work that was actually implemented."
+                        onChange={(event) => onVerificationChange(action.id, {
+                          implementationNote: event.target.value,
+                        })}
+                      />
+                    </label>
+
+                    <div className="action-verification-grid">
+                      <label>
+                        <span>Completion date</span>
+                        <input
+                          type="date"
+                          value={action.completionDate || ''}
+                          onChange={(event) => onVerificationChange(action.id, {
+                            completionDate: event.target.value,
+                          })}
+                        />
+                      </label>
+                      <label>
+                        <span>Verification status</span>
+                        <select
+                          value={verificationStatus}
+                          onChange={(event) => onVerificationChange(action.id, {
+                            verificationStatus: event.target.value as RecommendedAction['verificationStatus'],
+                          })}
+                        >
+                          {verificationStatusOptions.map((status) => (
+                            <option
+                              key={status}
+                              value={status}
+                              disabled={status === 'Verified' && !verificationReadiness.ready}
+                            >
+                              {status}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
+
+                    <div className="action-evidence-state" aria-label="Linked implementation evidence">
+                      <div className="baseline">
+                        <strong>{baselineEvidenceCount}</strong>
+                        <span>Baseline evidence</span>
+                      </div>
+                      <div className="after">
+                        <strong>{afterEvidenceCount}</strong>
+                        <span>After evidence</span>
+                      </div>
+                    </div>
+
+                    <div className="action-evidence-buttons">
+                      <button type="button" onClick={() => onAddAfterEvidence(action.id)}>
+                        <ImagePlus size={17} aria-hidden="true" />
+                        Add after evidence
+                      </button>
+                      {baselineEvidenceCount > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => onViewActionEvidence(action.id, 'Baseline')}
+                        >
+                          View baseline
+                        </button>
+                      )}
+                      {afterEvidenceCount > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => onViewActionEvidence(action.id, 'After')}
+                        >
+                          View after
+                        </button>
+                      )}
+                    </div>
+
+                    <label>
+                      <span>Verification method</span>
+                      <textarea
+                        rows={3}
+                        value={action.verificationMethod || ''}
+                        placeholder="Example: Review the live page on phone and desktop and compare it with dated baseline evidence."
+                        onChange={(event) => onVerificationChange(action.id, {
+                          verificationMethod: event.target.value,
+                        })}
+                      />
+                    </label>
+
+                    <label>
+                      <span>Conservative outcome note</span>
+                      <textarea
+                        rows={3}
+                        value={action.outcomeNote || ''}
+                        placeholder="Describe only the observable result. Use Not yet verified when business impact is unknown."
+                        onChange={(event) => onVerificationChange(action.id, {
+                          outcomeNote: event.target.value,
+                        })}
+                      />
+                    </label>
+
+                    <small>
+                      Verified requires a Completed action, a recorded method, and at least one
+                      linked after-state observation or screenshot. It does not verify rankings,
+                      leads, bookings, conversion, or revenue.
+                    </small>
+                  </div>
+                </details>
               </article>
             )
           })}

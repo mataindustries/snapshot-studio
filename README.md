@@ -2,7 +2,7 @@
 
 **Discover the growth pattern shaping a local business.**
 
-Snapshot Studio, powered by UpgradeOS, turns reviewed local-business information into a memorable Business Archetype, premium assessment, implementation roadmap, proposal, and outreach Send Kit.
+Snapshot Studio, powered by UpgradeOS, turns reviewed local-business information into a memorable Business Archetype, premium assessment, implementation roadmap, proposal, outreach Send Kit, and evidence-backed implementation closeout.
 
 **Lead → Review → Archetype → Roadmap → Proposal → Outreach**
 
@@ -34,9 +34,12 @@ Research is entered by the operator, deterministic suggestions are reviewed befo
 - Evidence Manager with linked observations and screenshot support
 - Opportunity / Effort Matrix, 48-Hour Visibility Sprint, and first-month roadmap
 - Action Control Center with live statuses, dependencies, and recent activity
+- Completion and verification controls that keep implementation status separate from proof
 - Proposal Generator and Proposal Workspace
+- Linked Follow-Up Snapshots with reviewed current scores and baseline/after evidence
+- Concise UpgradeOS Proof Report for browser Print / Save PDF
 - Editable Send Kit for email, contact form, text, phone notes, and follow-up
-- Browser Print / Save PDF for Snapshot and proposal deliverables
+- Browser Print / Save PDF for Snapshot, proposal, and Proof Report deliverables
 - Browser-local saved leads, intakes, Snapshots, proposals, and Fast Lane sessions
 - Deterministic fictional Starter Workspace with a six-step guided tour
 
@@ -51,7 +54,7 @@ Snapshot Studio is a static React and TypeScript application built with Vite. It
 - **Icons:** Lucide React
 - **Deployment:** static files emitted to `dist/`
 
-The existing models are reused across workspaces: a lead can link to an intake, Snapshot, proposal, and Fast Lane session without creating parallel records.
+The existing models are reused across workspaces: a lead can link to an intake, Snapshot, proposal, and Fast Lane session without creating parallel records. Follow-Up Snapshots retain stable links to the original baseline and accepted proposal while continuing to use the canonical actions and evidence relationships.
 
 ## Responsible AI
 
@@ -60,6 +63,7 @@ The existing models are reused across workspaces: a lead can link to an intake, 
 - Snapshot Studio does not automatically crawl websites or infer unseen website facts.
 - Operator notes are not presented as verified website evidence.
 - Missing evidence is labeled as preliminary instead of receiving a misleading score.
+- Completed work is not labeled Verified without a recorded method and linked after-state support.
 - The product does not guarantee search rankings, revenue, leads, or score movement.
 - Nothing is emailed, texted, published, or marked sent without an explicit operator action.
 
@@ -134,13 +138,13 @@ Additional technical context is available in [Architecture](docs/ARCHITECTURE.md
 - Screenshot evidence must be attached by the operator and can consume browser storage.
 - Print and clipboard behavior depends on browser capabilities and permissions.
 - Follow-up dates are stored for workflow use; there are no background reminders or automatic messages.
-- Projected score ranges are planning estimates and require a follow-up Snapshot to verify change.
+- Projected score ranges are planning estimates. A Follow-Up Snapshot requires all five current scores to be reviewed and never infers improvement from completion alone.
 
 ## Future roadmap
 
 - A follow-up queue built from the existing outreach and next-contact records
 - Optional, operator-authorized portability and backup workflows
-- More review tooling around evidence completeness and implementation verification
+- Optional operator-authorized export/import for linked proof records
 - Additional accessibility, browser, and print regression coverage
 
 These are future directions, not current product claims.

@@ -195,6 +195,25 @@ test('a complete report model passes pre-render validation', () => {
   })
 })
 
+test('Follow-Up Snapshot export requires a distinct baseline link and all five reviewed scores', () => {
+  const input = validInput()
+  input.snapshotKind = 'Follow-up'
+
+  const incompleteCodes = codes(input)
+  assert.ok(incompleteCodes.includes('follow-up-baseline-link'))
+  assert.ok(incompleteCodes.includes('follow-up-scores-unreviewed'))
+
+  input.baselineSnapshotId = 'snapshot-baseline'
+  input.reviewedScoreKeys = [
+    'visibility',
+    'trust',
+    'conversion',
+    'aiSearchReadiness',
+    'competitorPosition',
+  ]
+  assert.equal(validateReportForRender(input).valid, true)
+})
+
 test('Demo Mode accepts only the canonical labeled Harbor & Pine report', () => {
   const input = validInput()
   input.reportMode = 'demo'

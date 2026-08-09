@@ -28,6 +28,7 @@ import { DemoTour } from './components/DemoTour'
 import { OperatorHeader } from './components/OperatorHeader'
 import './components/ContestPreparation.css'
 import { EvidenceManager } from './components/EvidenceManager'
+import { FollowUpSnapshotPanel } from './components/FollowUpSnapshotPanel'
 import {
   FastLane,
   type FastLaneLaunchRequest,
@@ -42,6 +43,7 @@ import { ReportReadiness } from './components/ReportReadiness'
 import { ReportValidationBanner } from './components/ReportValidationBanner'
 import { ImplementationPathsReport } from './components/ImplementationPathsReport'
 import { PoweredByFooter } from './components/PoweredByFooter'
+import { ProofReportWorkspace } from './components/ProofReport'
 import {
   ProposalWorkspace,
   type ProposalCreationRequest,
@@ -70,8 +72,16 @@ import {
   createEvidenceItem,
   formatEvidenceReportText,
   getEvidenceForAction,
+  getEvidenceTiming,
   getReportEvidence,
+  setEvidenceActionLink,
 } from './lib/evidence'
+import {
+  applyActionVerificationPatch,
+  isRelevantAfterEvidence,
+  reconcileActionVerification,
+  type ActionVerificationPatch,
+} from './lib/implementationVerification'
 import { planRecommendations } from './lib/actionPlanner'
 import { createGrowthFoundation, refreshGrowthFoundation } from './lib/growthPlanning'
 import { createProgressJourneyModel } from './lib/progressJourney'
@@ -169,6 +179,11 @@ import {
 } from './lib/revenueWorkflow'
 import { recordRevenueEvent } from './lib/revenueEvents'
 import { loadProposals, saveProposal } from './lib/proposalStorage'
+import {
+  createFollowUpSnapshot,
+  createProofReportModel,
+  validateProofReport,
+} from './lib/proofLoop'
 import { buildBusinessHoroscope, generateOutputs } from './templates/snapshotTemplates'
 import type {
   ActionStatusChange,
@@ -176,6 +191,7 @@ import type {
   BusinessIntakePayload,
   EvidenceItem,
   EvidenceSentiment,
+  EvidenceTiming,
   Lead,
   LeadContactRoute,
   LeadPriority,
@@ -189,11 +205,13 @@ import type {
   ScoreKey,
   Scores,
   SnapshotForm,
+  SnapshotKind,
   SnapshotOutputs,
   Tone,
   WebsiteExtractionObservation,
 } from './types'
 import type { FastLaneSession, FastLaneSource } from './types/fastLane'
+import type { Proposal } from './types/proposal'
 import type { UpgradeOSReportModel } from './types/upgradeOS'
 
 const emptyForm: SnapshotForm = {
@@ -215,6 +233,18 @@ const defaultBranding: BrandingFields = {
   preparedBy: 'Sergio',
   brandName: 'Snapshot Studio',
   contactLine: '',
+}
+
+type SnapshotMetaState = {
+  snapshotKind: SnapshotKind
+  baselineSnapshotId?: string
+  engagementProposalId?: string
+  reviewedScoreKeys: ScoreKey[]
+}
+
+const defaultSnapshotMeta: SnapshotMetaState = {
+  snapshotKind: 'Baseline',
+  reviewedScoreKeys: [],
 }
 
 const outputLabels: Array<{
@@ -406,6 +436,8 @@ function App() {
   const [activeLeadId, setActiveLeadId] = useState<string | null>(null)
   const [activeRevenueLeadId, setActiveRevenueLeadId] = useState<string | null>(null)
   const [loadedId, setLoadedId] = useState<string | null>(null)
+  const [snapshotMeta, setSnapshotMeta] = useState<SnapshotMetaState>(defaultSnapshotMeta)
+  const [implementationProposalId, setImplementationProposalId] = useState<string | null>(null)
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
   const [storageMessage, setStorageMessage] = useState('')
   const [hasUnsavedProgress, setHasUnsavedProgress] = useState(false)
@@ -475,6 +507,17 @@ function App() {
     ),
     [growthFoundation.evidenceItems, growthFoundation.includeIncompleteEvidence],
   )
+  const upgradeOSEvidence = useMemo(() => {
+    const includedIds = new Set(reportEvidence.map((item) => item.id))
+    return [
+      ...reportEvidence,
+      ...growthFoundation.evidenceItems.filter((item) =>
+        getEvidenceTiming(item) === 'After'
+        && isRelevantAfterEvidence(item)
+        && !includedIds.has(item.id),
+      ),
+    ]
+  }, [growthFoundation.evidenceItems, reportEvidence])
   const reportReadiness = useMemo(
     () => getReportReadiness({
       form,
@@ -547,7 +590,7 @@ function App() {
       city: getDisplayCity(form),
       primaryService: getRecommendationSubject(form),
       actions: growthFoundation.recommendedActions,
-      evidenceItems: reportEvidence,
+      evidenceItems: upgradeOSEvidence,
       actionStatusHistory: growthFoundation.actionStatusHistory,
       currentArchetype: horoscope.archetype,
       currentHealthScore: scoreAvailable ? totalScore : null,
@@ -571,7 +614,7 @@ function App() {
       growthFoundation.targetScoreLow,
       horoscope.archetype,
       horoscope.nextEvolution,
-      reportEvidence,
+      upgradeOSEvidence,
       snapshotRecordedAt,
       snapshotNumber,
       scoreAvailable,
@@ -622,6 +665,9 @@ function App() {
     () => validateReportForRender({
       reportMode,
       snapshotId: loadedId,
+      snapshotKind: snapshotMeta.snapshotKind,
+      baselineSnapshotId: snapshotMeta.baselineSnapshotId,
+      reviewedScoreKeys: snapshotMeta.reviewedScoreKeys,
       archetype: horoscope.archetype,
       form,
       scores,
@@ -654,6 +700,7 @@ function App() {
       reportText,
       reportMode,
       scores,
+      snapshotMeta,
       upgradeOS,
     ],
   )
@@ -661,24 +708,47 @@ function App() {
     () => leads.find((lead) => lead.id === activeLeadId) ?? null,
     [activeLeadId, leads],
   )
-  const proposalSnapshots = useMemo(() => {
-    if (!loadedId) return savedSnapshots
-    const loadedSnapshot = savedSnapshots.find((snapshot) => snapshot.id === loadedId)
-    if (!loadedSnapshot) return savedSnapshots
-    const openSnapshot: SavedSnapshot = {
+  const loadedSnapshot = useMemo(
+    () => savedSnapshots.find((snapshot) => snapshot.id === loadedId),
+    [loadedId, savedSnapshots],
+  )
+  const currentOpenSnapshot = useMemo(() => {
+    if (!loadedSnapshot) return undefined
+    return {
       ...loadedSnapshot,
-      recommendedActions: growthFoundation.recommendedActions,
-      actionStatusHistory: growthFoundation.actionStatusHistory,
-    }
-    return savedSnapshots.map((snapshot) =>
-      snapshot.id === loadedId ? openSnapshot : snapshot,
-    )
+      ...form,
+      ...growthFoundation,
+      ...reportOffer,
+      scores,
+      outputs,
+      branding,
+      snapshotKind: snapshotMeta.snapshotKind,
+      baselineSnapshotId: snapshotMeta.snapshotKind === 'Follow-up'
+        ? snapshotMeta.baselineSnapshotId
+        : undefined,
+      engagementProposalId: snapshotMeta.snapshotKind === 'Follow-up'
+        ? snapshotMeta.engagementProposalId
+        : undefined,
+      reviewedScoreKeys: snapshotMeta.snapshotKind === 'Follow-up'
+        ? snapshotMeta.reviewedScoreKeys
+        : undefined,
+    } satisfies SavedSnapshot
   }, [
-    growthFoundation.actionStatusHistory,
-    growthFoundation.recommendedActions,
-    loadedId,
-    savedSnapshots,
+    branding,
+    form,
+    growthFoundation,
+    loadedSnapshot,
+    outputs,
+    reportOffer,
+    scores,
+    snapshotMeta,
   ])
+  const proposalSnapshots = useMemo(() => {
+    if (!currentOpenSnapshot) return savedSnapshots
+    return savedSnapshots.map((snapshot) =>
+      snapshot.id === currentOpenSnapshot.id ? currentOpenSnapshot : snapshot,
+    )
+  }, [currentOpenSnapshot, savedSnapshots])
   const nicheOptions = useMemo(
     () => Array.from(new Set(leads.map((lead) => lead.niche).filter(Boolean))).sort(),
     [leads],
@@ -707,6 +777,57 @@ function App() {
     [leads],
   )
   const revenueProposals = loadProposals()
+  const baselineSnapshot = snapshotMeta.snapshotKind === 'Follow-up'
+    ? savedSnapshots.find((snapshot) => snapshot.id === snapshotMeta.baselineSnapshotId)
+    : undefined
+  const engagementProposal = (() => {
+    const baselineId = snapshotMeta.snapshotKind === 'Follow-up'
+      ? snapshotMeta.baselineSnapshotId
+      : loadedId
+    if (!baselineId) return undefined
+    const requestedId = snapshotMeta.engagementProposalId || implementationProposalId
+    const requested = requestedId
+      ? revenueProposals.find((proposal) => proposal.id === requestedId)
+      : undefined
+    if (
+      requested?.proposalStatus === 'Accepted'
+      && requested.snapshotId === baselineId
+    ) return requested
+    return revenueProposals
+      .filter((proposal) =>
+        proposal.snapshotId === baselineId && proposal.proposalStatus === 'Accepted',
+      )
+      .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))[0]
+  })()
+  const proofReportInput = baselineSnapshot && currentOpenSnapshot
+    && snapshotMeta.snapshotKind === 'Follow-up'
+    ? {
+        baseline: baselineSnapshot,
+        followUp: currentOpenSnapshot,
+        proposal: engagementProposal,
+      }
+    : undefined
+  const proofReportModel = proofReportInput
+    ? createProofReportModel(proofReportInput)
+    : undefined
+  const proofReportValidation = proofReportInput
+    ? (() => {
+        const validation = validateProofReport(proofReportInput)
+        const issues = hasUnsavedProgress
+          ? [...validation.issues, 'Save the Follow-Up Snapshot before client export.']
+          : validation.issues
+        return { valid: issues.length === 0, issues: Array.from(new Set(issues)) }
+      })()
+    : undefined
+  const followUpDisabledReason = snapshotMeta.snapshotKind === 'Follow-up'
+    ? 'This record is already a Follow-Up Snapshot.'
+    : !currentOpenSnapshot
+      ? 'Save and load the baseline Snapshot first.'
+      : !growthFoundation.recommendedActions.some((action) => action.status === 'Completed')
+        ? 'Complete at least one canonical action first.'
+        : !engagementProposal
+          ? 'Open an accepted proposal for this Snapshot first.'
+          : undefined
   const revenueActions = useMemo(
     () => buildTodaysRevenueActions({ leads, proposals: revenueProposals }),
     [leads, revenueProposals],
@@ -745,12 +866,19 @@ function App() {
     [activeRevenueLead, activeRevenueProposal, activeRevenueSnapshot],
   )
 
+  function markSnapshotUnsaved(message = 'Unsaved Snapshot changes') {
+    setHasUnsavedProgress(true)
+    setStorageMessage(message)
+  }
+
   function updateField<K extends keyof SnapshotForm>(field: K, value: SnapshotForm[K]) {
     setForm((current) => ({ ...current, [field]: value }))
+    markSnapshotUnsaved()
   }
 
   function updateBranding<K extends keyof BrandingFields>(field: K, value: BrandingFields[K]) {
     setBranding((current) => ({ ...current, [field]: value }))
+    markSnapshotUnsaved()
   }
 
   function updateReportOffer<K extends keyof ReportOfferFields>(
@@ -758,24 +886,37 @@ function App() {
     value: ReportOfferFields[K],
   ) {
     setReportOffer((current) => ({ ...current, [field]: value }))
+    markSnapshotUnsaved()
   }
 
   function updateScore(field: ScoreKey, value: number) {
     setScores((current) => ({ ...current, [field]: value }))
+    if (snapshotMeta.snapshotKind === 'Follow-up') {
+      setSnapshotMeta((current) => ({
+        ...current,
+        reviewedScoreKeys: Array.from(new Set([...current.reviewedScoreKeys, field])),
+      }))
+    }
+    setHasUnsavedProgress(true)
+    setStorageMessage('Unsaved Snapshot changes')
   }
 
   function updateEvidenceLayer(
     evidenceItems: EvidenceItem[],
     actions: RecommendedAction[],
   ) {
+    const reconciledActions = actions.map((action) =>
+      reconcileActionVerification(action, evidenceItems),
+    )
     setFoundationDraft({
       ...growthFoundation,
       evidenceItems,
-      recommendedActions: actions.map((action) => ({
+      recommendedActions: reconciledActions.map((action) => ({
         ...action,
         linkedEvidence: action.linkedEvidenceIds,
       })),
     })
+    setHasUnsavedProgress(true)
     setStorageMessage('Evidence draft updated. Save the snapshot to keep it after refresh.')
   }
 
@@ -819,9 +960,16 @@ function App() {
     }))
     setFoundationDraft({
       ...growthFoundation,
-      recommendedActions: growthFoundation.recommendedActions.map((action) =>
-        targetIds.has(action.id) ? { ...action, status: newStatus } : action,
-      ),
+      recommendedActions: growthFoundation.recommendedActions.map((action) => {
+        if (!targetIds.has(action.id)) return action
+        return reconcileActionVerification({
+          ...action,
+          status: newStatus,
+          completionDate: newStatus === 'Completed'
+            ? action.completionDate || changedAt.slice(0, 10)
+            : action.completionDate,
+        }, growthFoundation.evidenceItems)
+      }),
       actionStatusHistory: appendActionStatusHistory(
         growthFoundation.actionStatusHistory,
         changes,
@@ -837,6 +985,71 @@ function App() {
     status: RecommendedActionStatus,
   ) {
     applyActionStatuses([actionId], status)
+  }
+
+  function updateActionVerification(
+    actionId: string,
+    patch: ActionVerificationPatch,
+  ) {
+    const source = growthFoundation.recommendedActions.find(
+      (action) => action.id === actionId,
+    )
+    if (!source) return
+    const result = applyActionVerificationPatch(
+      source,
+      patch,
+      growthFoundation.evidenceItems,
+    )
+    if (result.error) {
+      setStorageMessage(result.error)
+      return
+    }
+    setFoundationDraft({
+      ...growthFoundation,
+      recommendedActions: growthFoundation.recommendedActions.map((action) =>
+        action.id === actionId ? result.action : action,
+      ),
+    })
+    setHasUnsavedProgress(true)
+    setStorageMessage('Unsaved completion and verification changes')
+  }
+
+  function addAfterEvidenceForAction(actionId: string) {
+    const action = growthFoundation.recommendedActions.find(
+      (candidate) => candidate.id === actionId,
+    )
+    if (!action) return
+    const item: EvidenceItem = {
+      ...createEvidenceItem('After'),
+      title: `After: ${action.title}`,
+      linkedActionIds: [action.id],
+    }
+    const linked = setEvidenceActionLink(
+      [...growthFoundation.evidenceItems, item],
+      growthFoundation.recommendedActions,
+      item.id,
+      action.id,
+      true,
+    )
+    updateEvidenceLayer(linked.evidenceItems, linked.actions)
+    window.setTimeout(() => openEvidenceManager(item.id), 0)
+  }
+
+  function updateFollowUpScoreReview(key: ScoreKey, reviewed: boolean) {
+    setSnapshotMeta((current) => ({
+      ...current,
+      reviewedScoreKeys: reviewed
+        ? Array.from(new Set([...current.reviewedScoreKeys, key]))
+        : current.reviewedScoreKeys.filter((candidate) => candidate !== key),
+    }))
+    setHasUnsavedProgress(true)
+    setStorageMessage('Unsaved Follow-Up Snapshot review changes')
+  }
+
+  function updateFollowUpReviewDate(reviewDate: string) {
+    setFoundationDraft({ ...growthFoundation, reviewDate })
+    setHasUnsavedProgress(true)
+    setStorageMessage('Unsaved Follow-Up Snapshot review changes')
   }
 
   function startNextAction() {
@@ -888,11 +1101,13 @@ function App() {
       ...growthFoundation,
       includeIncompleteEvidence,
     })
+    markSnapshotUnsaved('Unsaved evidence-display changes')
   }
 
-  function viewActionEvidence(actionId: string) {
-    const evidence = getEvidenceForAction(actionId, reportEvidence)[0]
-      ?? getEvidenceForAction(actionId, growthFoundation.evidenceItems)[0]
+  function viewActionEvidence(actionId: string, timing?: EvidenceTiming) {
+    const matchesTiming = (item: EvidenceItem) => !timing || getEvidenceTiming(item) === timing
+    const evidence = getEvidenceForAction(actionId, reportEvidence).find(matchesTiming)
+      ?? getEvidenceForAction(actionId, growthFoundation.evidenceItems).find(matchesTiming)
     if (!evidence) return
 
     const target = document.getElementById('evidence-' + evidence.id)
@@ -1021,6 +1236,7 @@ function App() {
           : lead),
       )
     }
+    setHasUnsavedProgress(true)
     setStorageMessage('Approved intake draft values applied. Save the snapshot to keep them.')
   }
 
@@ -1041,7 +1257,9 @@ function App() {
     sentiment: EvidenceSentiment,
     caption?: string,
   ) {
-    const base = createEvidenceItem()
+    const base = createEvidenceItem(
+      snapshotMeta.snapshotKind === 'Follow-up' ? 'After' : 'Baseline',
+    )
     const normalizedSourceUrl = normalizeWebsiteUrl(intake.identity.websiteUrlRaw)
     const item: EvidenceItem = {
       ...base,
@@ -1059,13 +1277,17 @@ function App() {
       ...growthFoundation,
       evidenceItems: [...growthFoundation.evidenceItems, item],
     })
+    setHasUnsavedProgress(true)
+    setStorageMessage('Unsaved evidence changes')
     return item.id
   }
 
   function createBlankIntakeEvidence() {
     const normalizedSourceUrl = normalizeWebsiteUrl(intake.identity.websiteUrlRaw)
     const item: EvidenceItem = {
-      ...createEvidenceItem(),
+      ...createEvidenceItem(
+        snapshotMeta.snapshotKind === 'Follow-up' ? 'After' : 'Baseline',
+      ),
       title: 'Intake screenshot',
       sourceUrl: normalizedSourceUrl.valid ? normalizedSourceUrl.normalized : '',
       pageLabel: 'Operator intake',
@@ -1075,6 +1297,8 @@ function App() {
       ...growthFoundation,
       evidenceItems: [...growthFoundation.evidenceItems, item],
     })
+    setHasUnsavedProgress(true)
+    setStorageMessage('Unsaved evidence changes')
     return item.id
   }
 
@@ -1090,6 +1314,7 @@ function App() {
           : item,
       ),
     })
+    markSnapshotUnsaved('Unsaved evidence changes')
   }
 
   async function copyText(label: string, text: string) {
@@ -1141,6 +1366,30 @@ function App() {
     const existingSnapshot = loadedId
       ? savedSnapshots.find((snapshot) => snapshot.id === loadedId)
       : undefined
+    if (
+      existingSnapshot
+      && snapshotMeta.snapshotKind === 'Baseline'
+      && savedSnapshots.some((snapshot) => snapshot.baselineSnapshotId === existingSnapshot.id)
+    ) {
+      setStorageMessage(
+        'This saved Snapshot is an immutable baseline. Open its linked Follow-Up Snapshot to record implementation changes.',
+      )
+      return null
+    }
+    if (
+      existingSnapshot
+      && snapshotMeta.snapshotKind === 'Baseline'
+      && engagementProposal
+    ) {
+      if (followUpDisabledReason) {
+        setStorageMessage(
+          `This accepted-engagement Snapshot is the immutable baseline. ${followUpDisabledReason}`,
+        )
+        return null
+      }
+      handleCreateFollowUp()
+      return null
+    }
     const snapshot: SavedSnapshot = {
       ...(existingSnapshot ?? {}),
       ...form,
@@ -1151,6 +1400,16 @@ function App() {
       scores,
       outputs,
       branding,
+      snapshotKind: snapshotMeta.snapshotKind,
+      baselineSnapshotId: snapshotMeta.snapshotKind === 'Follow-up'
+        ? snapshotMeta.baselineSnapshotId
+        : undefined,
+      engagementProposalId: snapshotMeta.snapshotKind === 'Follow-up'
+        ? snapshotMeta.engagementProposalId
+        : undefined,
+      reviewedScoreKeys: snapshotMeta.snapshotKind === 'Follow-up'
+        ? snapshotMeta.reviewedScoreKeys
+        : undefined,
     }
 
     try {
@@ -1158,7 +1417,11 @@ function App() {
       setLoadedId(snapshot.id)
       setFoundationDraft(growthFoundation)
       setHasUnsavedProgress(false)
-      setStorageMessage('Snapshot recorded in this browser.')
+      setStorageMessage(
+        snapshotMeta.snapshotKind === 'Follow-up'
+          ? 'Follow-Up Snapshot recorded in this browser.'
+          : 'Snapshot recorded in this browser.',
+      )
     } catch (error) {
       setStorageMessage(
         isStorageQuotaError(error)
@@ -1168,7 +1431,7 @@ function App() {
       return null
     }
 
-    if (activeLeadId) {
+    if (snapshotMeta.snapshotKind === 'Baseline' && activeLeadId) {
       updateLeadList(
         leads.map((lead) =>
           lead.id === activeLeadId
@@ -1188,7 +1451,7 @@ function App() {
       || intake.website.pageText.trim()
       || intake.draft,
     )
-    if (hasIntakeContent) {
+    if (snapshotMeta.snapshotKind === 'Baseline' && hasIntakeContent) {
       const linkedIntake: BusinessIntakePayload = {
         ...intake,
         linkedLeadId: intake.linkedLeadId || activeLeadId || undefined,
@@ -1222,6 +1485,122 @@ function App() {
     requestProposal(snapshot, activeLead || undefined)
   }
 
+  function handleOpenImplementation(proposal: Proposal) {
+    if (proposal.proposalStatus !== 'Accepted') {
+      setStorageMessage('Mark the proposal Accepted before opening implementation.')
+      return
+    }
+    const baseline = savedSnapshots.find((saved) => saved.id === proposal.snapshotId)
+    if (!baseline) {
+      setStorageMessage('The Snapshot linked to this proposal is no longer available.')
+      return
+    }
+    const linkedFollowUp = savedSnapshots
+      .filter((snapshot) =>
+        snapshot.snapshotKind === 'Follow-up'
+        && snapshot.baselineSnapshotId === baseline.id
+        && snapshot.engagementProposalId === proposal.id,
+      )
+      .sort((left, right) => right.createdAt.localeCompare(left.createdAt))[0]
+    handleLoadSnapshot(linkedFollowUp || baseline)
+    setImplementationProposalId(proposal.id)
+    setStorageMessage(
+      linkedFollowUp
+        ? 'Linked Follow-Up Snapshot resumed in the canonical Action Control Center.'
+        : 'Accepted scope opened in the canonical Action Control Center.',
+    )
+    window.setTimeout(() => {
+      document.getElementById('action-control-center')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 60)
+  }
+
+  function handleOpenImplementationFromSnapshot(snapshot: SavedSnapshot) {
+    const baselineId = snapshot.snapshotKind === 'Follow-up'
+      ? snapshot.baselineSnapshotId
+      : snapshot.id
+    const proposal = loadProposals()
+      .filter((candidate) =>
+        candidate.snapshotId === baselineId
+        && candidate.proposalStatus === 'Accepted',
+      )
+      .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))[0]
+    const linkedFollowUp = snapshot.snapshotKind === 'Follow-up'
+      ? snapshot
+      : savedSnapshots
+          .filter((candidate) =>
+            candidate.snapshotKind === 'Follow-up'
+            && candidate.baselineSnapshotId === snapshot.id
+            && (!proposal || candidate.engagementProposalId === proposal.id),
+          )
+          .sort((left, right) => right.createdAt.localeCompare(left.createdAt))[0]
+    handleLoadSnapshot(linkedFollowUp || snapshot)
+    setImplementationProposalId(
+      proposal?.id ?? linkedFollowUp?.engagementProposalId
+        ?? snapshot.engagementProposalId ?? null,
+    )
+    setStorageMessage(
+      linkedFollowUp
+        ? 'Linked Follow-Up Snapshot resumed in the canonical Action Control Center.'
+        : proposal
+        ? 'Linked accepted scope opened in the canonical Action Control Center.'
+        : 'Implementation plan opened. Accept a linked proposal before creating a Follow-Up Snapshot.',
+    )
+    window.setTimeout(() => {
+      document.getElementById('action-control-center')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 60)
+  }
+
+  function handleCreateFollowUp() {
+    if (followUpDisabledReason || !currentOpenSnapshot || !engagementProposal) {
+      setStorageMessage(followUpDisabledReason || 'Follow-Up Snapshot is not ready yet.')
+      return
+    }
+    const existingFollowUp = savedSnapshots
+      .filter((snapshot) =>
+        snapshot.snapshotKind === 'Follow-up'
+        && snapshot.baselineSnapshotId === currentOpenSnapshot.id
+        && snapshot.engagementProposalId === engagementProposal.id,
+      )
+      .sort((left, right) => right.createdAt.localeCompare(left.createdAt))[0]
+    if (existingFollowUp) {
+      handleLoadSnapshot(existingFollowUp)
+      setImplementationProposalId(engagementProposal.id)
+      setStorageMessage('Existing linked Follow-Up Snapshot resumed; no duplicate was created.')
+      window.setTimeout(() => {
+        document.getElementById('follow-up-snapshot-review')
+          ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 60)
+      return
+    }
+
+    const followUp = createFollowUpSnapshot(currentOpenSnapshot, {
+      engagementProposalId: engagementProposal.id,
+    })
+    try {
+      const nextSnapshots = saveSnapshot(followUp)
+      const savedFollowUp = nextSnapshots.find((snapshot) => snapshot.id === followUp.id)
+        || followUp
+      setSavedSnapshots(nextSnapshots)
+      handleLoadSnapshot(savedFollowUp)
+      setImplementationProposalId(engagementProposal.id)
+      setStorageMessage(
+        'Follow-Up Snapshot created as a separate record. Review every current score and add after evidence.',
+      )
+      window.setTimeout(() => {
+        document.getElementById('follow-up-snapshot-review')
+          ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 60)
+    } catch (error) {
+      setStorageMessage(
+        isStorageQuotaError(error)
+          ? 'Browser storage is full. Remove or replace a large screenshot, then create the Follow-Up Snapshot again.'
+          : 'The Follow-Up Snapshot could not be saved. The baseline record was not changed.',
+      )
+    }
+  }
+
   function handleLoadSnapshot(snapshot: SavedSnapshot) {
     setForm({
       businessName: snapshot.businessName,
@@ -1251,10 +1630,35 @@ function App() {
     })
     setScores(normalizeScores(snapshot.scores))
     setFoundationDraft(refreshGrowthFoundation(normalizeScores(snapshot.scores), snapshot))
+    const snapshotKind = snapshot.snapshotKind === 'Follow-up' ? 'Follow-up' : 'Baseline'
+    setSnapshotMeta({
+      snapshotKind,
+      baselineSnapshotId: snapshotKind === 'Follow-up'
+        ? snapshot.baselineSnapshotId
+        : undefined,
+      engagementProposalId: snapshotKind === 'Follow-up'
+        ? snapshot.engagementProposalId
+        : undefined,
+      reviewedScoreKeys: snapshotKind === 'Follow-up'
+        ? snapshot.reviewedScoreKeys ?? []
+        : [],
+    })
+    const proposalBaselineId = snapshotKind === 'Follow-up'
+      ? snapshot.baselineSnapshotId
+      : snapshot.id
+    const linkedProposal = loadProposals()
+      .filter((proposal) =>
+        proposal.snapshotId === proposalBaselineId
+        && proposal.proposalStatus === 'Accepted',
+      )
+      .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))[0]
+    setImplementationProposalId(snapshot.engagementProposalId || linkedProposal?.id || null)
     setHasUnsavedProgress(false)
     setLoadedId(snapshot.id)
     const associatedIntake = savedIntakes.find(
-      (saved) => saved.linkedSnapshotId === snapshot.id,
+      (saved) => saved.linkedSnapshotId === snapshot.id
+        || (snapshotKind === 'Follow-up'
+          && saved.linkedSnapshotId === snapshot.baselineSnapshotId),
     )
     if (associatedIntake) {
       setIntake(associatedIntake)
@@ -1263,18 +1667,36 @@ function App() {
     } else {
       setIntake((current) => ({ ...current, appliedAt: undefined }))
       setIntakeStorageMessage('No saved intake is associated with this snapshot.')
+      const associatedLead = leads.find((lead) =>
+        lead.linkedSnapshotId === snapshot.id
+        || (snapshotKind === 'Follow-up'
+          && lead.linkedSnapshotId === snapshot.baselineSnapshotId),
+      )
+      setActiveLeadId(associatedLead?.id ?? null)
     }
     setStorageMessage(
-      'Loaded ' + snapshot.evidenceItems.length + ' evidence item'
+      (snapshotKind === 'Follow-up' ? 'Loaded Follow-Up Snapshot with ' : 'Loaded ')
+        + snapshot.evidenceItems.length + ' evidence item'
         + (snapshot.evidenceItems.length === 1 ? '.' : 's.'),
     )
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   function handleDeleteSnapshot(snapshotId: string) {
+    const linkedFollowUps = savedSnapshots.filter(
+      (snapshot) => snapshot.baselineSnapshotId === snapshotId,
+    )
+    if (linkedFollowUps.length > 0) {
+      setStorageMessage(
+        'This baseline has a linked Follow-Up Snapshot. Delete the follow-up first to preserve the proof record.',
+      )
+      return
+    }
     setSavedSnapshots(deleteSnapshot(snapshotId))
     if (loadedId === snapshotId) {
       setLoadedId(null)
+      setSnapshotMeta(defaultSnapshotMeta)
+      setImplementationProposalId(null)
     }
   }
 
@@ -1287,6 +1709,8 @@ function App() {
     setIntake(createEmptyBusinessIntake())
     setIntakeStorageMessage('Started a new intake for the new snapshot.')
     setLoadedId(null)
+    setSnapshotMeta(defaultSnapshotMeta)
+    setImplementationProposalId(null)
     setHasUnsavedProgress(false)
     setStorageMessage('Started a new snapshot. Evidence from the previous snapshot was not reused.')
     setActiveLeadId(null)
@@ -1541,6 +1965,8 @@ function App() {
       if (associatedLead) setActiveLeadId(associatedLead.id)
       if (fresh && !session?.snapshotId) {
         setLoadedId(null)
+        setSnapshotMeta(defaultSnapshotMeta)
+        setImplementationProposalId(null)
         setIntake(selectedIntake
           ? session?.intakeId
             ? selectedIntake
@@ -1561,6 +1987,8 @@ function App() {
     setFoundationDraft(createGrowthFoundation(emptyScores))
     setIntake(nextIntake)
     setLoadedId(null)
+    setSnapshotMeta(defaultSnapshotMeta)
+    setImplementationProposalId(null)
     setHasUnsavedProgress(false)
     setActiveLeadId(associatedLead?.id || null)
     setStorageMessage(
@@ -2371,7 +2799,9 @@ function App() {
           <div className="sticky-actions">
             <button className="primary-button" type="button" onClick={handleSaveSnapshot}>
               <Save size={18} aria-hidden="true" />
-              Save snapshot
+              {snapshotMeta.snapshotKind === 'Baseline' && engagementProposal
+                ? 'Save as follow-up'
+                : 'Save snapshot'}
             </button>
             <button className="secondary-button" type="button" onClick={copyAllOutputs}>
               <Copy size={18} aria-hidden="true" />
@@ -2382,17 +2812,41 @@ function App() {
         </aside>
       </section>
 
+      {baselineSnapshot && currentOpenSnapshot
+        && snapshotMeta.snapshotKind === 'Follow-up' && (
+        <FollowUpSnapshotPanel
+          baseline={baselineSnapshot}
+          followUpDate={currentOpenSnapshot.createdAt}
+          scores={scores}
+          reviewedScoreKeys={snapshotMeta.reviewedScoreKeys}
+          reviewDate={growthFoundation.reviewDate}
+          proposal={engagementProposal}
+          hasUnsavedChanges={hasUnsavedProgress}
+          onScoreReviewChange={updateFollowUpScoreReview}
+          onReviewDateChange={updateFollowUpReviewDate}
+          onSave={handleSaveSnapshot}
+        />
+      )}
+
       <ActionControlCenter
         actions={growthFoundation.recommendedActions}
         evidenceItems={growthFoundation.evidenceItems}
         history={growthFoundation.actionStatusHistory}
         sprint={roadmap.sprint}
         hasUnsavedProgress={hasUnsavedProgress}
+        message={storageMessage}
         onStatusChange={updateActionStatus}
+        onVerificationChange={updateActionVerification}
+        onAddAfterEvidence={addAfterEvidenceForAction}
+        onViewActionEvidence={viewActionEvidence}
         onStartNext={startNextAction}
         onCompleteNext={completeNextAction}
         onResetAll={resetActionStatuses}
         onCompleteSprintPhase={completeSprintPhase}
+        onCreateFollowUp={snapshotMeta.snapshotKind === 'Baseline'
+          ? handleCreateFollowUp
+          : undefined}
+        followUpDisabledReason={followUpDisabledReason}
       />
 
       <EvidenceManager
@@ -2402,7 +2856,17 @@ function App() {
         onChange={updateEvidenceLayer}
         onIncludeIncompleteChange={updateIncludeIncompleteEvidence}
         onViewActionEvidence={viewActionEvidence}
+        defaultEvidenceTiming={snapshotMeta.snapshotKind === 'Follow-up'
+          ? 'After'
+          : 'Baseline'}
       />
+
+      {proofReportModel && proofReportValidation && (
+        <ProofReportWorkspace
+          model={proofReportModel}
+          validation={proofReportValidation}
+        />
+      )}
 
       <section className="report-section" id="client-report-preview" aria-label="Client-facing report preview">
         <div className="report-toolbar screen-only">
@@ -2422,10 +2886,12 @@ function App() {
               <Copy size={18} aria-hidden="true" />
               {copiedKey === 'report' ? 'Copied report' : 'Copy full report'}
             </button>
-            <button className="secondary-button" type="button" onClick={handleCreateProposal}>
-              <FilePlus2 size={18} aria-hidden="true" />
-              Create proposal
-            </button>
+            {snapshotMeta.snapshotKind === 'Baseline' && !engagementProposal && (
+              <button className="secondary-button" type="button" onClick={handleCreateProposal}>
+                <FilePlus2 size={18} aria-hidden="true" />
+                Create proposal
+              </button>
+            )}
             <button
               className="primary-button"
               type="button"
@@ -2601,21 +3067,33 @@ function App() {
                     {snapshot.city || 'No city'} - {snapshot.niche || 'No industry'}
                   </span>
                   <small>
+                    {snapshot.snapshotKind === 'Follow-up' ? 'Follow-Up' : 'Baseline'} ·{' '}
                     {new Date(snapshot.createdAt).toLocaleString()} · {snapshot.evidenceItems.length}{' '}
                     evidence item{snapshot.evidenceItems.length === 1 ? '' : 's'}
                   </small>
                 </button>
+                {snapshot.snapshotKind !== 'Follow-up' && (
+                  <button
+                    className="icon-button"
+                    type="button"
+                    aria-label={`Create proposal for ${snapshot.businessName || 'snapshot'}`}
+                    title="Create proposal"
+                    onClick={() => requestProposal(
+                      snapshot,
+                      leads.find((lead) => lead.linkedSnapshotId === snapshot.id),
+                    )}
+                  >
+                    <FilePlus2 size={17} aria-hidden="true" />
+                  </button>
+                )}
                 <button
                   className="icon-button"
                   type="button"
-                  aria-label={`Create proposal for ${snapshot.businessName || 'snapshot'}`}
-                  title="Create proposal"
-                  onClick={() => requestProposal(
-                    snapshot,
-                    leads.find((lead) => lead.linkedSnapshotId === snapshot.id),
-                  )}
+                  aria-label={`Open implementation for ${snapshot.businessName || 'snapshot'}`}
+                  title="Open implementation"
+                  onClick={() => handleOpenImplementationFromSnapshot(snapshot)}
                 >
-                  <FilePlus2 size={17} aria-hidden="true" />
+                  <ListChecks size={17} aria-hidden="true" />
                 </button>
                 <button
                   className="icon-button danger"
@@ -2637,6 +3115,7 @@ function App() {
         snapshots={proposalSnapshots}
         creationRequest={proposalCreationRequest}
         focusRequest={proposalFocusRequest}
+        onOpenImplementation={handleOpenImplementation}
       />
     </main>
   )
